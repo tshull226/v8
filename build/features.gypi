@@ -61,6 +61,9 @@
 
     # Use the v8 provided v8::Platform implementation.
     'v8_use_default_platform%': 1,
+	
+		#mine for adding cuda extension
+		'v8_cuda_extension%' : 'false',
   },
   'target_defaults': {
     'conditions': [

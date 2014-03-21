@@ -193,6 +193,9 @@ ifeq ($(armthumb), on)
   GYPFLAGS += -Darm_thumb=1
 endif
 endif
+ifeq ($(cuda_extension), on)
+	GYPFLAGS += -Dv8_cuda_extension='true'
+endif
 # armtest=on
 # With this flag set, by default v8 will only use features implied
 # by the compiler (no probe). This is done by modifying the default

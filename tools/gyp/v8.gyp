@@ -340,6 +340,20 @@
         '../../src/extensions/statistics-extension.h',
         '../../src/extensions/trigger-failure-extension.cc',
         '../../src/extensions/trigger-failure-extension.h',
+        '../../src/extensions/webcuda/bindings.h',
+        '../../src/extensions/webcuda/bindings.cc',
+        #'../../src/extensions/webcuda/ctx.h',
+        #'../../src/extensions/webcuda/ctx.cc',
+        #'../../src/extensions/webcuda/device.h',
+        #'../../src/extensions/webcuda/device.cc',
+        #'../../src/extensions/webcuda/function.h',
+        #'../../src/extensions/webcuda/function.cc',
+        #'../../src/extensions/webcuda/mem.h',
+        #'../../src/extensions/webcuda/mem.cc',
+        #'../../src/extensions/webcuda/object_wrap.h',
+        #'../../src/extensions/webcuda/webcuda.h',
+        #'../../src/extensions/webcuda/webcuda.cc',
+        #'../../src/extensions/webcuda/webcuda_top.h',
         '../../src/factory.cc',
         '../../src/factory.h',
         '../../src/fast-dtoa.cc',
@@ -606,6 +620,39 @@
         '../../src/zone.h',
       ],
       'conditions': [
+        ['v8_cuda_extension=="true"', {
+					'cflags!': [
+						'-Werror',
+					],
+					'defines': [
+							'V8_WEBCUDA',
+					],
+					'link_settings': {
+						'libraries': [
+							'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
+						],
+					},
+					'include_dirs': [
+						'/usr/local/cuda/include',
+					],
+        },{
+					'sources!': [
+						'../../src/extensions/webcuda/bindings.h',
+						'../../src/extensions/webcuda/bindings.cc',
+						'../../src/extensions/webcuda/ctx.h',
+						'../../src/extensions/webcuda/ctx.cc',
+						'../../src/extensions/webcuda/device.h',
+						'../../src/extensions/webcuda/device.cc',
+						'../../src/extensions/webcuda/function.h',
+						'../../src/extensions/webcuda/function.cc',
+						'../../src/extensions/webcuda/mem.h',
+						'../../src/extensions/webcuda/mem.cc',
+						'../../src/extensions/webcuda/object_wrap.h',
+						'../../src/extensions/webcuda/webcuda.h',
+						'../../src/extensions/webcuda/webcuda.cc',
+						'../../src/extensions/webcuda/webcuda_top.h',
+					],
+				}],
         ['want_separate_host_toolset==1', {
           'toolsets': ['host', 'target'],
         }, {
