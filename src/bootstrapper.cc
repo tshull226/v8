@@ -48,6 +48,11 @@
 #include "extensions/trigger-failure-extension.h"
 #include "code-stubs.h"
 
+#ifdef V8_WEBCUDA
+#include "extensions/sample_cuda.h"
+//#include "extensions/webcuda/bindings.h"
+#endif
+
 namespace v8 {
 namespace internal {
 
@@ -2265,6 +2270,7 @@ void Genesis::ExtensionStates::set_state(RegisteredExtension* extension,
 }
 
 
+//TOM IMPORTANT - WHERE TO ADD EXTENSIONS
 bool Genesis::InstallExtensions(Handle<Context> native_context,
                                 v8::ExtensionConfiguration* extensions) {
   Isolate* isolate = native_context->GetIsolate();
