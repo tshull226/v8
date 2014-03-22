@@ -14,6 +14,9 @@ void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda
 }
 
 void WebCUDA::Version(const v8::FunctionCallbackInfo<v8::Value>& args){
-		cout << "version 0.1";
-
+	/*	Isolate* i =Isolate::New();
+		Handle<String> version = String::NewFromUtf8(i,"Version 0.1");
+		i->Dispose();
+		return version;
+		*/
 }

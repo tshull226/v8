@@ -8,6 +8,7 @@ namespace webcuda{
 	class WebCUDA{
 		public:
 			CUmodule module;
+			//static Handle<String> Version(const v8::FunctionCallbackInfo<v8::Value>& args);
 			static void Version(const v8::FunctionCallbackInfo<v8::Value>& args);
 			
 			static void AddWebCUDAMethods(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
