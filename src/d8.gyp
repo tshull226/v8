@@ -48,7 +48,6 @@
       ],
       'sources': [
         'd8.cc',
-				'src/extensions/sample_cuda.h',
       ],
       'conditions': [
         ['v8_cuda_extension=="true"', {
@@ -66,9 +65,12 @@
 					'include_dirs': [
 						'/usr/local/cuda/include',
 					],
+					'sources': [
+						'extensions/webcuda.cc',
+					],
         },{
 					'sources!': [
-						'../../src/extensions/sample_cuda.h', ##really a placeholder for the time being (will put in important stuff later)
+						#'../../src/extensions/sample_cuda.h', ##really a placeholder for the time being (will put in important stuff later)
 					],
 				}],
         [ 'want_separate_host_toolset==1', {

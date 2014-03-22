@@ -29,7 +29,7 @@
 #define V8_D8_H_
 
 #ifdef V8_WEBCUDA
-#include "extensions/sample_cuda.h"
+#include "extensions/webcuda.h"
 #endif
 
 #ifndef V8_SHARED

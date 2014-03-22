@@ -915,6 +915,12 @@ Handle<ObjectTemplate> Shell::CreateGlobalTemplate(Isolate* isolate) {
   global_template->Set(String::NewFromUtf8(isolate, "os"), os_templ);
 #endif  // V8_SHARED
 
+#ifdef V8_WEBCUDA
+  Handle<ObjectTemplate> webcuda_templ = ObjectTemplate::New(isolate);
+	webcuda::WebCUDA::AddWebCUDAMethods(isolate, webcuda_templ);
+  global_template->Set(String::NewFromUtf8(isolate, "webcuda"), webcuda_templ);
+#endif
+
   return global_template;
 }
 
