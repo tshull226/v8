@@ -48,10 +48,6 @@
 #include "extensions/trigger-failure-extension.h"
 #include "code-stubs.h"
 
-#ifdef V8_WEBCUDA
-#include "extensions/sample_cuda.h"
-//#include "extensions/webcuda/bindings.h"
-#endif
 
 namespace v8 {
 namespace internal {

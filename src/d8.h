@@ -28,6 +28,10 @@
 #ifndef V8_D8_H_
 #define V8_D8_H_
 
+#ifdef V8_WEBCUDA
+#include "extensions/sample_cuda.h"
+#endif
+
 #ifndef V8_SHARED
 #include "allocation.h"
 #include "hashmap.h"

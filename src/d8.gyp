@@ -48,8 +48,29 @@
       ],
       'sources': [
         'd8.cc',
+				'src/extensions/sample_cuda.h',
       ],
       'conditions': [
+        ['v8_cuda_extension=="true"', {
+					'cflags!': [
+						#'-Werror',
+					],
+					'defines': [
+							'V8_WEBCUDA',
+					],
+					'link_settings': {
+						'libraries': [
+							'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
+						],
+					},
+					'include_dirs': [
+						'/usr/local/cuda/include',
+					],
+        },{
+					'sources!': [
+						'../../src/extensions/sample_cuda.h', ##really a placeholder for the time being (will put in important stuff later)
+					],
+				}],
         [ 'want_separate_host_toolset==1', {
           'toolsets': [ '<(v8_toolset_for_d8)', ],
         }],
