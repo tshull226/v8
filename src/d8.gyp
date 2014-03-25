@@ -67,6 +67,7 @@
 					],
 					'sources': [
 						'extensions/webcuda.cc',
+						'extensions/webcuda/device.cc',
 					],
         },{
 					'sources!': [
