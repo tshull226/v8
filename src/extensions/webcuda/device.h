@@ -15,7 +15,7 @@ namespace webcuda {
     protected:
       static Persistent<ObjectTemplate> constructor_template;
 
-      static void MakeDeviceObject(const v8::FunctionCallbackInfo<v8::Value>& args);
+      static void  MakeDeviceObject(const v8::FunctionCallbackInfo<v8::Value>& args);
       static Handle<ObjectTemplate> MakeDeviceTemplate(Isolate* isolate);
       static void GetComputeCapability(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
       static void GetName(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
