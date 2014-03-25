@@ -3,3 +3,5 @@ device.cc GetName (71) need to property set string, length, passed to v8
 
 mem.cc = need to look into the async memory transfer
 GetDevicePtr = need to implement this...
+
+In general = need to make documentation for API
