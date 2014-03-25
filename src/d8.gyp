@@ -70,6 +70,7 @@
 						'extensions/webcuda/device.cc',
 						'extensions/webcuda/mem.cc',
 						'extensions/webcuda/function.cc',
+						'extensions/webcuda/module.cc',
 					],
         },{
 					'sources!': [
