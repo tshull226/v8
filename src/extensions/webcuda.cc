@@ -1,5 +1,7 @@
 
 #include <iostream>
+#include <cuda.h>
+#include <cudaProfiler.h>
 #include "webcuda.h"
 #include "webcuda/device.h"
 
@@ -18,6 +20,12 @@ void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda
 
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "deviceCount"),
 			FunctionTemplate::New(isolate, GetDeviceCount));
+
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "startProfiling"),
+			FunctionTemplate::New(isolate, webcuda::WebCUDA::StartProfiling));
+
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "stopProfiling"),
+			FunctionTemplate::New(isolate, webcuda::WebCUDA::StopProfiling));
 
 	//instantiating other features
 	Device::Initialize(isolate, webcuda_templ);
@@ -40,4 +48,16 @@ void WebCUDA::GetDeviceCount(const v8::FunctionCallbackInfo<v8::Value>& args){
 	cuDeviceGetCount(&deviceCount);
 	cout << "Device Count " << deviceCount << endl;
 	args.GetReturnValue().Set(Integer::New(args.GetIsolate(), deviceCount));
+}
+
+void WebCUDA::StartProfiling(const v8::FunctionCallbackInfo<v8::Value>& args){
+	cuProfilerStart();
+	cout << "Profiling Started!" << endl;
+	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Profiling Started!"));
+}
+
+void WebCUDA::StopProfiling(const v8::FunctionCallbackInfo<v8::Value>& args){
+	cuProfilerStop();
+	cout << "Profiling Stopped!" << endl;
+	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Profiling Stopped!"));
 }

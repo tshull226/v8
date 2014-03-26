@@ -77,7 +77,6 @@ void Module::Load(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Handle<Object> result = MakeModuleObject_(args.GetIsolate());
 	Module *pmodule = UnwrapModule(result);
 
-	//I THINK THIS NEEDS TO BE FIXED
 	String::Utf8Value fname(args[0]);
 	CUresult error = cuModuleLoad(&(pmodule->m_module), *fname);
 
