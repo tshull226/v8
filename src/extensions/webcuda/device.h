@@ -12,6 +12,8 @@ namespace webcuda {
     public:
       static void Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
 
+			static Device* UnwrapDevice(Handle<Object> obj);
+      CUdevice m_device;
     protected:
       static Persistent<ObjectTemplate> constructor_template;
 
@@ -20,7 +22,6 @@ namespace webcuda {
       static void GetName(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
       static void GetTotalMem(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
 
-			static Device* UnwrapDevice(Handle<Object> obj);
 
       // TODO: cuDeviceGetAttribute
       // TODO: cuDeviceGetProperties
@@ -32,7 +33,6 @@ namespace webcuda {
     private:
       static Handle<ObjectTemplate> MakeDeviceTemplate(Isolate* isolate);
 
-      CUdevice m_device;
 
 //      friend class Ctx; DON'T THINK THAT I NEED THIS ANYMORE
   };

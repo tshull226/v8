@@ -71,6 +71,7 @@
 						'extensions/webcuda/mem.cc',
 						'extensions/webcuda/function.cc',
 						'extensions/webcuda/module.cc',
+						'extensions/webcuda/ctx.cc',
 					],
         },{
 					'sources!': [
