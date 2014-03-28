@@ -75,7 +75,7 @@
 									'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
 								],
 							}
-            },{}],
+            }],
             [ 'OS=="linux"', {
 							'link_settings': {
 								'libraries': [
@@ -87,6 +87,11 @@
 								],
 							}
             },{}],
+					],
+        }],
+        [ 'v8_cuda_extension_debug=="true"', {
+					'defines': [
+							'V8_WEBCUDA_DEBUG',
 					],
         }],
         [ 'want_separate_host_toolset==1', {

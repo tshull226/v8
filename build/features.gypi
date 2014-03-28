@@ -64,6 +64,9 @@
 	
 		#mine for adding cuda extension
 		'v8_cuda_extension%' : 'false',
+
+		#mine for adding cuda extension debugging
+		'v8_cuda_extension_debug%' : 'false',
   },
   'target_defaults': {
     'conditions': [

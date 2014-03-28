@@ -35,7 +35,9 @@ void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda
 }
 
 void WebCUDA::Version(const v8::FunctionCallbackInfo<v8::Value>& args){
+#ifdef V8_WEBCUDA_DEBUG
 	cout << "Version 0.1" << endl;
+#endif
 	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Version 0.1"));
 }
 
