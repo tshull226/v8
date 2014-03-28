@@ -73,11 +73,23 @@
 						'extensions/webcuda/module.cc',
 						'extensions/webcuda/ctx.cc',
 					],
-        },{
-					'sources!': [
-						#'../../src/extensions/sample_cuda.h', ##really a placeholder for the time being (will put in important stuff later)
+				'conditions': [
+            [ 'OS=="mac"', {
+							'link_settings': {
+								'libraries': [
+									'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
+								],
+							}
+            }],
+            [ 'OS=="linux"', {
+							'link_settings': {
+								'libraries': [
+									'-lcuda',
+								],
+							}
+            }],
 					],
-				}],
+        }],
         [ 'want_separate_host_toolset==1', {
           'toolsets': [ '<(v8_toolset_for_d8)', ],
         }],
