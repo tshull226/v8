@@ -5,6 +5,9 @@ using namespace v8;
 
 Persistent<ObjectTemplate> Device::constructor_template;
 
+/**
+ * adds method "Device(int)" to webcuda object which returns an object containing information about the queried device
+ */
 void Device::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ) {
   HandleScope scope(isolate);
 

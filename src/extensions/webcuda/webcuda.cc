@@ -10,6 +10,9 @@ using namespace v8;
 using std::cout;
 using std::endl;
 
+/**
+ * calls initializers for other features (memory, device info, CUDA context creation, and kernal retrieval/launching)
+ */
 void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda_templ){
 	//instantiating basic webCUDA information
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "version"),

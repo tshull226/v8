@@ -1,3 +1,5 @@
+/** \file device.h */
+
 #ifndef DEVICE_H
 #define DEVICE_H
 
@@ -8,8 +10,17 @@ using namespace v8;
 
 namespace webcuda {
 
+/**
+ * \class Device
+ * \brief information about CUDA Device
+ *
+ * add more stuff
+ */
   class Device {
     public:
+			/**
+			 * \brief add Device classes features into JavaScript Object environment
+			 */
       static void Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
 
 			static Device* UnwrapDevice(Handle<Object> obj);
