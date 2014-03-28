@@ -3,7 +3,7 @@
 #include <cuda.h>
 #include <cudaProfiler.h>
 #include "webcuda.h"
-#include "webcuda/device.h"
+#include "device.h"
 
 using namespace webcuda;
 using namespace v8;

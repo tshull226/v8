@@ -66,7 +66,7 @@
 						'/usr/local/cuda/include',
 					],
 					'sources': [
-						'extensions/webcuda.cc',
+						'extensions/webcuda/webcuda.cc',
 						'extensions/webcuda/device.cc',
 						'extensions/webcuda/mem.cc',
 						'extensions/webcuda/function.cc',
