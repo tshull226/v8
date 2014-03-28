@@ -57,11 +57,6 @@
 					'defines': [
 							'V8_WEBCUDA',
 					],
-					'link_settings': {
-						'libraries': [
-							'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
-						],
-					},
 					'include_dirs': [
 						'/usr/local/cuda/include',
 					],
@@ -80,14 +75,18 @@
 									'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
 								],
 							}
-            }],
+            },{}],
             [ 'OS=="linux"', {
 							'link_settings': {
 								'libraries': [
 									'-lcuda',
 								],
+								'cflags!' : [
+									'-pedantic',
+					#				'-Werror',
+								],
 							}
-            }],
+            },{}],
 					],
         }],
         [ 'want_separate_host_toolset==1', {
