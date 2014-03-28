@@ -63,3 +63,6 @@ GTAGS
 GRTAGS
 GSYMS
 GPATH
+
+*.DS_Store
+/src/extensions/webcuda/DOCS/
