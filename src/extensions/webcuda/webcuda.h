@@ -1,6 +1,16 @@
 
 #include <v8.h>
 
+/** \mainpage WebCUDA Documentation
+ *
+ * These webpages consist of the WebCUDA documentation. The goal of WebCUDA is
+ * to add CUDA bindings for JavaScript for V8 in the Chrome and d8 applications.
+ * This is the CS598 SVA project for Jiho Choi, Kurt Fellows, and Tom Shull. We
+ * base this project on node-cuda, a similar project for Node.js.
+ * 
+ * Stay Tuned for future updates!
+ */
+
 using namespace v8;
 
 namespace webcuda{
@@ -15,7 +25,7 @@ namespace webcuda{
 			 * \brief returns CUDA driver version value
 			 */
 			static void GetDriverVersion(const v8::FunctionCallbackInfo<v8::Value>& args);
-			
+
 			/**
 			 * \brief returns number of CUDA drivers available
 			 */
