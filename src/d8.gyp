@@ -57,22 +57,43 @@
 					'defines': [
 							'V8_WEBCUDA',
 					],
-					'link_settings': {
-						'libraries': [
-							'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
-						],
-					},
 					'include_dirs': [
 						'/usr/local/cuda/include',
 					],
 					'sources': [
-						'extensions/webcuda.cc',
+						'extensions/webcuda/webcuda.cc',
+						'extensions/webcuda/device.cc',
+						'extensions/webcuda/mem.cc',
+						'extensions/webcuda/function.cc',
+						'extensions/webcuda/module.cc',
+						'extensions/webcuda/ctx.cc',
 					],
-        },{
-					'sources!': [
-						#'../../src/extensions/sample_cuda.h', ##really a placeholder for the time being (will put in important stuff later)
+				'conditions': [
+            [ 'OS=="mac"', {
+							'link_settings': {
+								'libraries': [
+									'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
+								],
+							}
+            }],
+            [ 'OS=="linux"', {
+							'link_settings': {
+								'libraries': [
+									'-lcuda',
+								],
+								'cflags!' : [
+									'-pedantic',
+					#				'-Werror',
+								],
+							}
+            },{}],
 					],
-				}],
+        }],
+        [ 'v8_cuda_extension_debug=="true"', {
+					'defines': [
+							'V8_WEBCUDA_DEBUG',
+					],
+        }],
         [ 'want_separate_host_toolset==1', {
           'toolsets': [ '<(v8_toolset_for_d8)', ],
         }],

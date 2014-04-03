@@ -1,77 +1,103 @@
 #include "device.h"
 
+using namespace webcuda;
 using namespace v8;
-using namespace v8::internal;
-using namespace WebCuda;
 
-Persistent<FunctionTemplate> Device::constructor_template;
+Persistent<ObjectTemplate> Device::constructor_template;
 
-void Device::Initialize(Handle<Object> target) {
-  HandleScope scope;
+/**
+ * adds method "Device(int)" to webcuda object which returns an object containing information about the queried device
+ */
+void Device::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ) {
+  HandleScope scope(isolate);
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(Device::New);
-  constructor_template = Persistent<FunctionTemplate>::New(t);
-  constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(String::NewSymbol("CudaDevice"));
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "Device"),
+			FunctionTemplate::New(isolate, MakeDeviceObject));
 
-  constructor_template->InstanceTemplate()->SetAccessor(String::New("name"), Device::GetName);
-  constructor_template->InstanceTemplate()->SetAccessor(String::New("totalMem"), Device::GetTotalMem);
-  constructor_template->InstanceTemplate()->SetAccessor(String::New("computeCapability"), Device::GetComputeCapability);
+	Handle<ObjectTemplate> raw_template = MakeDeviceTemplate(isolate);
+	constructor_template.Reset(isolate, raw_template);
 
-  target->Set(String::NewSymbol("Device"), constructor_template->GetFunction());
+  //target->Set(String::NewSymbol("Device"), constructor_template->GetFunction());
 }
 
-static Handle<Value> GetName_(CUdevice device) {
-  HandleScope scope;
-  char deviceName[256];
+Handle<ObjectTemplate> Device::MakeDeviceTemplate(Isolate* isolate) {
+  EscapableHandleScope handle_scope(isolate);
 
-  cuDeviceGetName(deviceName, 256, device);
-  Local<String> result = String::New(deviceName);
-  return scope.Close(result);
+  Local<ObjectTemplate> result = ObjectTemplate::New(isolate);
+  result->SetInternalFieldCount(1);
+
+  // Add accessors for each of the fields of the request.
+  result->SetAccessor(
+      String::NewFromUtf8(isolate, "name", String::kInternalizedString),
+      Device::GetName);
+  result->SetAccessor(
+      String::NewFromUtf8(isolate, "totalMem", String::kInternalizedString),
+      Device::GetTotalMem);
+  result->SetAccessor(
+      String::NewFromUtf8(isolate, "computeCapability", String::kInternalizedString),
+      Device::GetComputeCapability);
+
+  // Again, return the result through the current handle scope.
+  return handle_scope.Escape(result);
 }
 
-Handle<Value> Device::New(const Arguments& args) {
-  HandleScope scope;
-  Local<Object> result = args.This();
-  int ordinal = args[0]->IntegerValue();
+void Device::MakeDeviceObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	HandleScope handle_scope(args.GetIsolate());
 
-  if (!constructor_template->HasInstance(result)) {
-    result = constructor_template->InstanceTemplate()->NewInstance();
-  }
+	//retrieving device information
+	Handle<Integer> arg = Handle<Integer>::Cast(args[0]);
+	int64_t deviceNum = arg->Value();
+	
+	Device* pdevice = new Device();
+	cuDeviceGet(&(pdevice->m_device), deviceNum);
 
-  Device *pdevice = new Device();
-  cuDeviceGet(&(pdevice->m_device), ordinal);
+	//creating object
+	Handle<ObjectTemplate> templ = Local<ObjectTemplate>::New(args.GetIsolate(), constructor_template);
+	Local<Object> result = templ->NewInstance();
 
-  pdevice->Wrap(result);
-  return scope.Close(result);
+	//wrap the raw C++ pointer in an External so it can be referenced from within JavaScript
+	Handle<External> device_ptr = External::New(args.GetIsolate(), pdevice);
+
+	//Store the pointer in the JavaScript Wrapper
+	result->SetInternalField(0, device_ptr);
+
+	args.GetReturnValue().Set(result);
 }
 
-Handle<Value> Device::GetComputeCapability(Local<String> property, const AccessorInfo &info) {
-  HandleScope scope;
 
-  Device *pdevice = ObjectWrap::Unwrap<Device>(info.Holder());
-  int major = 0, minor = 0;
-  cuDeviceComputeCapability(&major, &minor, pdevice->m_device);
-
-  Local<Object> result = Object::New();
-  result->Set(String::New("major"), Integer::New(major));
-  result->Set(String::New("minor"), Integer::New(minor));
-  return scope.Close(result);
+Device* Device::UnwrapDevice(Handle<Object> obj) {
+	Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
+	void* ptr = field->Value();
+	return static_cast<Device*>(ptr);
 }
 
-Handle<Value> Device::GetName(Local<String> property, const AccessorInfo &info) {
-  HandleScope scope;
+void Device::GetName(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+	Device* device = UnwrapDevice(info.Holder());
 
-  Device *pdevice = ObjectWrap::Unwrap<Device>(info.Holder());
-  return GetName_(pdevice->m_device);
+	char deviceName[256];
+	cuDeviceGetName(deviceName, 256, device->m_device);
+
+	info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), deviceName));
 }
 
-Handle<Value> Device::GetTotalMem(Local<String> property, const AccessorInfo &info) {
-  HandleScope scope;
+void Device::GetComputeCapability(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+	Device* device = UnwrapDevice(info.Holder());
 
-  Device *pdevice = ObjectWrap::Unwrap<Device>(info.Holder());
-  size_t totalGlobalMem;
-  cuDeviceTotalMem(&totalGlobalMem, pdevice->m_device);
+	int major = 0, minor = 0;
+	cuDeviceComputeCapability(&major, &minor, device->m_device);
 
-  return scope.Close(Number::New(totalGlobalMem));
+	Local<Object> result = Object::New(info.GetIsolate());
+	result->Set(String::NewFromUtf8(info.GetIsolate(), "major"), Integer::New(info.GetIsolate(), major));
+	result->Set(String::NewFromUtf8(info.GetIsolate(), "minor"), Integer::New(info.GetIsolate(), minor));
+
+	info.GetReturnValue().Set(result);
+}
+
+void Device::GetTotalMem(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+	Device* device = UnwrapDevice(info.Holder());
+
+	size_t totalGlobalMem;
+	cuDeviceTotalMem(&totalGlobalMem, device->m_device);
+
+	info.GetReturnValue().Set(Integer::New(info.GetIsolate(), totalGlobalMem));
 }

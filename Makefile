@@ -197,6 +197,9 @@ ifeq ($(cuda_extension), on)
 	GYPFLAGS += -Dv8_cuda_extension='true'
 	LINK += -F/Library/Frameworks -framework CUDA
 endif
+ifeq ($(cuda_extension_debug), on)
+	GYPFLAGS += -Dv8_cuda_extension_debug='true'
+endif
 # armtest=on
 # With this flag set, by default v8 will only use features implied
 # by the compiler (no probe). This is done by modifying the default

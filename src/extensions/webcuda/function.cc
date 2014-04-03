@@ -1,72 +1,104 @@
-//TOM need to adjust this method
 //#include <node_buffer.h>
 #include <cstring>
 #include <cstdio>
 #include "function.h"
-#include "mem.h"
 
-using namespace WebCuda;
+using namespace webcuda;
+using namespace v8;
 
-Persistent<FunctionTemplate> WebCuda::Function::constructor_template;
 
-void WebCuda::Function::Initialize(Handle<Object> target) {
-  HandleScope scope;
+Persistent<ObjectTemplate> webcuda::Function::constructor_template;
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(WebCuda::Function::New);
-  constructor_template = Persistent<FunctionTemplate>::New(t);
-  constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(String::NewSymbol("CudaFunction"));
+void webcuda::Function::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ) {
+  HandleScope scope(isolate);
 
-  WEBCUDA_SET_PROTOTYPE_METHOD(constructor_template, "launchKernel", WebCuda::Function::LaunchKernel);
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "launchKernel"),
+			FunctionTemplate::New(isolate, LaunchKernel));
 
-  // Function objects can only be created by cuModuleGetFunction
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "Function"),
+			FunctionTemplate::New(isolate, MakeFunctionObject));
+
+	Handle<ObjectTemplate> raw_template = MakeFunctionTemplate(isolate);
+	constructor_template.Reset(isolate, raw_template);
+
+  //target->Set(String::NewSymbol("Device"), constructor_template->GetFunction());
 }
 
-Handle<Value> WebCuda::Function::New(const Arguments& args) {
-  HandleScope scope;
+Handle<ObjectTemplate> webcuda::Function::MakeFunctionTemplate(Isolate* isolate) {
+  EscapableHandleScope handle_scope(isolate);
 
-  WebCuda::Function *pfunction = new WebCuda::Function();
-  pfunction->Wrap(args.This());
+  Local<ObjectTemplate> result = ObjectTemplate::New(isolate);
+  result->SetInternalFieldCount(1);
 
-  return args.This();
+  // Again, return the result through the current handle scope.
+  return handle_scope.Escape(result);
 }
 
-Handle<Value> WebCuda::Function::LaunchKernel(const Arguments& args) {
-  HandleScope scope;
-  Function *pfunction = ObjectWrap::Unwrap<Function>(args.This());
+//void MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
+Handle<Object> webcuda::Function::MakeFunctionObject_(Isolate* isolate) {
+	EscapableHandleScope handle_scope(isolate);
 
-  Local<Array> gridDim = Local<Array>::Cast(args[0]);
-  unsigned int gridDimX = gridDim->Get(0)->Uint32Value();
-  unsigned int gridDimY = gridDim->Get(1)->Uint32Value();
-  unsigned int gridDimZ = gridDim->Get(2)->Uint32Value();
+	//retrieving device information
 
-  Local<Array> blockDim = Local<Array>::Cast(args[1]);
-  unsigned int blockDimX = blockDim->Get(0)->Uint32Value();
-  unsigned int blockDimY = blockDim->Get(1)->Uint32Value();
-  unsigned int blockDimZ = blockDim->Get(2)->Uint32Value();
+	Function* fdevice = new Function();
 
-  Local<Object> buf = args[2]->ToObject();
-	//TOM_FIX
-	/*
-	 * in node_buffer.h lines 40-43
-  char *pbuffer = Buffer::Data(buf);
-  size_t bufferSize = Buffer::Length(buf);
-	*/
-	//TOM TEMP SOLUTION
-  char *pbuffer = 0;
-  size_t bufferSize = 0;
+	//creating object
+	Handle<ObjectTemplate> templ = Local<ObjectTemplate>::New(isolate, constructor_template);
+	Local<Object> result = templ->NewInstance();
 
-  void *cuExtra[] = {
-    CU_LAUNCH_PARAM_BUFFER_POINTER, pbuffer,
-    CU_LAUNCH_PARAM_BUFFER_SIZE,    &bufferSize,
-    CU_LAUNCH_PARAM_END
-  };
+	//wrap the raw C++ pointer in an External so it can be referenced from within JavaScript
+	Handle<External> device_ptr = External::New(isolate, fdevice);
 
-  CUresult error = cuLaunchKernel(pfunction->m_function,
-      gridDimX, gridDimY, gridDimZ,
-      blockDimX, blockDimY, blockDimZ,
-      0, 0, NULL, cuExtra);
+	//Store the pointer in the JavaScript Wrapper
+	result->SetInternalField(0, device_ptr);
 
-  return scope.Close(Number::New(error));
+	return handle_scope.Escape(result);
+}
+
+webcuda::Function* webcuda::Function::UnwrapFunction(Handle<Object> obj) {
+	Handle<External> field = Handle<External>::Cast(obj->GetInternalField(0));
+	void* ptr = field->Value();
+	return static_cast<Function*>(ptr);
+}
+
+void webcuda::Function::MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	HandleScope handle_scope(args.GetIsolate());
+	Handle<Object> temp = MakeFunctionObject_(args.GetIsolate());
+
+	args.GetReturnValue().Set(temp);
+}
+
+void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	HandleScope handle_scope(args.GetIsolate());
+	Function* pfunction = UnwrapFunction(Handle<Object>::Cast(args[0]));
+
+	Local<Array> gridDim = Local<Array>::Cast(args[1]);
+	unsigned int gridDimX = gridDim->Get(0)->Uint32Value();
+	unsigned int gridDimY = gridDim->Get(1)->Uint32Value();
+	unsigned int gridDimZ = gridDim->Get(2)->Uint32Value();
+
+	Local<Array> blockDim = Local<Array>::Cast(args[2]);
+	unsigned int blockDimX = blockDim->Get(0)->Uint32Value();
+	unsigned int blockDimY = blockDim->Get(1)->Uint32Value();
+	unsigned int blockDimZ = blockDim->Get(2)->Uint32Value();
+
+	Local<Object> buf = args[3]->ToObject();
+	//char *pbuffer = Buffer::Data(buf);
+  char *pbuffer = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
+	//size_t bufferSize = Buffer::Length(buf);
+  size_t bufferSize =  buf->GetIndexedPropertiesExternalArrayDataLength();
+
+	void *cuExtra[] = {
+		CU_LAUNCH_PARAM_BUFFER_POINTER, pbuffer,
+		CU_LAUNCH_PARAM_BUFFER_SIZE,    &bufferSize,
+		CU_LAUNCH_PARAM_END
+	};
+
+	CUresult error = cuLaunchKernel(pfunction->m_function,
+			gridDimX, gridDimY, gridDimZ,
+			blockDimX, blockDimY, blockDimZ,
+			0, 0, NULL, cuExtra);
+
+	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 

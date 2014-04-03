@@ -1,38 +1,51 @@
-#ifndef DEVICE_HPP
-#define DEVICE_HPP
+/** \file device.h */
+
+#ifndef DEVICE_H
+#define DEVICE_H
 
 #include <cuda.h>
-#include "bindings.h"
-
+#include <v8.h>
 
 using namespace v8;
 
-namespace WebCuda {
+namespace webcuda {
 
-  class Device : public ObjectWrap {
+/**
+ * \class Device
+ * \brief information about CUDA Device
+ *
+ * add more stuff
+ */
+  class Device {
     public:
-      static void Initialize(Handle<Object> target);
+			/**
+			 * \brief add Device classes features into JavaScript Object environment
+			 */
+      static void Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
 
+			static Device* UnwrapDevice(Handle<Object> obj);
+      CUdevice m_device;
     protected:
-      static Persistent<FunctionTemplate> constructor_template;
+      static Persistent<ObjectTemplate> constructor_template;
 
-      static Handle<Value> New(const internal::Arguments& args);
-      static Handle<Value> GetComputeCapability(Local<String> property, const internal::AccessorInfo &info);
-      static Handle<Value> GetName(Local<String> property, const internal::AccessorInfo &info);
-      static Handle<Value> GetTotalMem(Local<String> property, const internal::AccessorInfo &info);
+      static void  MakeDeviceObject(const v8::FunctionCallbackInfo<v8::Value>& args);
+      static void GetComputeCapability(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
+      static void GetName(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
+      static void GetTotalMem(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
+
 
       // TODO: cuDeviceGetAttribute
       // TODO: cuDeviceGetProperties
 
-      //Device() : ObjectWrap(), m_device(NULL) {}
-      Device() : ObjectWrap(), m_device(0) {}
+      Device() : m_device(0) {}
 
       ~Device() {}
 
     private:
-      CUdevice m_device;
+      static Handle<ObjectTemplate> MakeDeviceTemplate(Isolate* isolate);
 
-      friend class Ctx;
+
+//      friend class Ctx; DON'T THINK THAT I NEED THIS ANYMORE
   };
 
 }

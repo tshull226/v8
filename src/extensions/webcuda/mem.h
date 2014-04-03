@@ -2,36 +2,73 @@
 #define MEM_HPP
 
 #include <cuda.h>
-#include "bindings.h"
-#include "function.h"
+#include <v8.h>
+//#include "function.hpp" not sure why it would need this...
+using namespace v8;
 
-namespace WebCuda {
+namespace webcuda {
 
-  class Mem : public ObjectWrap {
+  class Mem {
     public:
-      static void Initialize(Handle<Object> target);
+      static void Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
 
     protected:
-      static Persistent<FunctionTemplate> constructor_template;
+			/**
+			 * \brief initialize features of Mem
+			 */
+      static Persistent<ObjectTemplate> constructor_template;
 
-      static Handle<Value> Alloc(const Arguments& args);
-      static Handle<Value> AllocPitch(const Arguments& args);
-      static Handle<Value> Free(const Arguments& args);
-      static Handle<Value> CopyHtoD(const Arguments& args);
-      static Handle<Value> CopyDtoH(const Arguments& args);
+			/**
+			 * \brief create JavaScript Object used to represent CUDA memory
+			 */
+      static Handle<Object> MakeMemObject(Isolate* isolate);
 
-      static Handle<Value> GetDevicePtr(Local<String> property, const AccessorInfo &info);
+			/**
+			 * \brief creates object template for JavaScript Mem Object
+			 */
+      static Handle<ObjectTemplate> MakeMemTemplate(Isolate* isolate);
 
-      Mem() : ObjectWrap(), m_devicePtr(0) {}
+			/**
+			 * \brief allocates CUDA memory for the application
+			 */
+      static void Alloc(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+			/**
+			 * \brief allocates CUDA memory for the application
+			 */
+      static void AllocPitch(const v8::FunctionCallbackInfo<v8::Value>& args);
+			
+			/**
+			 * \brief frees previously allocated CUDA memory
+			 */
+      static void Free(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+			/**
+			 * \brief copies memory from JavaScript space to CUDA memory
+			 */
+      static void CopyHtoD(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+			/**
+			 * \brief copies memory from CUDA memory to JavaScript space
+			 */
+      static void CopyDtoH(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+			/**
+			 * \brief retrieve C++ Mem Object from JavaScript wrapper
+			 */
+			static Mem* UnwrapDevicePtr(Handle<Object> obj);
+
+      //static Handle<Value> GetDevicePtr(Local<String> property, const AccessorInfo &info);
+
+      Mem() : m_devicePtr(0) {}
 
       ~Mem() {}
 
     private:
-      static Handle<Value> New(const Arguments& args);
 
       CUdeviceptr m_devicePtr;
 
-      friend class WebCuda::Function;
+//      friend class NodeCuda::Function; NEED TO SEE WHY THIS IS HERE...
   };
 
 }

@@ -1,36 +1,65 @@
-#ifndef FUNCTION_H
-#define FUNCTION_H
+#ifndef FUNCTION_HPP
+#define FUNCTION_HPP
 
 #include <cuda.h>
-#include "bindings.h"
-#include "webcuda.h"
-#include "object_wrap.h"
+#include <v8.h>
+//#include "module.hpp" need to see why i need this
 
 using namespace v8;
-using v8::internal::Arguments;
 
-namespace WebCuda {
-	class WebCUDA;
+namespace webcuda {
 
-  class Function : public ObjectWrap {
+  class Function {
     public:
-      static void Initialize(Handle<Object> target);
+			/**
+			 * \brief initialize features of Function
+			 */
+      static void Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
+
+			/**
+			 * \brief create JavaScript Object used to represent CUDA kernel
+			 */
+      static Handle<Object> MakeFunctionObject(Isolate* isolate) { return MakeFunctionObject_(isolate); }
+
+			/**
+			 * \brief retrieve C++ Function Object from JavaScript wrapper
+			 */
+      static Function* UnwrapFunction(Handle<Object> obj);
+      CUfunction m_function;
+
 
     protected:
-      static Persistent<FunctionTemplate> constructor_template;
+      static Persistent<ObjectTemplate> constructor_template;
 
-      static Handle<Value> LaunchKernel(const Arguments& args);
+			/**
+			 * \brief create JavaScript Object used to represent CUDA kernel
+			 */
+      static void  MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-      Function() : ObjectWrap(), m_function(0) {}
+			/**
+			 * \brief launches CUDA kernel
+			 */
+      static void  LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+      Function() : m_function(0) {}
 
       ~Function() {}
 
     private:
-      static Handle<Value> New(const Arguments& args);
+      //static Handle<Value> New(const Arguments& args); shouldn't need this
+			
+			/**
+			 * \brief helper method for creating JavaScript Object used to represent CUDA kernel
+			 */
+      static Handle<Object> MakeFunctionObject_(Isolate* isolate);
 
-      CUfunction m_function;
+			/**
+			 * \brief creates object template for JavaScript Function Object
+			 */
+      static Handle<ObjectTemplate> MakeFunctionTemplate(Isolate* isolate);
 
-      friend Handle<Value> WebCUDA::GetFunction(const Arguments&);
+
+      //friend Handle<Value> Module::GetFunction(const Arguments&); see why i need this...
   };
 
 }

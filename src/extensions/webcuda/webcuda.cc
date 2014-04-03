@@ -1,60 +1,68 @@
+
+#include <iostream>
+#include <cuda.h>
+#include <cudaProfiler.h>
 #include "webcuda.h"
-#include "function.h"
+#include "device.h"
 
-using namespace WebCuda;
+using namespace webcuda;
 using namespace v8;
+using std::cout;
+using std::endl;
 
-Persistent<FunctionTemplate> WebCUDA::constructor_template;
+/**
+ * calls initializers for other features (memory, device info, CUDA context creation, and kernal retrieval/launching)
+ */
+void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda_templ){
+	//instantiating basic webCUDA information
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "version"),
+			FunctionTemplate::New(isolate, Version));
 
-void WebCUDA::Initialize(Handle<Object> target) {
-  HandleScope scope;
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "driverVersion"),
+			FunctionTemplate::New(isolate, GetDriverVersion));
 
-  Local<FunctionTemplate> t = FunctionTemplate::New(WebCUDA::New);
-  constructor_template = Persistent<FunctionTemplate>::New(t);
-  constructor_template->InstanceTemplate()->SetInternalFieldCount(1);
-  constructor_template->SetClassName(String::NewSymbol("WebCUDAModule"));
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "deviceCount"),
+			FunctionTemplate::New(isolate, GetDeviceCount));
 
-  // WebCUDA objects can only be created by load functions
-  WEBCUDA_SET_METHOD(target, "moduleLoad", WebCUDA::Load);
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "startProfiling"),
+			FunctionTemplate::New(isolate, webcuda::WebCUDA::StartProfiling));
 
-  WEBCUDA_SET_PROTOTYPE_METHOD(constructor_template, "getFunction", WebCUDA::GetFunction);
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "stopProfiling"),
+			FunctionTemplate::New(isolate, webcuda::WebCUDA::StopProfiling));
+
+	//instantiating other features
+	Device::Initialize(isolate, webcuda_templ);
 }
 
-Handle<Value> WebCUDA::New(const Arguments& args) {
-  HandleScope scope;
-
-  WebCUDA *pmem = new WebCUDA();
-  pmem->Wrap(args.This());
-
-  return args.This();
+void WebCUDA::Version(const v8::FunctionCallbackInfo<v8::Value>& args){
+#ifdef V8_WEBCUDA_DEBUG
+	cout << "Version 0.1" << endl;
+#endif
+	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Version 0.1"));
 }
 
-Handle<Value> WebCUDA::Load(const Arguments& args) {
-  HandleScope scope;
-  Local<Object> result = constructor_template->InstanceTemplate()->NewInstance();
-  WebCUDA *pmodule = ObjectWrap::Unwrap<WebCUDA>(result);
-
-  String::AsciiValue fname(args[0]);
-  CUresult error = cuModuleLoad(&(pmodule->m_module), *fname);
-
-  result->Set(String::New("fname"), args[0]);
-  result->Set(String::New("error"), Integer::New(error));
-
-  return scope.Close(result);
+void WebCUDA::GetDriverVersion(const v8::FunctionCallbackInfo<v8::Value>& args){
+	int driverVersion = 0;
+	cuDriverGetVersion(&driverVersion);
+	cout << "Driver Version " << driverVersion << endl;
+	args.GetReturnValue().Set(Integer::New(args.GetIsolate(), driverVersion));
 }
 
-Handle<Value> WebCUDA::GetFunction(const Arguments& args) {
-  HandleScope scope;
-  Local<Object> result = WebCUDA::Function::constructor_template->InstanceTemplate()->NewInstance();
-  WebCUDA *pmodule = ObjectWrap::Unwrap<WebCUDA>(args.This());
-  WebCUDA::Function *pfunction = ObjectWrap::Unwrap<WebCUDA::Function>(result);
-
-  String::AsciiValue name(args[0]);
-  CUresult error = cuModuleGetFunction(&(pfunction->m_function), pmodule->m_module, *name);
-
-  result->Set(String::New("name"), args[0]);
-  result->Set(String::New("error"), Integer::New(error));
-
-  return scope.Close(result);
+void WebCUDA::GetDeviceCount(const v8::FunctionCallbackInfo<v8::Value>& args){
+	int deviceCount = 0;
+	cuDeviceGetCount(&deviceCount);
+	cout << "Device Count " << deviceCount << endl;
+	args.GetReturnValue().Set(Integer::New(args.GetIsolate(), deviceCount));
 }
 
+void WebCUDA::StartProfiling(const v8::FunctionCallbackInfo<v8::Value>& args){
+	cuProfilerStart();
+	cout << "Profiling Started!" << endl;
+	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Profiling Started!"));
+}
+
+void WebCUDA::StopProfiling(const v8::FunctionCallbackInfo<v8::Value>& args){
+	cuProfilerStop();
+	cout << "Profiling Stopped!" << endl;
+	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Profiling Stopped!"));
+}
