@@ -195,6 +195,7 @@ endif
 endif
 ifeq ($(cuda_extension), on)
 	GYPFLAGS += -Dv8_cuda_extension='true'
+	LINK += -F/Library/Frameworks -framework CUDA
 endif
 # armtest=on
 # With this flag set, by default v8 will only use features implied
