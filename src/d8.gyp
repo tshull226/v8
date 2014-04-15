@@ -59,6 +59,7 @@
 					],
 					'include_dirs': [
 						'/usr/local/cuda/include',
+						'/usr/local/cuda-5.5/include',
 					],
 					'sources': [
 						'extensions/webcuda/webcuda.cc',
