@@ -7,6 +7,7 @@ using namespace v8;
 using namespace webcuda;
 using std::cout;
 using std::endl;
+using std::string;
 
 Persistent<ObjectTemplate> Module::constructor_template;
 
@@ -104,7 +105,7 @@ void Module::Load(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(result);
 }
 
-#define NVCC "something"
+#define NVCC "/Developer/NVIDIA/CUDA-5.5/bin/nvcc"
 #define NVCC_FLAGS ""
 
 /** \param kFile name of text file containing CUDA kernel
@@ -113,11 +114,12 @@ void Module::Load(const v8::FunctionCallbackInfo<v8::Value>& args) {
  * a .ptx file. Returns the name of the .ptx file created
  */
 std::string Module::InvokeNVCC_(std::string kFile){
-	std::string cuFile = "temp.ptx";
-	kFile = "temp.cu";
-	int nvcc_exit_status = std::system((std::string(NVCC) + " -ptx " + NVCC_FLAGS + " " + kFile + "-o" + cuFile).c_str());
+	std::string cuFile = "~/testing/test.ptx";
+	kFile = "~/testing/test.cu";
+	cout <<"trying" << endl;
+	int nvcc_exit_status = std::system((std::string(NVCC) + " -ptx " + NVCC_FLAGS + " " + kFile + " -o " + cuFile).c_str());
 
-	if (nvcc_exit_status == 0){
+	if (nvcc_exit_status != 0){
 		cout << "no go" << endl;
 	}
 
@@ -153,6 +155,8 @@ void Module::Compile(const v8::FunctionCallbackInfo<v8::Value>& args) {
  */
 void Module::CompileFile(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope scope(args.GetIsolate());
+
+	InvokeNVCC_("");
 
 	//args.GetReturnValue().Set(result);
 }

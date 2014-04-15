@@ -4,6 +4,9 @@
 #include <cudaProfiler.h>
 #include "webcuda.h"
 #include "device.h"
+#include "mem.h"
+#include "ctx.h"
+#include "module.h"
 
 using namespace webcuda;
 using namespace v8;
@@ -34,6 +37,9 @@ void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda
 
 	//instantiating other features
 	Device::Initialize(isolate, webcuda_templ);
+	Module::Initialize(isolate, webcuda_templ);
+	Mem::Initialize(isolate, webcuda_templ);
+	Ctx::Initialize(isolate, webcuda_templ);
 }
 
 void WebCUDA::Version(const v8::FunctionCallbackInfo<v8::Value>& args){
