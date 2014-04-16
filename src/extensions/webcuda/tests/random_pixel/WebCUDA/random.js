@@ -49,7 +49,7 @@ function runCuda(seed){
 	
 	//Loading Module
 	print("loading CUDA module");
-	var module = webcuda.moduleLoad("tests/random_pixel/random.ptx");
+	var module = webcuda.moduleLoad("tests/random_pixel/WebCUDA/random.ptx");
 	print("fname: " + module.fname + " error: " + module.error);
 
 	//Retrieving Function from Module
