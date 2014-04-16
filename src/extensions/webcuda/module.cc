@@ -180,6 +180,15 @@ void Module::GetFunction(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	String::Utf8Value name(args[1]);
 	CUresult error = cuModuleGetFunction(&(pfunction->m_function), pmodule->m_module, *name);
 
+	if(error == CUDA_ERROR_NOT_FOUND){
+		cout << "could not find function" << endl;
+	} else if (error == CUDA_SUCCESS){
+		cout << "successful?" << endl;
+	} else{
+		cout << "back to drawing board" << endl;
+	}
+
+
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "name"), args[1]);
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
 

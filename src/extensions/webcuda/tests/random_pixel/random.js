@@ -47,21 +47,26 @@ function runCuda(seed){
 	
 	//Loading Module
 	print("loading CUDA module");
-	var module = webcuda.moduleLoad("fake");
+	var module = webcuda.moduleLoad("tests/random_pixel/random.ptx");
+	print("fname: " + module.fname + " error: " + module.error);
 
 	//Retrieving Function from Module
-	var cuFunc = wecuda.getFunction(module, "rng");
+	print("retrieving function from module");
+	var cuFunc = webcuda.getFunction(module, "rng");
+	print("name: " + cuFunc.name + " error: " + cuFunc.error);
 
 	//Launching the Kernel
-	webcuda.launchKernel(cuFunc, [40,30,0], [16,16,0], 
+	/*
+	 webcuda.launchKernel(cuFunc, [40,30,0], [16,16,0], 
 			[{
 				type: "DevicePtr",
 				value: d_I.devicePtr()
-			}]);
+				}]);
+				*/
 
 
 	//Retrieving Data from CUDA Device Memory
-	
+
 	print("copying CUDA Mem Result to device");
 	webcuda.copyDtoH(h_I, d_I);
 
