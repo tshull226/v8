@@ -1,9 +1,12 @@
 #include <cstring>
+#include <iostream>
 //#include <node_buffer.h> need to see what the implications of this is...
 #include "mem.h"
 
 using namespace v8;
 using namespace webcuda;
+using std::cout;
+using std::endl;
 
 
 Persistent<ObjectTemplate> Mem::constructor_template;
@@ -85,6 +88,7 @@ void Mem::Alloc(const v8::FunctionCallbackInfo<v8::Value>& args) {
   Mem *pmem = UnwrapDevicePtr(result);
 
   size_t bytesize = args[0]->Uint32Value();
+	cout << "mem size " << bytesize << endl;
 	CUresult error = cuMemAlloc(&(pmem->m_devicePtr), bytesize);
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "size"), Integer::NewFromUnsigned(args.GetIsolate(), bytesize));
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
@@ -199,15 +203,32 @@ void Mem::CopyDtoH(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 
+
+void* Mem::GetDevicePtr(Handle<Object> obj, size_t* bufsize){
+	Mem *pmem = UnwrapDevicePtr(obj);
+	
+	*bufsize = sizeof(pmem->m_devicePtr);
+
+	return &(pmem->m_devicePtr);
+	
+	//enclosing device pointer info inside a array buffer
+	//Handle<ArrayBuffer> ptrbuf = ArrayBuffer::New(info.GetIsolate(), &pmem->m_devicePtr,sizeof(pmem->m_devicePtr));
+	/*
+	Handle<ArrayBuffer> ptrbuf = ArrayBuffer::New(info.GetIsolate(), sizeof(pmem->m_devicePtr));
+	v8::ArrayBuffer::Contents ctx = ptrbuf->Externalize();
+	memcpy(ctx.Data(), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
+	*/
+
+}
 //Not sure why this exists...
 /*
-Handle<Value> Mem::GetDevicePtr(Local<String> property, const AccessorInfo &info) {
-	HandleScope scope;
-	Mem *pmem = ObjectWrap::Unwrap<Mem>(info.Holder());
-	Buffer *ptrbuf = Buffer::New(sizeof(pmem->m_devicePtr));
+	 Handle<Value> Mem::GetDevicePtr(Local<String> property, const AccessorInfo &info) {
+	 HandleScope scope;
+	 Mem *pmem = ObjectWrap::Unwrap<Mem>(info.Holder());
+	 Buffer *ptrbuf = Buffer::New(sizeof(pmem->m_devicePtr));
 
-	memcpy(Buffer::Data(ptrbuf->handle_), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
+	 memcpy(Buffer::Data(ptrbuf->handle_), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
 
-	return scope.Close(ptrbuf->handle_);
-}
-*/
+	 return scope.Close(ptrbuf->handle_);
+	 }
+	 */

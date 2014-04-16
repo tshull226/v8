@@ -41,7 +41,9 @@ function runCuda(seed){
 
 	//Creating device memory for pixel array
 	print("allocating CUDA memory");
+	print(h_I.buffer.byteLength);
 	var d_I = webcuda.memAlloc(h_I.buffer);
+	print("size: "+d_I.size+" error: "+d_I.error);
 
 
 	
@@ -56,19 +58,17 @@ function runCuda(seed){
 	print("name: " + cuFunc.name + " error: " + cuFunc.error);
 
 	//Launching the Kernel
-	/*
-	 webcuda.launchKernel(cuFunc, [40,30,0], [16,16,0], 
-			[{
-				type: "DevicePtr",
-				value: d_I.devicePtr()
-				}]);
-				*/
-
-
+	
+	print("trying to launch kernel");
+	//var launchResult = webcuda.launchKernel(cuFunc, [40,30,0], [16,16,0], d_I);
+	var launchResult = webcuda.launchKernel(cuFunc, [1,1,0], [1,1,0], d_I);
+	print("launch result: " + launchResult);
+	
+	
 	//Retrieving Data from CUDA Device Memory
 
 	print("copying CUDA Mem Result to device");
-	webcuda.copyDtoH(h_I, d_I);
+	webcuda.copyDtoH(h_I.buffer, d_I);
 
 	//temp check to see if things seem reasonable
 	print("checking results");

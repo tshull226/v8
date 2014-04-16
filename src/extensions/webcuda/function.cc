@@ -1,10 +1,16 @@
 //#include <node_buffer.h>
 #include <cstring>
 #include <cstdio>
+#include <iostream>
 #include "function.h"
+#include "mem.h"
 
 using namespace webcuda;
 using namespace v8;
+using std::cout;
+using std::endl;
+
+
 
 
 Persistent<ObjectTemplate> webcuda::Function::constructor_template;
@@ -80,29 +86,65 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	unsigned int gridDimX = gridDim->Get(0)->Uint32Value();
 	unsigned int gridDimY = gridDim->Get(1)->Uint32Value();
 	unsigned int gridDimZ = gridDim->Get(2)->Uint32Value();
+	cout << gridDimX << "," << gridDimY << "," << gridDimZ << endl;
 
 	Local<Array> blockDim = Local<Array>::Cast(args[2]);
 	unsigned int blockDimX = blockDim->Get(0)->Uint32Value();
 	unsigned int blockDimY = blockDim->Get(1)->Uint32Value();
 	unsigned int blockDimZ = blockDim->Get(2)->Uint32Value();
 
+	/*
 	Local<Object> buf = args[3]->ToObject();
 	//char *pbuffer = Buffer::Data(buf);
   char *pbuffer = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
 	//size_t bufferSize = Buffer::Length(buf);
   size_t bufferSize =  buf->GetIndexedPropertiesExternalArrayDataLength();
+	*/
+
+	Handle<Object> mem = Handle<Object>::Cast(args[3]);
+	size_t bufferSize;
+	void *bufferLoc = Mem::GetDevicePtr(mem, &bufferSize);
+	void *pbuffer = malloc(bufferSize);
+	cout << bufferSize << endl;
+	memcpy(pbuffer,bufferLoc,bufferSize);
+	cout <<bufferLoc << ", " <<  pbuffer << ", " << endl;
+	/*
+	Handle<ArrayBuffer> buf = Handle<ArrayBuffer>::Cast(args[3]);
+	if(buf->IsExternal()){
+		cout << "yep, is external" << endl;
+	}
+	v8::ArrayBuffer::Contents ctx = buf->Externalize();
+  //char *phost = static_cast<char*>(ctx.Data());
+  void *pbuffer = ctx.Data();
+	size_t bufferSize = ctx.ByteLength();
+	*/
+
+	/*
+	void *kernelParams[] = {pbuffer};
+	
+	CUresult error = cuLaunchKernel(pfunction->m_function,
+			gridDimX, gridDimY, gridDimZ,
+			blockDimX, blockDimY, blockDimZ,
+			0, 0, kernelParams, NULL);
+			*/
 
 	void *cuExtra[] = {
 		CU_LAUNCH_PARAM_BUFFER_POINTER, pbuffer,
 		CU_LAUNCH_PARAM_BUFFER_SIZE,    &bufferSize,
 		CU_LAUNCH_PARAM_END
 	};
+	
 
 	CUresult error = cuLaunchKernel(pfunction->m_function,
 			gridDimX, gridDimY, gridDimZ,
 			blockDimX, blockDimY, blockDimZ,
 			0, 0, NULL, cuExtra);
 
+	if(error == CUDA_ERROR_INVALID_VALUE){
+		cout << "this is the error" << endl;
+	}
+
+	free(pbuffer);
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 
