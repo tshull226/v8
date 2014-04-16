@@ -81,6 +81,15 @@ void webcuda::Function::MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Va
 void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Function* pfunction = UnwrapFunction(Handle<Object>::Cast(args[0]));
+	/*
+	//testing function
+	CUfunction *func = &(pfunction->m_function);
+	int test;
+	CUresult e1 = cuFuncGetAttribute(&test, CU_FUNC_ATTRIBUTE_NUM_REGS, *func);
+	cout << "test error:" << e1 << ", result:" << test << endl;
+	e1 = cuFuncGetAttribute(&test, CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, *func);
+	cout << "test error:" << e1 << ", result:" << test << endl;
+	*/
 
 	Local<Array> gridDim = Local<Array>::Cast(args[1]);
 	unsigned int gridDimX = gridDim->Get(0)->Uint32Value();
@@ -101,6 +110,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
   size_t bufferSize =  buf->GetIndexedPropertiesExternalArrayDataLength();
 	*/
 
+	
 	Handle<Object> mem = Handle<Object>::Cast(args[3]);
 	size_t bufferSize;
 	void *bufferLoc = Mem::GetDevicePtr(mem, &bufferSize);
@@ -108,6 +118,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	cout << bufferSize << endl;
 	memcpy(pbuffer,bufferLoc,bufferSize);
 	cout <<bufferLoc << ", " <<  pbuffer << ", " << endl;
+	
 	/*
 	Handle<ArrayBuffer> buf = Handle<ArrayBuffer>::Cast(args[3]);
 	if(buf->IsExternal()){
@@ -128,6 +139,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 			0, 0, kernelParams, NULL);
 			*/
 
+	
 	void *cuExtra[] = {
 		CU_LAUNCH_PARAM_BUFFER_POINTER, pbuffer,
 		CU_LAUNCH_PARAM_BUFFER_SIZE,    &bufferSize,
@@ -139,6 +151,12 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 			gridDimX, gridDimY, gridDimZ,
 			blockDimX, blockDimY, blockDimZ,
 			0, 0, NULL, cuExtra);
+/*
+	CUresult error = cuLaunchKernel(pfunction->m_function,
+			gridDimX, gridDimY, gridDimZ,
+			blockDimX, blockDimY, blockDimZ,
+			0, 0, NULL, NULL);
+			*/
 
 	if(error == CUDA_ERROR_INVALID_VALUE){
 		cout << "this is the error" << endl;
