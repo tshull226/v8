@@ -68,6 +68,10 @@ void webcuda::Function::MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Va
 	args.GetReturnValue().Set(temp);
 }
 
+/** \param args contains the block dimensions, thread dimensions, and the arguments for the kernel launch
+ *
+ * Function uses cuLaunchKernel)
+ */
 void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Function* pfunction = UnwrapFunction(Handle<Object>::Cast(args[0]));
