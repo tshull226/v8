@@ -1,9 +1,12 @@
 #include <cstring>
+#include <iostream>
 //#include <node_buffer.h> need to see what the implications of this is...
 #include "mem.h"
 
 using namespace v8;
 using namespace webcuda;
+using std::cout;
+using std::endl;
 
 
 Persistent<ObjectTemplate> Mem::constructor_template;
@@ -74,12 +77,18 @@ Mem* Mem::UnwrapDevicePtr(Handle<Object> obj) {
 }
 
 
+/** \args the byte size of CUDA memory to allocate
+ *
+ * uses cuMemAlloc to allocate the amount of memory specified and returns it in
+ * a JavaScript Wrapped Object
+ */
 void Mem::Alloc(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Local<Object> result = MakeMemObject(args.GetIsolate());
   Mem *pmem = UnwrapDevicePtr(result);
 
   size_t bytesize = args[0]->Uint32Value();
+	cout << "mem size " << bytesize << endl;
 	CUresult error = cuMemAlloc(&(pmem->m_devicePtr), bytesize);
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "size"), Integer::NewFromUnsigned(args.GetIsolate(), bytesize));
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
@@ -87,6 +96,12 @@ void Mem::Alloc(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(result);
 }
 
+/** \args the width, height, and byte size of CUDA memory array to allocate
+ *
+ * uses cuMemAllocPitch to allocate the amount of memory specified and returns it in
+ * a JavaScript Wrapped Object which also tells of the size, pitch, and if an
+ * error occured
+ */
 void Mem::AllocPitch(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Local<Object> result = MakeMemObject(args.GetIsolate());
@@ -106,6 +121,10 @@ void Mem::AllocPitch(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 
+/** \args the JavaScript CUDA Memory object to be freed
+ *
+ * Uses cuMemFree to free the memory wrapped in the specific JavaScript Object
+ */
 void Mem::Free(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 
@@ -116,15 +135,25 @@ void Mem::Free(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 
+/** \args contains both a JavaScript memory object as well as a JavaScript
+ * ArrayBuffer
+ *
+ */
 void Mem::CopyHtoD(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Mem *pmem = UnwrapDevicePtr(Handle<Object>::Cast(args[0]));
 
-	Local<Object> buf = args[1]->ToObject();
+	/*Local<Object> buf = args[1]->ToObject();
 	//char *phost = Buffer::Data(buf);
   char *phost = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
 	//size_t bytes = Buffer::Length(buf);
   size_t bytes=  buf->GetIndexedPropertiesExternalArrayDataLength();
+	*/
+	Handle<ArrayBuffer> buf = Handle<ArrayBuffer>::Cast(args[1]);
+	v8::ArrayBuffer::Contents ctx = buf->Externalize();
+  //char *phost = static_cast<char*>(ctx.Data());
+  void *phost = ctx.Data();
+	size_t bytes = ctx.ByteLength();
 
 	//bool async = args.Length() >= 2 && args[2]->IsTrue();
 
@@ -144,11 +173,18 @@ void Mem::CopyHtoD(const v8::FunctionCallbackInfo<v8::Value>& args) {
 void Mem::CopyDtoH(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 
+	Handle<ArrayBuffer> buf = Handle<ArrayBuffer>::Cast(args[0]);
+	v8::ArrayBuffer::Contents ctx = buf->Externalize();
+  //char *phost = static_cast<char*>(ctx.Data());
+  void *phost = ctx.Data();
+	size_t bytes = ctx.ByteLength();
+	/*
 	Local<Object> buf = args[0]->ToObject();
 	//char *phost = Buffer::Data(buf);
   char *phost = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
 	//size_t bytes = Buffer::Length(buf);
   size_t bytes=  buf->GetIndexedPropertiesExternalArrayDataLength();
+	*/
 
 	Mem *pmem = UnwrapDevicePtr(Handle<Object>::Cast(args[1]));
 
@@ -167,15 +203,32 @@ void Mem::CopyDtoH(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 
+
+void* Mem::GetDevicePtr(Handle<Object> obj, size_t* bufsize){
+	Mem *pmem = UnwrapDevicePtr(obj);
+	
+	*bufsize = sizeof(pmem->m_devicePtr);
+
+	return &(pmem->m_devicePtr);
+	
+	//enclosing device pointer info inside a array buffer
+	//Handle<ArrayBuffer> ptrbuf = ArrayBuffer::New(info.GetIsolate(), &pmem->m_devicePtr,sizeof(pmem->m_devicePtr));
+	/*
+	Handle<ArrayBuffer> ptrbuf = ArrayBuffer::New(info.GetIsolate(), sizeof(pmem->m_devicePtr));
+	v8::ArrayBuffer::Contents ctx = ptrbuf->Externalize();
+	memcpy(ctx.Data(), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
+	*/
+
+}
 //Not sure why this exists...
 /*
-Handle<Value> Mem::GetDevicePtr(Local<String> property, const AccessorInfo &info) {
-	HandleScope scope;
-	Mem *pmem = ObjectWrap::Unwrap<Mem>(info.Holder());
-	Buffer *ptrbuf = Buffer::New(sizeof(pmem->m_devicePtr));
+	 Handle<Value> Mem::GetDevicePtr(Local<String> property, const AccessorInfo &info) {
+	 HandleScope scope;
+	 Mem *pmem = ObjectWrap::Unwrap<Mem>(info.Holder());
+	 Buffer *ptrbuf = Buffer::New(sizeof(pmem->m_devicePtr));
 
-	memcpy(Buffer::Data(ptrbuf->handle_), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
+	 memcpy(Buffer::Data(ptrbuf->handle_), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
 
-	return scope.Close(ptrbuf->handle_);
-}
-*/
+	 return scope.Close(ptrbuf->handle_);
+	 }
+	 */

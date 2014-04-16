@@ -1,7 +1,11 @@
 #include "device.h"
+#include <string>
+#include <iostream>
 
 using namespace webcuda;
 using namespace v8;
+using std::cout;
+using std::endl;
 
 Persistent<ObjectTemplate> Device::constructor_template;
 
@@ -47,6 +51,10 @@ void Device::MakeDeviceObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	//retrieving device information
 	Handle<Integer> arg = Handle<Integer>::Cast(args[0]);
 	int64_t deviceNum = arg->Value();
+#ifdef V8_WEBCUDA_DEBUG
+	cout << deviceNum << endl;
+#endif
+
 	
 	Device* pdevice = new Device();
 	cuDeviceGet(&(pdevice->m_device), deviceNum);
@@ -62,6 +70,7 @@ void Device::MakeDeviceObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	result->SetInternalField(0, device_ptr);
 
 	args.GetReturnValue().Set(result);
+	
 }
 
 
@@ -76,8 +85,9 @@ void Device::GetName(Local<String> name, const v8::PropertyCallbackInfo<v8::Valu
 
 	char deviceName[256];
 	cuDeviceGetName(deviceName, 256, device->m_device);
+	std::string deviceStr(deviceName);
 
-	info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), deviceName));
+	info.GetReturnValue().Set(String::NewFromUtf8(info.GetIsolate(), deviceStr.c_str()));
 }
 
 void Device::GetComputeCapability(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {

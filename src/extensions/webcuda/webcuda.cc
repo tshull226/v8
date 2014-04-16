@@ -4,6 +4,10 @@
 #include <cudaProfiler.h>
 #include "webcuda.h"
 #include "device.h"
+#include "mem.h"
+#include "ctx.h"
+#include "module.h"
+#include "function.h"
 
 using namespace webcuda;
 using namespace v8;
@@ -14,6 +18,8 @@ using std::endl;
  * calls initializers for other features (memory, device info, CUDA context creation, and kernal retrieval/launching)
  */
 void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda_templ){
+	//have to initialize Cuda driver api
+	cuInit(0);
 	//instantiating basic webCUDA information
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "version"),
 			FunctionTemplate::New(isolate, Version));
@@ -32,6 +38,10 @@ void WebCUDA::AddWebCUDAMethods(Isolate* isolate, Handle<ObjectTemplate> webcuda
 
 	//instantiating other features
 	Device::Initialize(isolate, webcuda_templ);
+	Module::Initialize(isolate, webcuda_templ);
+	Mem::Initialize(isolate, webcuda_templ);
+	Ctx::Initialize(isolate, webcuda_templ);
+	webcuda::Function::Initialize(isolate, webcuda_templ);
 }
 
 void WebCUDA::Version(const v8::FunctionCallbackInfo<v8::Value>& args){

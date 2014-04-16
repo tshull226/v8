@@ -1,0 +1,367 @@
+	.version 1.4
+	.target sm_10, map_f64_to_f32
+	// compiled with /Developer/NVIDIA/CUDA-5.5/bin/../open64/lib//be
+	// nvopencc 4.1 built on 2013-09-05
+
+	//-----------------------------------------------------------
+	// Compiling /tmp/tmpxft_00003e15_00000000-9_random.cpp3.i (/var/folders/47/7_llxx1d7mqdz5db3wszxt_m0000gn/T/ccBI#.AZ7h2L)
+	//-----------------------------------------------------------
+
+	//-----------------------------------------------------------
+	// Options:
+	//-----------------------------------------------------------
+	//  Target:ptx, ISA:sm_10, Endian:little, Pointer Size:64
+	//  -O3	(Optimization level)
+	//  -g0	(Debug level)
+	//  -m2	(Report advisories)
+	//-----------------------------------------------------------
+
+	.file	1	"/tmp/tmpxft_00003e15_00000000-8_random.cudafe2.gpu"
+	.file	2	"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stddef.h"
+	.file	3	"/Developer/NVIDIA/CUDA-5.5/bin/../include/crt/device_runtime.h"
+	.file	4	"/Developer/NVIDIA/CUDA-5.5/bin/../include/host_defines.h"
+	.file	5	"/Developer/NVIDIA/CUDA-5.5/bin/../include/builtin_types.h"
+	.file	6	"/Developer/NVIDIA/CUDA-5.5/bin/../include/device_types.h"
+	.file	7	"/Developer/NVIDIA/CUDA-5.5/bin/../include/driver_types.h"
+	.file	8	"/Developer/NVIDIA/CUDA-5.5/bin/../include/surface_types.h"
+	.file	9	"/Developer/NVIDIA/CUDA-5.5/bin/../include/texture_types.h"
+	.file	10	"/Developer/NVIDIA/CUDA-5.5/bin/../include/vector_types.h"
+	.file	11	"/Developer/NVIDIA/CUDA-5.5/bin/../include/device_launch_parameters.h"
+	.file	12	"/Developer/NVIDIA/CUDA-5.5/bin/../include/crt/storage_class.h"
+	.file	13	"random.cu"
+	.file	14	"/Developer/NVIDIA/CUDA-5.5/bin/../include/common_functions.h"
+	.file	15	"/Developer/NVIDIA/CUDA-5.5/bin/../include/math_functions.h"
+	.file	16	"/Developer/NVIDIA/CUDA-5.5/bin/../include/math_constants.h"
+	.file	17	"/Developer/NVIDIA/CUDA-5.5/bin/../include/device_functions.h"
+	.file	18	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_11_atomic_functions.h"
+	.file	19	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_12_atomic_functions.h"
+	.file	20	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_13_double_functions.h"
+	.file	21	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_20_atomic_functions.h"
+	.file	22	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_32_atomic_functions.h"
+	.file	23	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_35_atomic_functions.h"
+	.file	24	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_20_intrinsics.h"
+	.file	25	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_30_intrinsics.h"
+	.file	26	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_32_intrinsics.h"
+	.file	27	"/Developer/NVIDIA/CUDA-5.5/bin/../include/sm_35_intrinsics.h"
+	.file	28	"/Developer/NVIDIA/CUDA-5.5/bin/../include/surface_functions.h"
+	.file	29	"/Developer/NVIDIA/CUDA-5.5/bin/../include/texture_fetch_functions.h"
+	.file	30	"/Developer/NVIDIA/CUDA-5.5/bin/../include/texture_indirect_functions.h"
+	.file	31	"/Developer/NVIDIA/CUDA-5.5/bin/../include/surface_indirect_functions.h"
+	.file	32	"/Developer/NVIDIA/CUDA-5.5/bin/../include/math_functions_dbl_ptx1.h"
+
+
+	.entry rng (
+		.param .u64 __cudaparm_rng_I)
+	{
+	.reg .u16 %rh<4>;
+	.reg .u32 %r<261>;
+	.reg .u64 %rd<6>;
+	.loc	13	8	0
+$LDWbegin_rng:
+	.loc	13	36	0
+	cvt.s32.u16 	%r1, %ctaid.y;
+	cvt.u16.u32 	%rh1, %r1;
+	mov.u16 	%rh2, %ntid.y;
+	mul.wide.u16 	%r2, %rh1, %rh2;
+	cvt.s32.u16 	%r3, %tid.y;
+	add.u32 	%r4, %r3, %r2;
+	cvt.u32.u16 	%r5, %nctaid.x;
+	mul.lo.u32 	%r6, %r5, %r4;
+	cvt.s32.u16 	%r7, %ctaid.x;
+	add.u32 	%r8, %r7, %r6;
+	cvt.u32.u16 	%r9, %ntid.x;
+	mul.lo.u32 	%r10, %r9, %r8;
+	cvt.s32.u16 	%r11, %tid.x;
+	add.u32 	%r12, %r11, %r10;
+	shl.b32 	%r13, %r12, 9;
+	shl.b32 	%r14, %r12, 21;
+	add.s32 	%r15, %r13, %r12;
+	add.s32 	%r16, %r14, %r15;
+	add.s32 	%r17, %r16, 8;
+	shl.b32 	%r18, %r12, 11;
+	add.s32 	%r19, %r12, %r18;
+	shl.b32 	%r20, %r12, 19;
+	add.s32 	%r21, %r19, %r20;
+	shr.s32 	%r22, %r17, 5;
+	sub.s32 	%r23, %r22, 939442524;
+	sub.s32 	%r24, %r16, 1640531519;
+	shl.b32 	%r25, %r17, 4;
+	sub.s32 	%r26, %r25, 1556008596;
+	and.b32 	%r27, %r24, %r26;
+	and.b32 	%r28, %r23, %r27;
+	add.s32 	%r29, %r21, %r28;
+	add.s32 	%r30, %r29, 1;
+	.loc	13	37	0
+	shr.s32 	%r31, %r30, 5;
+	sub.s32 	%r32, %r30, 1640531527;
+	shl.b32 	%r33, %r30, 4;
+	add.s32 	%r34, %r31, 2123724318;
+	sub.s32 	%r35, %r33, 1383041155;
+	and.b32 	%r36, %r32, %r35;
+	and.b32 	%r37, %r34, %r36;
+	add.s32 	%r38, %r37, %r16;
+	add.s32 	%r39, %r38, 8;
+	.loc	13	36	0
+	shr.s32 	%r40, %r39, 5;
+	sub.s32 	%r41, %r40, 939442524;
+	add.s32 	%r42, %r38, 1013904250;
+	shl.b32 	%r43, %r39, 4;
+	sub.s32 	%r44, %r43, 1556008596;
+	and.b32 	%r45, %r42, %r44;
+	and.b32 	%r46, %r41, %r45;
+	add.s32 	%r47, %r30, %r46;
+	.loc	13	37	0
+	shr.s32 	%r48, %r47, 5;
+	add.s32 	%r49, %r48, 2123724318;
+	add.s32 	%r50, %r47, 1013904242;
+	shl.b32 	%r51, %r47, 4;
+	sub.s32 	%r52, %r51, 1383041155;
+	and.b32 	%r53, %r50, %r52;
+	and.b32 	%r54, %r49, %r53;
+	add.s32 	%r55, %r39, %r54;
+	.loc	13	36	0
+	shr.s32 	%r56, %r55, 5;
+	sub.s32 	%r57, %r56, 939442524;
+	sub.s32 	%r58, %r55, 626627285;
+	shl.b32 	%r59, %r55, 4;
+	sub.s32 	%r60, %r59, 1556008596;
+	and.b32 	%r61, %r58, %r60;
+	and.b32 	%r62, %r57, %r61;
+	add.s32 	%r63, %r47, %r62;
+	.loc	13	37	0
+	shr.s32 	%r64, %r63, 5;
+	add.s32 	%r65, %r64, 2123724318;
+	sub.s32 	%r66, %r63, 626627285;
+	shl.b32 	%r67, %r63, 4;
+	sub.s32 	%r68, %r67, 1383041155;
+	and.b32 	%r69, %r66, %r68;
+	and.b32 	%r70, %r65, %r69;
+	add.s32 	%r71, %r55, %r70;
+	.loc	13	36	0
+	shr.s32 	%r72, %r71, 5;
+	sub.s32 	%r73, %r72, 939442524;
+	add.s32 	%r74, %r71, 2027808484;
+	shl.b32 	%r75, %r71, 4;
+	sub.s32 	%r76, %r75, 1556008596;
+	and.b32 	%r77, %r74, %r76;
+	and.b32 	%r78, %r73, %r77;
+	add.s32 	%r79, %r63, %r78;
+	.loc	13	37	0
+	shr.s32 	%r80, %r79, 5;
+	add.s32 	%r81, %r80, 2123724318;
+	add.s32 	%r82, %r79, 2027808484;
+	shl.b32 	%r83, %r79, 4;
+	sub.s32 	%r84, %r83, 1383041155;
+	and.b32 	%r85, %r82, %r84;
+	and.b32 	%r86, %r81, %r85;
+	add.s32 	%r87, %r71, %r86;
+	.loc	13	36	0
+	shr.s32 	%r88, %r87, 5;
+	sub.s32 	%r89, %r88, 939442524;
+	add.s32 	%r90, %r87, 387276957;
+	shl.b32 	%r91, %r87, 4;
+	sub.s32 	%r92, %r91, 1556008596;
+	and.b32 	%r93, %r90, %r92;
+	and.b32 	%r94, %r89, %r93;
+	add.s32 	%r95, %r79, %r94;
+	.loc	13	37	0
+	shr.s32 	%r96, %r95, 5;
+	add.s32 	%r97, %r96, 2123724318;
+	add.s32 	%r98, %r95, 387276957;
+	shl.b32 	%r99, %r95, 4;
+	sub.s32 	%r100, %r99, 1383041155;
+	and.b32 	%r101, %r98, %r100;
+	and.b32 	%r102, %r97, %r101;
+	add.s32 	%r103, %r87, %r102;
+	.loc	13	36	0
+	shr.s32 	%r104, %r103, 5;
+	sub.s32 	%r105, %r104, 939442524;
+	sub.s32 	%r106, %r103, 1253254570;
+	shl.b32 	%r107, %r103, 4;
+	sub.s32 	%r108, %r107, 1556008596;
+	and.b32 	%r109, %r106, %r108;
+	and.b32 	%r110, %r105, %r109;
+	add.s32 	%r111, %r95, %r110;
+	.loc	13	37	0
+	shr.s32 	%r112, %r111, 5;
+	add.s32 	%r113, %r112, 2123724318;
+	sub.s32 	%r114, %r111, 1253254570;
+	shl.b32 	%r115, %r111, 4;
+	sub.s32 	%r116, %r115, 1383041155;
+	and.b32 	%r117, %r114, %r116;
+	and.b32 	%r118, %r113, %r117;
+	add.s32 	%r119, %r103, %r118;
+	.loc	13	36	0
+	shr.s32 	%r120, %r119, 5;
+	sub.s32 	%r121, %r120, 939442524;
+	add.s32 	%r122, %r119, 1401181199;
+	shl.b32 	%r123, %r119, 4;
+	sub.s32 	%r124, %r123, 1556008596;
+	and.b32 	%r125, %r122, %r124;
+	and.b32 	%r126, %r121, %r125;
+	add.s32 	%r127, %r111, %r126;
+	.loc	13	37	0
+	shr.s32 	%r128, %r127, 5;
+	add.s32 	%r129, %r128, 2123724318;
+	add.s32 	%r130, %r127, 1401181199;
+	shl.b32 	%r131, %r127, 4;
+	sub.s32 	%r132, %r131, 1383041155;
+	and.b32 	%r133, %r130, %r132;
+	and.b32 	%r134, %r129, %r133;
+	add.s32 	%r135, %r119, %r134;
+	.loc	13	36	0
+	shr.s32 	%r136, %r135, 5;
+	sub.s32 	%r137, %r136, 939442524;
+	sub.s32 	%r138, %r135, 239350328;
+	shl.b32 	%r139, %r135, 4;
+	sub.s32 	%r140, %r139, 1556008596;
+	and.b32 	%r141, %r138, %r140;
+	and.b32 	%r142, %r137, %r141;
+	add.s32 	%r143, %r127, %r142;
+	.loc	13	37	0
+	shr.s32 	%r144, %r143, 5;
+	add.s32 	%r145, %r144, 2123724318;
+	sub.s32 	%r146, %r143, 239350328;
+	shl.b32 	%r147, %r143, 4;
+	sub.s32 	%r148, %r147, 1383041155;
+	and.b32 	%r149, %r146, %r148;
+	and.b32 	%r150, %r145, %r149;
+	add.s32 	%r151, %r135, %r150;
+	.loc	13	36	0
+	shr.s32 	%r152, %r151, 5;
+	sub.s32 	%r153, %r152, 939442524;
+	sub.s32 	%r154, %r151, 1879881855;
+	shl.b32 	%r155, %r151, 4;
+	sub.s32 	%r156, %r155, 1556008596;
+	and.b32 	%r157, %r154, %r156;
+	and.b32 	%r158, %r153, %r157;
+	add.s32 	%r159, %r143, %r158;
+	.loc	13	37	0
+	shr.s32 	%r160, %r159, 5;
+	add.s32 	%r161, %r160, 2123724318;
+	sub.s32 	%r162, %r159, 1879881855;
+	shl.b32 	%r163, %r159, 4;
+	sub.s32 	%r164, %r163, 1383041155;
+	and.b32 	%r165, %r162, %r164;
+	and.b32 	%r166, %r161, %r165;
+	add.s32 	%r167, %r151, %r166;
+	.loc	13	36	0
+	shr.s32 	%r168, %r167, 5;
+	sub.s32 	%r169, %r168, 939442524;
+	add.s32 	%r170, %r167, 774553914;
+	shl.b32 	%r171, %r167, 4;
+	sub.s32 	%r172, %r171, 1556008596;
+	and.b32 	%r173, %r170, %r172;
+	and.b32 	%r174, %r169, %r173;
+	add.s32 	%r175, %r159, %r174;
+	.loc	13	37	0
+	shr.s32 	%r176, %r175, 5;
+	add.s32 	%r177, %r176, 2123724318;
+	add.s32 	%r178, %r175, 774553914;
+	shl.b32 	%r179, %r175, 4;
+	sub.s32 	%r180, %r179, 1383041155;
+	and.b32 	%r181, %r178, %r180;
+	and.b32 	%r182, %r177, %r181;
+	add.s32 	%r183, %r167, %r182;
+	.loc	13	36	0
+	shr.s32 	%r184, %r183, 5;
+	sub.s32 	%r185, %r184, 939442524;
+	sub.s32 	%r186, %r183, 865977613;
+	shl.b32 	%r187, %r183, 4;
+	sub.s32 	%r188, %r187, 1556008596;
+	and.b32 	%r189, %r186, %r188;
+	and.b32 	%r190, %r185, %r189;
+	add.s32 	%r191, %r175, %r190;
+	.loc	13	37	0
+	shr.s32 	%r192, %r191, 5;
+	add.s32 	%r193, %r192, 2123724318;
+	sub.s32 	%r194, %r191, 865977613;
+	shl.b32 	%r195, %r191, 4;
+	sub.s32 	%r196, %r195, 1383041155;
+	and.b32 	%r197, %r194, %r196;
+	and.b32 	%r198, %r193, %r197;
+	add.s32 	%r199, %r183, %r198;
+	.loc	13	36	0
+	shr.s32 	%r200, %r199, 5;
+	sub.s32 	%r201, %r200, 939442524;
+	add.s32 	%r202, %r199, 1788458156;
+	shl.b32 	%r203, %r199, 4;
+	sub.s32 	%r204, %r203, 1556008596;
+	and.b32 	%r205, %r202, %r204;
+	and.b32 	%r206, %r201, %r205;
+	add.s32 	%r207, %r191, %r206;
+	.loc	13	37	0
+	shr.s32 	%r208, %r207, 5;
+	add.s32 	%r209, %r208, 2123724318;
+	add.s32 	%r210, %r207, 1788458156;
+	shl.b32 	%r211, %r207, 4;
+	sub.s32 	%r212, %r211, 1383041155;
+	and.b32 	%r213, %r210, %r212;
+	and.b32 	%r214, %r209, %r213;
+	add.s32 	%r215, %r199, %r214;
+	.loc	13	36	0
+	shr.s32 	%r216, %r215, 5;
+	sub.s32 	%r217, %r216, 939442524;
+	add.s32 	%r218, %r215, 147926629;
+	shl.b32 	%r219, %r215, 4;
+	sub.s32 	%r220, %r219, 1556008596;
+	and.b32 	%r221, %r218, %r220;
+	and.b32 	%r222, %r217, %r221;
+	add.s32 	%r223, %r207, %r222;
+	.loc	13	37	0
+	shr.s32 	%r224, %r223, 5;
+	add.s32 	%r225, %r224, 2123724318;
+	add.s32 	%r226, %r223, 147926629;
+	shl.b32 	%r227, %r223, 4;
+	sub.s32 	%r228, %r227, 1383041155;
+	and.b32 	%r229, %r226, %r228;
+	and.b32 	%r230, %r225, %r229;
+	add.s32 	%r231, %r215, %r230;
+	.loc	13	36	0
+	shr.s32 	%r232, %r231, 5;
+	sub.s32 	%r233, %r232, 939442524;
+	sub.s32 	%r234, %r231, 1492604898;
+	shl.b32 	%r235, %r231, 4;
+	sub.s32 	%r236, %r235, 1556008596;
+	and.b32 	%r237, %r234, %r236;
+	and.b32 	%r238, %r233, %r237;
+	add.s32 	%r239, %r223, %r238;
+	.loc	13	37	0
+	shr.s32 	%r240, %r239, 5;
+	add.s32 	%r241, %r240, 2123724318;
+	sub.s32 	%r242, %r239, 1492604898;
+	shl.b32 	%r243, %r239, 4;
+	sub.s32 	%r244, %r243, 1383041155;
+	and.b32 	%r245, %r242, %r244;
+	and.b32 	%r246, %r241, %r245;
+	add.s32 	%r247, %r231, %r246;
+	.loc	13	36	0
+	shr.s32 	%r248, %r247, 5;
+	sub.s32 	%r249, %r248, 939442524;
+	add.s32 	%r250, %r247, 1161830871;
+	shl.b32 	%r251, %r247, 4;
+	sub.s32 	%r252, %r251, 1556008596;
+	and.b32 	%r253, %r250, %r252;
+	and.b32 	%r254, %r249, %r253;
+	add.s32 	%r255, %r239, %r254;
+	.loc	13	43	0
+	and.b32 	%r256, %r255, 255;
+	ld.param.u64 	%rd1, [__cudaparm_rng_I];
+	mul.lo.s32 	%r257, %r12, 4;
+	cvt.s64.s32 	%rd2, %r257;
+	mul.wide.s32 	%rd3, %r257, 4;
+	add.u64 	%rd4, %rd1, %rd3;
+	st.global.s32 	[%rd4+0], %r256;
+	.loc	13	44	0
+	st.global.s32 	[%rd4+4], %r256;
+	.loc	13	45	0
+	st.global.s32 	[%rd4+8], %r256;
+	.loc	13	46	0
+	shr.s32 	%r258, %r255, 8;
+	and.b32 	%r259, %r258, 255;
+	st.global.s32 	[%rd4+12], %r259;
+	.loc	13	53	0
+	exit;
+$LDWend_rng:
+	} // rng
+

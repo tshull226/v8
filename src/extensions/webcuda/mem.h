@@ -12,6 +12,11 @@ namespace webcuda {
     public:
       static void Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ);
 
+			/**
+			 * \brief retrieves device pointer of device mem
+			 */
+      static void* GetDevicePtr(Handle<Object> obj, size_t* bufsize);
+
     protected:
 			/**
 			 * \brief initialize features of Mem
