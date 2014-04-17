@@ -1,25 +1,27 @@
 
 INT_SIZE = 4;
 
-	//setting up pixel dimensions
-	width = 640;
-	height = 480;
-	numElements = height * width;
-	numPixels = 4 * numElements;
+//setting up pixel dimensions
+width = 640;
+height = 480;
+numElements = height * width;
+numPixels = 4 * numElements;
 
 function main(){
 	var seed = 1;
 
 
 	var t_I = runJS(seed);
+	webcuda.startProfiling();
 	var h_I = runCuda(seed);
+	webcuda.stopProfiling();
 
 	//temp check to see if things seem reasonable
 	/*
-	for(i = 0; i < numPixels; i++){
-		print(t_I[i]);
-	}
-	*/
+		 for(i = 0; i < numPixels; i++){
+		 print(t_I[i]);
+		 }
+		 */
 
 	testResult(t_I, h_I);
 }
@@ -41,12 +43,11 @@ function runCuda(seed){
 
 	//Creating device memory for pixel array
 	print("allocating CUDA memory");
-	//print(h_I.buffer.byteLength);
 	var d_I = webcuda.memAlloc(h_I.buffer.byteLength);
 	print("size: "+d_I.size+" error: "+d_I.error);
 
 
-	
+
 	//Loading Module
 	print("loading CUDA module");
 	var module = webcuda.moduleLoad("tests/random_pixel/WebCUDA/random.ptx");
@@ -58,24 +59,20 @@ function runCuda(seed){
 	print("name: " + cuFunc.name + " error: " + cuFunc.error);
 
 	//Launching the Kernel
-	
 	print("trying to launch kernel");
 	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], [{"memParam" : d_I}, {"intParam" : 1} ]);
 	print("launch result: " + launchResult);
-	
-	
-	//Retrieving Data from CUDA Device Memory
 
+
+	//Retrieving Data from CUDA Device Memory
 	print("copying CUDA Mem Result to device");
 	webcuda.copyDtoH(h_I.buffer, d_I);
 
 	/*
 	//temp check to see if things seem reasonable
 	print("checking results");
-	var value = 0;
 	for(i = 0; i < numPixels; i++){
-		//value += h_I[i];
-		print(h_I[i]);
+	print(h_I[i]);
 	}
 	*/
 
@@ -89,7 +86,7 @@ function runCuda(seed){
 	//Freeing CUDA context
 	var ctxFree = ctx.destroy();
 	print("free context result: "+ ctxFree);
-	
+
 	//returning value
 	return h_I;
 
