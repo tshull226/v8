@@ -5,10 +5,10 @@
 
 extern "C" {
 //	__global__ void rng(int *I, int seed)
-	__global__ void rng(int *I)
+	__global__ void rng(int *I, int seed)
 	{
 
-		int seed = 1; //TEMP for the time being to make my life easier
+		//int seed = 1; //TEMP for the time being to make my life easier
 		int tx = threadIdx.x;
 		int ty = threadIdx.y;
 		int bx = blockIdx.x;

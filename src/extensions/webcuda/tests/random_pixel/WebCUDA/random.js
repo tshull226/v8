@@ -60,8 +60,7 @@ function runCuda(seed){
 	//Launching the Kernel
 	
 	print("trying to launch kernel");
-	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], d_I);
-	//var launchResult = webcuda.launchKernel(cuFunc, [1,1,1], [1,1,1], d_I);
+	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], [{"memParam" : d_I}, {"intParam" : 1} ]);
 	print("launch result: " + launchResult);
 	
 	
@@ -143,8 +142,10 @@ function testResult(h_I, t_I){
 	{
 		if (Math.abs(t_I[i] - h_I[i]) > 1e-5)
 		{
+			print("FAILED");
 			print("Result verification failed at element " + i);
 			print("Host element value: " + h_I[i] + ", CUDA element value: " + t_I[i]);
+			quit();
 		}
 	}
 	print("Test PASSED\n");

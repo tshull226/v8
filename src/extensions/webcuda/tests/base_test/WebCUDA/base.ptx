@@ -4,7 +4,7 @@
 	// nvopencc 4.1 built on 2013-09-05
 
 	//-----------------------------------------------------------
-	// Compiling /tmp/tmpxft_00003dec_00000000-9_base.cpp3.i (/var/folders/47/7_llxx1d7mqdz5db3wszxt_m0000gn/T/ccBI#.i7ogmn)
+	// Compiling /tmp/tmpxft_000049d8_00000000-9_base.cpp3.i (/var/folders/47/7_llxx1d7mqdz5db3wszxt_m0000gn/T/ccBI#.f1rBdv)
 	//-----------------------------------------------------------
 
 	//-----------------------------------------------------------
@@ -16,7 +16,7 @@
 	//  -m2	(Report advisories)
 	//-----------------------------------------------------------
 
-	.file	1	"/tmp/tmpxft_00003dec_00000000-8_base.cudafe2.gpu"
+	.file	1	"/tmp/tmpxft_000049d8_00000000-8_base.cudafe2.gpu"
 	.file	2	"/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/clang/5.1/include/stddef.h"
 	.file	3	"/Developer/NVIDIA/CUDA-5.5/bin/../include/crt/device_runtime.h"
 	.file	4	"/Developer/NVIDIA/CUDA-5.5/bin/../include/host_defines.h"
@@ -50,12 +50,12 @@
 	.file	32	"/Developer/NVIDIA/CUDA-5.5/bin/../include/math_functions_dbl_ptx1.h"
 
 
-	.entry rng
+	.entry base
 	{
-	.loc	13	8	0
-$LDWbegin_rng:
-	.loc	13	42	0
+	.loc	13	7	0
+$LDWbegin_base:
+	.loc	13	17	0
 	exit;
-$LDWend_rng:
-	} // rng
+$LDWend_base:
+	} // base
 
