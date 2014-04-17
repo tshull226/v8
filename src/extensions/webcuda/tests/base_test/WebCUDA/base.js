@@ -28,6 +28,10 @@ function runCuda(seed){
 	print("trying to launch kernel");
 	var launchResult = webcuda.launchKernel(cuFunc, [1,1,1], [1,1,1], []);
 	print("launch result: " + launchResult);
+
+	//erasing context
+	var ctxFree = ctx.destroy();
+	print("free context result: " + ctxFree);
 }
 
 main();

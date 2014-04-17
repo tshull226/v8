@@ -87,8 +87,8 @@ function runCuda(seed){
 	print("free memory result: "+memFree);
 
 	//Freeing CUDA context
-	//NEED TO IMPLEMENT THIS!!!
-	//ctx.destroy();
+	var ctxFree = ctx.destroy();
+	print("free context result: "+ ctxFree);
 	
 	//returning value
 	return h_I;
