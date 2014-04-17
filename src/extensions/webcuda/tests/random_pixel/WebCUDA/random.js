@@ -27,26 +27,22 @@ function main(){
 }
 
 function runCuda(seed){
-	var blocks, threads;
+	//Retrieving Device
+	print("retrieving Device Info");
+	var dev = webcuda.Device(0);
+
+	//Setting up Context for CUDA Device
+	print("creating Context");
+	var ctx = webcuda.newContext(0, dev);
 
 	//Creating host memory for pixel array
 	print("creating host memory");
 	var h_I = new Int32Array(numPixels); 
 
-	//Retrieving Device
-	print("retrieving Device Info");
-	var dev = webcuda.Device(0);
-
-	//Setting up Context for CUDA
-	print("creating Context");
-	var ctx = webcuda.newContext(0, dev);
-
 	//Creating device memory for pixel array
 	print("allocating CUDA memory");
 	var d_I = webcuda.memAlloc(h_I.buffer.byteLength);
 	print("size: "+d_I.size+" error: "+d_I.error);
-
-
 
 	//Loading Module
 	print("loading CUDA module");
@@ -63,7 +59,6 @@ function runCuda(seed){
 	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], [{"memParam" : d_I}, {"intParam" : 1} ]);
 	print("launch result: " + launchResult);
 
-
 	//Retrieving Data from CUDA Device Memory
 	print("copying CUDA Mem Result to device");
 	webcuda.copyDtoH(h_I.buffer, d_I);
@@ -75,8 +70,6 @@ function runCuda(seed){
 	print(h_I[i]);
 	}
 	*/
-
-
 
 	//Freeing CUDA Memory
 	print("freeing CUDA memory");
