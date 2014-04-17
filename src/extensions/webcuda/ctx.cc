@@ -136,6 +136,7 @@ void  Ctx::PushCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void  Ctx::PopCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	//need to think about this a little more since currently creating a new context also sets it as the one running
 	HandleScope scope(args.GetIsolate());
 	Ctx *pctx = UnwrapCtx(Handle<Object>::Cast(args[0]));
 

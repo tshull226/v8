@@ -76,7 +76,7 @@ function runCuda(seed){
 	var memFree = webcuda.free(d_I);
 	print("free memory result: "+memFree);
 
-	//Freeing CUDA context
+	//Destorying CUDA context
 	var ctxFree = ctx.destroy();
 	print("free context result: "+ ctxFree);
 
