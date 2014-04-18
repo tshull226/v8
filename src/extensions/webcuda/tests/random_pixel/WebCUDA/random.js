@@ -33,7 +33,7 @@ function runCuda(seed){
 
 	//Setting up Context for CUDA Device
 	print("creating Context");
-	var ctx = webcuda.newContext(0, dev);
+	var ctx = webcuda.Context(0, dev);
 
 	//Creating host memory for pixel array
 	print("creating host memory");
@@ -76,8 +76,9 @@ function runCuda(seed){
 	var memFree = webcuda.free(d_I);
 	print("free memory result: "+memFree);
 
-	//Destorying CUDA context
-	var ctxFree = ctx.destroy();
+	//Destroying CUDA context
+	print("destroying CUDA context");
+	var ctxFree = webcuda.destroyCtx(ctx);
 	print("free context result: "+ ctxFree);
 
 	//returning value

@@ -14,9 +14,6 @@ Persistent<ObjectTemplate> Module::constructor_template;
 void Module::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ) {
   HandleScope scope(isolate);
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "Module"),
-			FunctionTemplate::New(isolate, MakeModuleObject));
-
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "moduleLoad"),
 			FunctionTemplate::New(isolate, Load));
 

@@ -21,9 +21,6 @@ void webcuda::Function::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> 
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "launchKernel"),
 			FunctionTemplate::New(isolate, LaunchKernel));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "Function"),
-			FunctionTemplate::New(isolate, MakeFunctionObject));
-
 	Handle<ObjectTemplate> raw_template = MakeFunctionTemplate(isolate);
 	constructor_template.Reset(isolate, raw_template);
 
@@ -122,6 +119,8 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 		pointerVals = (void **) malloc(sizeof(void *)*len);
 		Handle<String> strHandle = String::NewFromUtf8(args.GetIsolate(), "memParam");
 		Handle<String> intHandle = String::NewFromUtf8(args.GetIsolate(), "intParam");
+		Handle<String> floatHandle = String::NewFromUtf8(args.GetIsolate(), "floatParam");
+		Handle<String> doubleHandle = String::NewFromUtf8(args.GetIsolate(), "doubleParam");
 		for(size_t i = 0; i < len; i++){
 			Handle<Object> obj = Handle<Object>::Cast(argArray->Get(i));
 			if(obj->HasOwnProperty(strHandle)){
@@ -139,6 +138,22 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 				*intVal = val->Value();
 				kernelParams[i] = intVal;
 				pointerVals[ptrValLen] = intVal;
+				ptrValLen++;
+			} else if(obj->HasOwnProperty(floatHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(floatHandle);
+				float *floatVal = (float *)malloc(sizeof(float));
+				*floatVal = temp->NumberValue();
+				kernelParams[i] = floatVal;
+				pointerVals[ptrValLen] = floatVal;
+				ptrValLen++;
+			} else if(obj->HasOwnProperty(doubleHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(doubleHandle);
+				double *doubleVal = (double *)malloc(sizeof(double));
+				*doubleVal = temp->NumberValue();
+				kernelParams[i] = doubleVal;
+				pointerVals[ptrValLen] = doubleVal;
 				ptrValLen++;
 			} else {
 				//currenty cannot handle the parameters given
