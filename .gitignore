@@ -67,3 +67,4 @@ GPATH
 *.DS_Store
 /src/extensions/webcuda/DOCS/
 /src/extensions/webcuda/JSDOC/out
+/src/extensions/webcuda/JSDOC/node_modules

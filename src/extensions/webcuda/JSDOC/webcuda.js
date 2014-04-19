@@ -1,8 +1,3 @@
-/**
- * @fileOverview WebCUDA JavaScript API Documentation
- * @author Jiho Choi, Kurt Fellows, Tom Shull
- */
-
 
 /** @namespace*/
 var webcuda = {
@@ -27,7 +22,6 @@ var webcuda = {
 	"startProfiling" : function(){},
 	/**
 	 * notifies Nvidia Visual Profiler to end profiling
-	 * @return 
 	 */
 	"stopProfiling" : function(){},
 	/**
