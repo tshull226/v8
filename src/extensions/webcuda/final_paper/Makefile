@@ -1,4 +1,4 @@
-PAPER = template
+PAPER = WebCUDA
 TEX = $(wildcard *.tex)
 BIB = references.bib
 FIGS = $(wildcard figures/*.pdf figures/*.png graphs/*.pdf graphs/*.png)
