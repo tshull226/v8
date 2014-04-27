@@ -37,6 +37,12 @@ var webcuda = {
 	 */
 	"moduleLoad" : function(fileName){},
 	/**
+	 * unload  a cuModule and delete any temporary files created
+	 * @param {Module} handle for the module to be unloaded
+	 * @return {int} the error number denoting whether the operation was successful (0) or not (not 0) 
+	 */
+	"moduleUnload" : function(fileName){},
+	/**
 	 * Extracts requested kernel from the CUDA module and loads it into a CUDA function handle
 	 * @param {Module} module the CUDA module to load the kernel from
 	 * @param {string} kernelName the name of the kernel
@@ -51,12 +57,17 @@ var webcuda = {
 	 */
 	"compile" : function(module){},
 	/**
-	 * @deprecated need to create new module type
-	 * compile a text file into a handle to a CUDA module
-	 * @param {string} fileName the file path to text file
+	 * compile a cu file into a handle to a CUDA module
+	 * @param {string} fileName (without .cu) for the file path to cu file
 	 * @return {ModuleTxt} a new {@link Module} Object
 	 */
 	"compileFile" : function(fileName){},
+	/**
+	 * compile a txt file into a handle to a CUDA module
+	 * @param {string} fileName (without .txt) for the file path to text file
+	 * @return {ModuleTxt} a new {@link Module} Object
+	 */
+	"compileText" : function(fileName){},
 	/**
 	 * allocates memory on CUDA device for use in kernels. NOTE: the device memory will be allocated on the device that is associated with the current context. This can be retrieved via calling {@link webcuda.getCurrent}.
 	 * @param {int} bytes the amount of bytes to be allocated on device. 
@@ -127,6 +138,7 @@ var webcuda = {
 	"popCurrentCtx" : function(){},
 	/**
 	 * Destroys specified context and pops it if local to the calling thread. Please see <a href="http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/group__CUDA__CTX_g27a365aebb0eb548166309f58a1e8b8e.html#g27a365aebb0eb548166309f58a1e8b8e">cuCtxDestroy</a> for more details
+	 * @param {Context} ctx the CUDA context to destroy
 	 * @return {Number} the error number denoting whether the operation was successful (error==0) or not (error !=0)
 	 */
 	"destroyCtx" : function(ctx){},

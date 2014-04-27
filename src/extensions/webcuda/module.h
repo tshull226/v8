@@ -30,14 +30,24 @@ namespace webcuda {
       static void  Load(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 			/**
-			 * \brief compile file into Cuda Kernel
+			 * \brief unload the module and free any temporarily allocated files used for compilation
 			 */
+      static void  Unload(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+			/**
+			 * \brief compile string into Cuda Kernel
+			 */
       static void  Compile(const v8::FunctionCallbackInfo<v8::Value>& args);
+
 			/**
 			 * \brief compile file into Cuda Kernel
 			 */
       static void  CompileFile(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+			/**
+			 * \brief compile text file into Cuda Kernel
+			 */
+      static void  CompileText(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 			/**
 			 * \brief create JavaScript Object used to represent CUDA file
@@ -69,7 +79,9 @@ namespace webcuda {
 			/** 
 			 * \brief helper method to invoke nvcc
 			 */
-			static std::string InvokeNVCC_(std::string kFile);
+			static Handle<Object> InvokeNVCC_(Isolate* isolate, Handle<Value> kFile);
+			//static void InvokeNVCC_(String::Utf8Value kFile);
+			
 
 
       CUmodule m_module;
