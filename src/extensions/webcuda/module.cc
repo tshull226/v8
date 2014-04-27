@@ -142,10 +142,9 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		deleteFile = *fileValue2;
 		std::system((std::string("rm ") + deleteFile).c_str());
 	} else if(module->HasOwnProperty(cuHandle)){
-		Handle<Value> temp = module->Get(cuHandle);
+		Handle<Value> temp = module->Get(fileHandle);
 		String::Utf8Value fileValue1(temp);
 		string deleteFile(*fileValue1);
-		deleteFile += ".cu";
 		std::system((std::string("rm ") + deleteFile).c_str());
 
 	}
