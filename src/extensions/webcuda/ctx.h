@@ -27,7 +27,8 @@ namespace webcuda{
 			/**
 			 * \brief Delete CUDA context
 			 */
-			static void Destroy(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
+			//static void Destroy(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
+			static void  Destroy(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 			/**
 			 * \brief return CUDA Driver API version being used

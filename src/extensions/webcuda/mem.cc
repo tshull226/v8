@@ -109,11 +109,13 @@ void Mem::AllocPitch(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 	size_t pPitch;
 	unsigned int ElementSizeBytes = args[2]->Uint32Value();
-	size_t WidthInBytes = ElementSizeBytes * args[0]->Uint32Value();
+	size_t Width = args[0]->Uint32Value();
+	size_t WidthInBytes = ElementSizeBytes * Width;
 	size_t Height = args[1]->Uint32Value();
 	CUresult error = cuMemAllocPitch(&(pmem->m_devicePtr), &pPitch, WidthInBytes, Height, ElementSizeBytes);
 
-	result->Set(String::NewFromUtf8(args.GetIsolate(), "size"), Integer::NewFromUnsigned(args.GetIsolate(), pPitch*Height));
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "width"), Integer::NewFromUnsigned(args.GetIsolate(), Width));
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "height"), Integer::NewFromUnsigned(args.GetIsolate(), Height));
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "pitch"), Integer::NewFromUnsigned(args.GetIsolate(), pPitch));
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
 

@@ -15,23 +15,26 @@ void Ctx::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ)
   constructor_template->SetClassName(String::NewSymbol("CudaCtx"));
 	*/
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "newContext"),
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "Context"),
 			FunctionTemplate::New(isolate, Ctx::New));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "synchronize"),
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "synchronizeCtx"),
 			FunctionTemplate::New(isolate, Ctx::Synchronize));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "setCurrent"),
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "setCurrentCtx"),
 			FunctionTemplate::New(isolate, Ctx::SetCurrent));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "getCurrent"),
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "getCurrentCtx"),
 			FunctionTemplate::New(isolate, Ctx::GetCurrent));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "pushCurrent"),
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "pushCurrentCtx"),
 			FunctionTemplate::New(isolate, Ctx::PushCurrent));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "popCurrent"),
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "popCurrentCtx"),
 			FunctionTemplate::New(isolate, Ctx::PopCurrent));
+
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "destroyCtx"),
+			FunctionTemplate::New(isolate, Ctx::Destroy));
 
 	Handle<ObjectTemplate> raw_template = MakeCtxTemplate(isolate);
 	constructor_template.Reset(isolate, raw_template);
@@ -55,9 +58,11 @@ Handle<ObjectTemplate> Ctx::MakeCtxTemplate(Isolate* isolate) {
   result->SetInternalFieldCount(1);
 
   // Add accessors for each of the fields of the request.
+	/*
   result->SetAccessor(
       String::NewFromUtf8(isolate, "destroy", String::kInternalizedString),
       Ctx::Destroy);
+			*/
   result->SetAccessor(
       String::NewFromUtf8(isolate, "apiVersion", String::kInternalizedString),
       Ctx::GetApiVersion);
@@ -109,17 +114,19 @@ void Ctx::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	//pctx->m_device = ObjectWrap::Unwrap<Device>(args[1]->ToObject())->m_device;
 	CUdevice m_device = Device::UnwrapDevice(Handle<Object>::Cast(args[1]))->m_device;
 
-	cuCtxCreate(&(pctx->m_context), flags, m_device);
-
+	CUresult error = cuCtxCreate(&(pctx->m_context), flags, m_device);
+	ctx_ptr->Set(String::NewFromUtf8(args.GetIsolate(), "error"),
+			Number::New(args.GetIsolate(), error));
 	args.GetReturnValue().Set(ctx_ptr);
 }
 
-void Ctx::Destroy(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
-	HandleScope scope(info.GetIsolate());
-	Ctx *pctx = UnwrapCtx(info.Holder());
+//void Ctx::Destroy(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
+void Ctx::Destroy(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	HandleScope scope(args.GetIsolate());
+	Ctx *pctx = UnwrapCtx(Handle<Object>::Cast(args[0]));
 
 	CUresult error = cuCtxDestroy(pctx->m_context);
-	info.GetReturnValue().Set(Number::New(info.GetIsolate(), error));
+	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 
 void  Ctx::PushCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -131,11 +138,15 @@ void  Ctx::PushCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
 }
 
 void  Ctx::PopCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	//need to think about this a little more since currently creating a new context also sets it as the one running
 	HandleScope scope(args.GetIsolate());
-	Ctx *pctx = UnwrapCtx(Handle<Object>::Cast(args[0]));
+	Handle<Object> result = MakeCtxObject_(args.GetIsolate());
+	Ctx *pctx = UnwrapCtx(result);
 
 	CUresult error = cuCtxPopCurrent(&(pctx->m_context));
-	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"),
+			Number::New(args.GetIsolate(), error));
+	args.GetReturnValue().Set(result);
 }
 
 void Ctx::SetCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -151,20 +162,20 @@ void Ctx::GetCurrent(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Handle<Object> result = MakeCtxObject_(args.GetIsolate());
 	Ctx *pctx = UnwrapCtx(result);
 
-	//CUresult error = cuCtxGetCurrent(&(pctx->m_context));
-	//TODO NEED TO DO SOMETHING WITH ERROR
-	cuCtxGetCurrent(&(pctx->m_context));
+	CUresult error = cuCtxGetCurrent(&(pctx->m_context));
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"),
+			Number::New(args.GetIsolate(), error));
 	args.GetReturnValue().Set(result);
 }
 
 //TODO: DON'T NEED THIS
 /*
-struct SynchronizeParams {
-	Ctx *ctx;
-	CUresult error;
-	Persistent<Function> cb;
-};
-*/
+	 struct SynchronizeParams {
+	 Ctx *ctx;
+	 CUresult error;
+	 Persistent<Function> cb;
+	 };
+	 */
 
 //TODO Should not be a property method
 void  Ctx::Synchronize(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -213,40 +224,40 @@ void  Ctx::Synchronize(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 //TODO: DON'T THINK THAT I NEED ANY OF THIS...
 /*
-void Ctx::Process(uv_work_t* work_req) {
-	SynchronizeParams *params = static_cast<SynchronizeParams*>(work_req->data);
+	 void Ctx::Process(uv_work_t* work_req) {
+	 SynchronizeParams *params = static_cast<SynchronizeParams*>(work_req->data);
 
-	params->error = cuCtxPushCurrent(params->ctx->m_context);
-	if (params->error) return;
+	 params->error = cuCtxPushCurrent(params->ctx->m_context);
+	 if (params->error) return;
 
-	params->error = cuCtxSynchronize();
-	if (params->error) return;
+	 params->error = cuCtxSynchronize();
+	 if (params->error) return;
 
-	params->error = cuCtxPopCurrent(NULL);
-}
+	 params->error = cuCtxPopCurrent(NULL);
+	 }
 
-void Ctx::After(uv_work_t* work_req, int status) {
-	assert(status == 0);
-	HandleScope scope;
-	SynchronizeParams *params = static_cast<SynchronizeParams*>(work_req->data);
+	 void Ctx::After(uv_work_t* work_req, int status) {
+	 assert(status == 0);
+	 HandleScope scope;
+	 SynchronizeParams *params = static_cast<SynchronizeParams*>(work_req->data);
 
-	params->ctx->Unref();
-	params->ctx->sync_in_progress = false;
+	 params->ctx->Unref();
+	 params->ctx->sync_in_progress = false;
 
-	cuCtxPushCurrent(params->ctx->m_context);
+	 cuCtxPushCurrent(params->ctx->m_context);
 
-	Local<Value> argv[1];
-	argv[0] = Number::New(params->error);
+	 Local<Value> argv[1];
+	 argv[0] = Number::New(params->error);
 
-	TryCatch try_catch;
-	params->cb->Call(Context::GetCurrent()->Global(), 1, argv);
-	if (try_catch.HasCaught()) FatalException(try_catch);
+	 TryCatch try_catch;
+	 params->cb->Call(Context::GetCurrent()->Global(), 1, argv);
+	 if (try_catch.HasCaught()) FatalException(try_catch);
 
-	params->cb.Dispose();
-	uv_unref((uv_handle_t*) work_req);
-	delete params;
-}
-*/
+	 params->cb.Dispose();
+	 uv_unref((uv_handle_t*) work_req);
+	 delete params;
+	 }
+	 */
 
 void Ctx::GetApiVersion(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info) {
 	HandleScope scope(info.GetIsolate());

@@ -1,0 +1,31 @@
+{
+	"tags"      : {
+		"allowUnknownTags" : true
+	},
+	"source": {
+		"include" : [ "webcuda.js", "README.md" ]
+	},
+	"plugins"   : ["plugins/markdown"],
+	"templates" : {
+		"cleverLinks"     : false,
+		"monospaceLinks"  : false,
+		"default"         : {
+			"outputSourceFiles" : false
+		},
+		"systemName"      : "WebCUDA",
+		"footer"          : "",
+		"copyright"       : "University of Illinois in Champaign-Urbana Copyright © 2013-2014",
+		"navType"         : "vertical",
+		"theme"           : "cerulean",
+		"linenums"        : false,
+		"collapseSymbols" : false,
+		"inverseNav"      : true
+	},
+	"opts": {
+		"tutorials" : "tutorials"
+	},
+	"markdown"  : {
+		"parser"   : "gfm",
+		"hardwrap" : true
+	}
+}

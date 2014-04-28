@@ -2,23 +2,28 @@
 #include "function.h"
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <time.h>
 
 using namespace v8;
 using namespace webcuda;
 using std::cout;
 using std::endl;
 using std::string;
+using std::ofstream;
+using std::stringstream;
 
 Persistent<ObjectTemplate> Module::constructor_template;
 
 void Module::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ) {
   HandleScope scope(isolate);
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "Module"),
-			FunctionTemplate::New(isolate, MakeModuleObject));
-
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "moduleLoad"),
 			FunctionTemplate::New(isolate, Load));
+
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "moduleUnload"),
+			FunctionTemplate::New(isolate, Unload));
 
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "getFunction"),
 			FunctionTemplate::New(isolate, GetFunction));
@@ -29,8 +34,15 @@ void Module::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_tem
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "compileFile"),
 			FunctionTemplate::New(isolate, CompileFile));
 
+	webcuda_templ->Set(String::NewFromUtf8(isolate, "compileText"),
+			FunctionTemplate::New(isolate, CompileText));
+
 	Handle<ObjectTemplate> raw_template = MakeModuleTemplate(isolate);
 	constructor_template.Reset(isolate, raw_template);
+
+	//initializing the random number generator
+	//std::srand(std::time(NULL));
+	//ACUTALLY LIKE THE DETERMINSTIC ASPECT OF IT FOR THE TIME BEING
 
   //target->Set(String::NewSymbol("Module"), constructor_template->GetFunction());
 }
@@ -105,6 +117,45 @@ void Module::Load(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	args.GetReturnValue().Set(result);
 }
 
+/* \param args the name of the kernel function to unload
+ *
+ * uses cuModuleUnload to unload a kernel into a JavaScript object from which
+ * functions can be extracted from. Also frees any temporarily created files used for compilation
+ */
+void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	Handle<Object> module = Handle<Object>::Cast(args[0]);
+	Handle<String> textHandle = String::NewFromUtf8(args.GetIsolate(), "textName");
+	Handle<String> strHandle = String::NewFromUtf8(args.GetIsolate(), "cuString");
+	Handle<String> cuHandle = String::NewFromUtf8(args.GetIsolate(), "cuName");
+	Handle<String> fileHandle = String::NewFromUtf8(args.GetIsolate(), "fname");
+
+	if(module->HasOwnProperty(textHandle) || module->HasOwnProperty(strHandle)){
+		//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+		Handle<Value> temp = module->Get(cuHandle);
+		String::Utf8Value fileValue1(temp);
+		string deleteFile(*fileValue1);
+		deleteFile += ".cu";
+		std::system((std::string("rm ") + deleteFile).c_str());
+
+		temp = module->Get(fileHandle);
+		String::Utf8Value fileValue2(temp);
+		deleteFile = *fileValue2;
+		std::system((std::string("rm ") + deleteFile).c_str());
+	} else if(module->HasOwnProperty(cuHandle)){
+		Handle<Value> temp = module->Get(fileHandle);
+		String::Utf8Value fileValue1(temp);
+		string deleteFile(*fileValue1);
+		std::system((std::string("rm ") + deleteFile).c_str());
+
+	}
+
+	Module *pmodule = UnwrapModule(module);
+	CUresult error = cuModuleUnload((pmodule->m_module));
+
+	args.GetReturnValue().Set(Integer::New(args.GetIsolate(), error));
+
+}
+
 #define NVCC "/Developer/NVIDIA/CUDA-5.5/bin/nvcc"
 #define NVCC_FLAGS ""
 
@@ -113,17 +164,24 @@ void Module::Load(const v8::FunctionCallbackInfo<v8::Value>& args) {
  * Invokes NVCC on a text file by using system calls to compile a .cu file into
  * a .ptx file. Returns the name of the .ptx file created
  */
-std::string Module::InvokeNVCC_(std::string kFile){
-	std::string cuFile = "~/testing/test.ptx";
-	kFile = "~/testing/test.cu";
+Handle<Object>  Module::InvokeNVCC_(Isolate *isolate, Handle<Value> kFileHandle){
+
+	EscapableHandleScope scope(isolate);
+
+	String::Utf8Value kFile(kFileHandle);
+	std::string cuFile(*kFile);
+	cuFile +=	".cu";
+	std::string outFile(*kFile);
+	outFile += ".ptx";
 	cout <<"trying" << endl;
-	int nvcc_exit_status = std::system((std::string(NVCC) + " -ptx " + NVCC_FLAGS + " " + kFile + " -o " + cuFile).c_str());
+	int nvcc_exit_status = std::system((std::string(NVCC) + " -ptx " + NVCC_FLAGS + " " + cuFile + " -o " + outFile).c_str());
 
 	if (nvcc_exit_status != 0){
 		cout << "no go" << endl;
 	}
 
-	return cuFile;
+	Local<Object> returnValue = Local<Object>::Cast(String::NewFromUtf8(isolate, outFile.c_str()));
+	return scope.Escape(returnValue);
 }
 
 /** \param args string containing CUDA code 
@@ -135,14 +193,39 @@ std::string Module::InvokeNVCC_(std::string kFile){
 void Module::Compile(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope scope(args.GetIsolate());
 
+	//creating module
 	Handle<Object> result = MakeModuleObject_(args.GetIsolate());
 	Module *pmodule = UnwrapModule(result);
 
-	String::Utf8Value fname(args[0]);
+	//creating temp file for compilation
+	//random file name
+	int random_val = std::rand() % 10000;
+	stringstream ss;
+	ss << random_val;
+	random_val = std::rand() % 10000;
+	ss << random_val;
+	string cuFileName = ss.str();
+
+	//write CUDA text to random file name
+	//retrieving CUDA string
+	String::Utf8Value cuString(args[0]);
+	ofstream cuFile;
+	cuFile.open((cuFileName + ".cu").c_str());
+	cuFile << *cuString;
+	cuFile.close();
+
+	//compiling
+	Handle<Value> cuNameHandle = Handle<Value>::Cast(String::NewFromUtf8(args.GetIsolate(), cuFileName.c_str()));
+	//creating temp file for compilation and compiling
+	Handle<Object> fnameHandle = InvokeNVCC_(args.GetIsolate(), cuNameHandle);
+	String::Utf8Value fname(fnameHandle);
 	CUresult error = cuModuleLoad(&(pmodule->m_module), *fname);
 
-	result->Set(String::NewFromUtf8(args.GetIsolate(), "fname"), args[0]);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "cudaString"), args[0]);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "cuName"), cuNameHandle);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "fname"), fnameHandle);
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
+
 
 	args.GetReturnValue().Set(result);
 }
@@ -156,9 +239,62 @@ void Module::Compile(const v8::FunctionCallbackInfo<v8::Value>& args) {
 void Module::CompileFile(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope scope(args.GetIsolate());
 
-	InvokeNVCC_("");
+	//creating module
+	Handle<Object> result = MakeModuleObject_(args.GetIsolate());
+	Module *pmodule = UnwrapModule(result);
 
-	//args.GetReturnValue().Set(result);
+	//creating temp file for compilation and compiling
+	Handle<Object> fnameHandle = InvokeNVCC_(args.GetIsolate(), args[0]);
+	String::Utf8Value fname(fnameHandle);
+	CUresult error = cuModuleLoad(&(pmodule->m_module), *fname);
+
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "cuName"), args[0]);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "fname"), fnameHandle);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
+
+	args.GetReturnValue().Set(result);
+}
+
+/** \param args name of the filename containing the CUDA code
+ * 
+ * WebCUDA Wrapper (webcuda.compile) to Compile file and return a WebCUDA Module
+ * object. Uses InvokeNVCC_ to call nvcc and creates a cubin from which
+ * cuModuleLoad can be used to extract the module.
+ */
+void Module::CompileText(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	HandleScope scope(args.GetIsolate());
+
+	//creating module
+	Handle<Object> result = MakeModuleObject_(args.GetIsolate());
+	Module *pmodule = UnwrapModule(result);
+
+	//creating .cu file
+	String::Utf8Value kFile(args[0]);
+	string txtFile(*kFile);
+	txtFile += ".txt";
+	//creating cu file name
+	int random_val = std::rand() % 10000;
+	stringstream ss;
+	ss << random_val;
+	random_val = std::rand() % 10000;
+	ss << random_val;
+	string cuFile = ss.str();
+
+	//copying text to cu file
+	std::system((std::string("cp ") + txtFile + " " + cuFile + ".cu").c_str());
+	Handle<Value> cuNameHandle = Handle<Value>::Cast(String::NewFromUtf8(args.GetIsolate(), cuFile.c_str()));
+	//creating temp file for compilation and compiling
+	Handle<Object> fnameHandle = InvokeNVCC_(args.GetIsolate(), cuNameHandle);
+	String::Utf8Value fname(fnameHandle);
+	CUresult error = cuModuleLoad(&(pmodule->m_module), *fname);
+
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "textName"), args[0]);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "cuName"), cuNameHandle);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "fname"), fnameHandle);
+	result->Set(String::NewFromUtf8(args.GetIsolate(), "error"), Integer::New(args.GetIsolate(), error));
+
+
+	args.GetReturnValue().Set(result);
 }
 
 /** \param args name of the kernel function to extract from module

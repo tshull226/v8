@@ -16,28 +16,25 @@ using std::endl;
 Persistent<ObjectTemplate> webcuda::Function::constructor_template;
 
 void webcuda::Function::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_templ) {
-  HandleScope scope(isolate);
+	HandleScope scope(isolate);
 
 	webcuda_templ->Set(String::NewFromUtf8(isolate, "launchKernel"),
 			FunctionTemplate::New(isolate, LaunchKernel));
 
-	webcuda_templ->Set(String::NewFromUtf8(isolate, "Function"),
-			FunctionTemplate::New(isolate, MakeFunctionObject));
-
 	Handle<ObjectTemplate> raw_template = MakeFunctionTemplate(isolate);
 	constructor_template.Reset(isolate, raw_template);
 
-  //target->Set(String::NewSymbol("Device"), constructor_template->GetFunction());
+	//target->Set(String::NewSymbol("Device"), constructor_template->GetFunction());
 }
 
 Handle<ObjectTemplate> webcuda::Function::MakeFunctionTemplate(Isolate* isolate) {
-  EscapableHandleScope handle_scope(isolate);
+	EscapableHandleScope handle_scope(isolate);
 
-  Local<ObjectTemplate> result = ObjectTemplate::New(isolate);
-  result->SetInternalFieldCount(1);
+	Local<ObjectTemplate> result = ObjectTemplate::New(isolate);
+	result->SetInternalFieldCount(1);
 
-  // Again, return the result through the current handle scope.
-  return handle_scope.Escape(result);
+	// Again, return the result through the current handle scope.
+	return handle_scope.Escape(result);
 }
 
 //void MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Value>& args) {
@@ -103,66 +100,98 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	unsigned int blockDimZ = blockDim->Get(2)->Uint32Value();
 
 	/*
-	Local<Object> buf = args[3]->ToObject();
+		 Local<Object> buf = args[3]->ToObject();
 	//char *pbuffer = Buffer::Data(buf);
-  char *pbuffer = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
+	char *pbuffer = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
 	//size_t bufferSize = Buffer::Length(buf);
-  size_t bufferSize =  buf->GetIndexedPropertiesExternalArrayDataLength();
+	size_t bufferSize =  buf->GetIndexedPropertiesExternalArrayDataLength();
 	*/
 
-	
-	Handle<Object> mem = Handle<Object>::Cast(args[3]);
-	size_t bufferSize;
-	void *bufferLoc = Mem::GetDevicePtr(mem, &bufferSize);
-	void *pbuffer = malloc(bufferSize);
-	cout << bufferSize << endl;
-	memcpy(pbuffer,bufferLoc,bufferSize);
-	cout <<bufferLoc << ", " <<  pbuffer << ", " << endl;
-	
-	/*
-	Handle<ArrayBuffer> buf = Handle<ArrayBuffer>::Cast(args[3]);
-	if(buf->IsExternal()){
-		cout << "yep, is external" << endl;
-	}
-	v8::ArrayBuffer::Contents ctx = buf->Externalize();
-  //char *phost = static_cast<char*>(ctx.Data());
-  void *pbuffer = ctx.Data();
-	size_t bufferSize = ctx.ByteLength();
-	*/
 
-	/*
-	void *kernelParams[] = {pbuffer};
-	
+	void **kernelParams = NULL;
+	void **pointerVals = NULL;
+	size_t ptrValLen = 0;
+
+	Local<Array> argArray = Local<Array>::Cast(args[3]);
+	size_t len = argArray->Length();
+	if(len > 0){
+		kernelParams = (void **) malloc(sizeof(void *)*len);
+		pointerVals = (void **) malloc(sizeof(void *)*len);
+		Handle<String> strHandle = String::NewFromUtf8(args.GetIsolate(), "memParam");
+		Handle<String> intHandle = String::NewFromUtf8(args.GetIsolate(), "intParam");
+		Handle<String> floatHandle = String::NewFromUtf8(args.GetIsolate(), "floatParam");
+		Handle<String> doubleHandle = String::NewFromUtf8(args.GetIsolate(), "doubleParam");
+		for(size_t i = 0; i < len; i++){
+			Handle<Object> obj = Handle<Object>::Cast(argArray->Get(i));
+			if(obj->HasOwnProperty(strHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(strHandle);
+				Handle<Object> mem = Handle<Object>::Cast(temp);
+				size_t bufferSize;
+				void *bufferLoc = Mem::GetDevicePtr(mem, &bufferSize);
+				kernelParams[i] = bufferLoc;
+			} else if(obj->HasOwnProperty(intHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(intHandle);
+				Handle<Integer> val = Handle<Integer>::Cast(temp);
+				int *intVal = (int *)malloc(sizeof(int));
+				*intVal = val->Value();
+				kernelParams[i] = intVal;
+				pointerVals[ptrValLen] = intVal;
+				ptrValLen++;
+			} else if(obj->HasOwnProperty(floatHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(floatHandle);
+				float *floatVal = (float *)malloc(sizeof(float));
+				*floatVal = temp->NumberValue();
+				kernelParams[i] = floatVal;
+				pointerVals[ptrValLen] = floatVal;
+				ptrValLen++;
+			} else if(obj->HasOwnProperty(doubleHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(doubleHandle);
+				double *doubleVal = (double *)malloc(sizeof(double));
+				*doubleVal = temp->NumberValue();
+				kernelParams[i] = doubleVal;
+				pointerVals[ptrValLen] = doubleVal;
+				ptrValLen++;
+			} else {
+				//currenty cannot handle the parameters given
+
+				//need to free any memory allocated
+				for(size_t i = 0; i < ptrValLen; i++){
+					free(pointerVals[i]);
+				}
+				free(pointerVals);
+				free(kernelParams);
+
+				args.GetReturnValue().Set(Number::New(args.GetIsolate(), -1));
+			}
+		}
+	} 
+
 	CUresult error = cuLaunchKernel(pfunction->m_function,
 			gridDimX, gridDimY, gridDimZ,
 			blockDimX, blockDimY, blockDimZ,
 			0, 0, kernelParams, NULL);
-			*/
 
-	
-	void *cuExtra[] = {
-		CU_LAUNCH_PARAM_BUFFER_POINTER, pbuffer,
-		CU_LAUNCH_PARAM_BUFFER_SIZE,    &bufferSize,
-		CU_LAUNCH_PARAM_END
-	};
-	
+	//Freeing memory that possibly was created
 
-	CUresult error = cuLaunchKernel(pfunction->m_function,
-			gridDimX, gridDimY, gridDimZ,
-			blockDimX, blockDimY, blockDimZ,
-			0, 0, NULL, cuExtra);
-/*
-	CUresult error = cuLaunchKernel(pfunction->m_function,
-			gridDimX, gridDimY, gridDimZ,
-			blockDimX, blockDimY, blockDimZ,
-			0, 0, NULL, NULL);
-			*/
-
-	if(error == CUDA_ERROR_INVALID_VALUE){
-		cout << "this is the error" << endl;
+	if(len > 0){
+		for(size_t i = 0; i < ptrValLen; i++){
+			free(pointerVals[i]);
+		}
+		free(pointerVals);
+		free(kernelParams);
 	}
 
-	free(pbuffer);
+
+#ifdef V8_WEBCUDA_DEBUG
+	if(error == CUDA_ERROR_INVALID_VALUE){
+		cout << "invalid parameters send to kernel Launch" << endl;
+	}
+#endif
+
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
 

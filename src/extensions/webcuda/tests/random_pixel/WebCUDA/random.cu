@@ -4,11 +4,9 @@
 #include <cuda_runtime.h>
 
 extern "C" {
-//	__global__ void rng(int *I, int seed)
-	__global__ void rng(int *I)
+	__global__ void rng(int *I, int seed)
 	{
 
-		int seed = 1; //TEMP for the time being to make my life easier
 		int tx = threadIdx.x;
 		int ty = threadIdx.y;
 		int bx = blockIdx.x;
@@ -44,11 +42,5 @@ extern "C" {
 		I[i*4+1] = r;
 		I[i*4+2] = r;
 		I[i*4+3] = g;
-		/*
-			 I[i*4  ] = i;
-			 I[i*4+1] = i;
-			 I[i*4+2] = i;
-			 I[i*4+3] = i;
-		 */
 	}
 }

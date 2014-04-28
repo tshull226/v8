@@ -66,3 +66,11 @@ GPATH
 
 *.DS_Store
 /src/extensions/webcuda/DOCS/
+/src/extensions/webcuda/JSDOC/out
+/src/extensions/webcuda/JSDOC/node_modules
+/src/extensions/webcuda/final_paper/*.aux
+/src/extensions/webcuda/final_paper/*.bbl
+/src/extensions/webcuda/final_paper/*.blg
+/src/extensions/webcuda/final_paper/*.log
+/src/extensions/webcuda/final_paper/*.out
+/src/extensions/webcuda/final_paper/*.pdf

@@ -1,52 +1,49 @@
 
 INT_SIZE = 4;
 
-	//setting up pixel dimensions
-	width = 640;
-	height = 480;
-	numElements = height * width;
-	numPixels = 4 * numElements;
+//setting up pixel dimensions
+width = 640;
+height = 480;
+numElements = height * width;
+numPixels = 4 * numElements;
 
 function main(){
 	var seed = 1;
 
 
 	var t_I = runJS(seed);
+	webcuda.startProfiling();
 	var h_I = runCuda(seed);
+	webcuda.stopProfiling();
 
 	//temp check to see if things seem reasonable
 	/*
-	for(i = 0; i < numPixels; i++){
-		print(t_I[i]);
-	}
-	*/
+		 for(i = 0; i < numPixels; i++){
+		 print(t_I[i]);
+		 }
+		 */
 
 	testResult(t_I, h_I);
 }
 
 function runCuda(seed){
-	var blocks, threads;
+	//Retrieving Device
+	print("retrieving Device Info");
+	var dev = webcuda.Device(0);
+
+	//Setting up Context for CUDA Device
+	print("creating Context");
+	var ctx = webcuda.Context(0, dev);
 
 	//Creating host memory for pixel array
 	print("creating host memory");
 	var h_I = new Int32Array(numPixels); 
 
-	//Retrieving Device
-	print("retrieving Device Info");
-	var dev = webcuda.Device(0);
-
-	//Setting up Context for CUDA
-	print("creating Context");
-	var ctx = webcuda.newContext(0, dev);
-
 	//Creating device memory for pixel array
 	print("allocating CUDA memory");
-	//print(h_I.buffer.byteLength);
 	var d_I = webcuda.memAlloc(h_I.buffer.byteLength);
 	print("size: "+d_I.size+" error: "+d_I.error);
 
-
-	
 	//Loading Module
 	print("loading CUDA module");
 	var module = webcuda.moduleLoad("tests/random_pixel/WebCUDA/random.ptx");
@@ -58,39 +55,37 @@ function runCuda(seed){
 	print("name: " + cuFunc.name + " error: " + cuFunc.error);
 
 	//Launching the Kernel
-	
 	print("trying to launch kernel");
-	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], d_I);
-	//var launchResult = webcuda.launchKernel(cuFunc, [1,1,1], [1,1,1], d_I);
+	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], [{"memParam" : d_I}, {"intParam" : 1} ]);
 	print("launch result: " + launchResult);
-	
-	
-	//Retrieving Data from CUDA Device Memory
 
+	//Retrieving Data from CUDA Device Memory
 	print("copying CUDA Mem Result to device");
 	webcuda.copyDtoH(h_I.buffer, d_I);
 
 	/*
 	//temp check to see if things seem reasonable
 	print("checking results");
-	var value = 0;
 	for(i = 0; i < numPixels; i++){
-		//value += h_I[i];
-		print(h_I[i]);
+	print(h_I[i]);
 	}
 	*/
-
-
 
 	//Freeing CUDA Memory
 	print("freeing CUDA memory");
 	var memFree = webcuda.free(d_I);
 	print("free memory result: "+memFree);
 
-	//Freeing CUDA context
-	//NEED TO IMPLEMENT THIS!!!
-	//ctx.destroy();
-	
+	//Freeing CUDA Module
+	print("freeing CUDA module");
+	var moduleFree = webcuda.moduleUnload(module);
+	print("free module result: " + moduleFree);
+
+	//Destroying CUDA context
+	print("destroying CUDA context");
+	var ctxFree = webcuda.destroyCtx(ctx);
+	print("free context result: "+ ctxFree);
+
 	//returning value
 	return h_I;
 
@@ -143,8 +138,10 @@ function testResult(h_I, t_I){
 	{
 		if (Math.abs(t_I[i] - h_I[i]) > 1e-5)
 		{
+			print("FAILED");
 			print("Result verification failed at element " + i);
 			print("Host element value: " + h_I[i] + ", CUDA element value: " + t_I[i]);
+			quit();
 		}
 	}
 	print("Test PASSED\n");
