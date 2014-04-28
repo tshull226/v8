@@ -41,7 +41,7 @@ var webcuda = {
 	 * @param {Module} handle for the module to be unloaded
 	 * @return {int} the error number denoting whether the operation was successful (0) or not (not 0) 
 	 */
-	"moduleUnload" : function(fileName){},
+	"moduleUnload" : function(module){},
 	/**
 	 * Extracts requested kernel from the CUDA module and loads it into a CUDA function handle
 	 * @param {Module} module the CUDA module to load the kernel from
