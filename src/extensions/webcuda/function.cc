@@ -111,6 +111,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	void **kernelParams = NULL;
 	void **pointerVals = NULL;
 	size_t ptrValLen = 0;
+	size_t sharedMemory = 0;
 
 	Local<Array> argArray = Local<Array>::Cast(args[3]);
 	size_t len = argArray->Length();
@@ -121,6 +122,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 		Handle<String> intHandle = String::NewFromUtf8(args.GetIsolate(), "intParam");
 		Handle<String> floatHandle = String::NewFromUtf8(args.GetIsolate(), "floatParam");
 		Handle<String> doubleHandle = String::NewFromUtf8(args.GetIsolate(), "doubleParam");
+		Handle<String> sharedMemHandle = String::NewFromUtf8(args.GetIsolate(), "sharedMemBytes");
 		for(size_t i = 0; i < len; i++){
 			Handle<Object> obj = Handle<Object>::Cast(argArray->Get(i));
 			if(obj->HasOwnProperty(strHandle)){
@@ -149,12 +151,17 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 				ptrValLen++;
 			} else if(obj->HasOwnProperty(doubleHandle)){
 				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
-				Handle<Value> temp = obj->Get(doubleHandle);
-				double *doubleVal = (double *)malloc(sizeof(double));
-				*doubleVal = temp->NumberValue();
-				kernelParams[i] = doubleVal;
-				pointerVals[ptrValLen] = doubleVal;
+				Handle<Value> temp = obj->Get(floatHandle);
+				float *floatVal = (float *)malloc(sizeof(float));
+				*floatVal = temp->NumberValue();
+				kernelParams[i] = floatVal;
+				pointerVals[ptrValLen] = floatVal;
 				ptrValLen++;
+			} else if(obj->HasOwnProperty(sharedMemHandle)){
+				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+				Handle<Value> temp = obj->Get(sharedMemHandle);
+				Handle<Integer> val = Handle<Integer>::Cast(temp);
+				sharedMemory = val->Value();
 			} else {
 				//currenty cannot handle the parameters given
 
@@ -173,7 +180,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	CUresult error = cuLaunchKernel(pfunction->m_function,
 			gridDimX, gridDimY, gridDimZ,
 			blockDimX, blockDimY, blockDimZ,
-			0, 0, kernelParams, NULL);
+			sharedMemory, 0, kernelParams, NULL);
 
 	//Freeing memory that possibly was created
 
