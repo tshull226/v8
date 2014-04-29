@@ -143,7 +143,7 @@ function runCuda(path){
 	print("launched kernel...");
 
 	//Synchronizing for Context to Complete
-	//webcuda.synchronizeCtx();
+	webcuda.synchronizeCtx();
 	
 
 	//Retrieving Data from CUDA Device Memory
