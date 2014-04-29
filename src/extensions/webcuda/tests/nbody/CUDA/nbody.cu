@@ -2,6 +2,12 @@
 
 #include <cuda_runtime.h>
 
+#define NUMBODIES 1024
+#define TIMESTEP 0.01 
+#define NUMITERATIONS 4 
+#define NUMTHREADS 64
+#define NUMBLOCKS 16 
+
 	__device__ float3
 bodyBodyInteraction(float4 bi, float4 bj, float3 ai)
 {
@@ -137,17 +143,12 @@ void write_file(char *pathname, int length, float4 *position, float3 *velocity){
 
 	fclose(fp);
 }
-#define NUMBODIES 128
-#define TIMESTEP 0.01 
-#define NUMITERATIONS 4 
-#define NUMTHREADS 16
-#define NUMBLOCKS 8
 
 int main(void)
 {
 	dim3 blocks, threads;
 
-	char * pathname = "../data/tab128";
+	char * pathname = "../data/tab1024";
 
 	//allocate host memory for position, velocity
 	float4 *h_X = (float4 *) malloc(sizeof(float4) * NUMBODIES);

@@ -1,11 +1,10 @@
 
-INT_SIZE = 4;
-
 var numBodies;
 var timeStep = 0.01;
 var numIterations = 40;
 var threadSize = 16;
 var blockSize = 8;
+var filepath = "tests/nbody/data/tab128";
 
 function loadData(path){
 	var data = read(path);
@@ -14,12 +13,6 @@ function loadData(path){
 	data = temp.split(' ');
 	var length = data.length;
 	var i;
-
-	/*
-		 for(i = 0; i < length; i++){
-		 print(data[i]);
-		 }
-		 */
 
 	var j;
 	numBodies = length/7;
@@ -35,15 +28,8 @@ function loadData(path){
 			velocity[i*3 + j] = parseFloat(data[i*7 + 4 + j]);
 		}
 	}
-	print(position);
-	for(i = 0; i < numBodies; i++){
-		print(position[i*4 + 3]);
-	}
-	print("\n\n\n****separator***\n\n\n");
-	print(velocity);
 
 	return { "X" : position, "V" : velocity};
-
 }
 
 function loadDataJS(path){
@@ -68,26 +54,14 @@ function loadDataJS(path){
 function main(){
 
 
-	var path = "tests/nbody/data/tab128";
-//	loadData(path);
+	//	loadData(path);
 
-	var jsResult = runJS(path);
-	var cudaResult = runCuda(path);
-	/*
-		 var jsResult = runJS();
-		 webcuda.startProfiling();
-		 var cudaResult = runCuda();
-		 webcuda.stopProfiling();
-		 */
+	var jsResult = runJS(filepath);
+	webcuda.startProfiling();
+	var cudaResult = runCuda(filepath);
+	webcuda.stopProfiling();
 
-	//temp check to see if things seem reasonable
-	/*
-		 for(i = 0; i < numPixels; i++){
-		 print(t_I[i]);
-		 }
-		 */
-
-		testResult(jsResult, cudaResult);
+	testResult(jsResult, cudaResult);
 
 }
 
@@ -136,7 +110,7 @@ function runCuda(path){
 	var sharedMem = threadSize*4*4;
 	print("shared memory size: " + sharedMem);
 
-	
+
 	//Launching the Kernel
 	print("trying to launch kernel");
 	var launchResult = webcuda.launchKernel(cuFunc, [blockSize,1,1], [threadSize,1,1], sharedMem, [{"memParam" : d_X}, {"memParam" : d_V},{"intParam" : numBodies} , {"intParam" : numIterations}, {"floatParam" : timeStep}]);
@@ -145,7 +119,7 @@ function runCuda(path){
 
 	//Synchronizing for Context to Complete
 	webcuda.synchronizeCtx();
-	
+
 
 	//Retrieving Data from CUDA Device Memory
 	print("copying CUDA Mem Result to device");
