@@ -158,7 +158,12 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 }
 
+#ifdef __APPLE__
 #define NVCC "/Developer/NVIDIA/CUDA-5.5/bin/nvcc"
+#else
+#define NVCC "/usr/local/cuda-5.5/bin/nvcc"
+#endif
+
 #define NVCC_FLAGS ""
 
 /** \param kFile name of text file containing CUDA kernel
