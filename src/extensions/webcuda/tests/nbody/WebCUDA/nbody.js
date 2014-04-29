@@ -3,7 +3,7 @@ INT_SIZE = 4;
 
 var numBodies;
 var timeStep = 0.01;
-var numIterations = 4;
+var numIterations = 40;
 var threadSize = 16;
 var blockSize = 8;
 
@@ -71,8 +71,8 @@ function main(){
 	var path = "tests/nbody/data/tab128";
 //	loadData(path);
 
-	runJS(path);
-	runCuda(path);
+	var jsResult = runJS(path);
+	var cudaResult = runCuda(path);
 	/*
 		 var jsResult = runJS();
 		 webcuda.startProfiling();
@@ -87,7 +87,7 @@ function main(){
 		 }
 		 */
 
-	//	testResult(jsResult, cudaResult);
+		testResult(jsResult, cudaResult);
 
 }
 
@@ -134,6 +134,7 @@ function runCuda(path){
 
 	//Calculating the number of shared memory bytes needed
 	var sharedMem = threadSize*4*4;
+	print("shared memory size: " + sharedMem);
 
 	
 	//Launching the Kernel
@@ -169,9 +170,9 @@ function runCuda(path){
 	print("d_V free memory result: "+memFree);
 
 	//Freeing CUDA Module
-	//print("freeing CUDA module");
-	//var moduleFree = webcuda.moduleUnload(module);
-	//print("free module result: " + moduleFree);
+	print("freeing CUDA module");
+	var moduleFree = webcuda.moduleUnload(module);
+	print("free module result: " + moduleFree);
 
 	//Destroying CUDA context
 	print("destroying CUDA context");
@@ -244,32 +245,28 @@ function advance(bodies, step){
 
 function testResult(jsResult, cudaResult){
 	var i;
-	var jsPosition = jsResult.positions;
+	var jsPosition = new Array();
 	var cudaPosition = cudaResult.positions;
-	for (i = 0; i < numBodies*3; i++)
+	//making js result correct
+	for(i = 0; i < numBodies; i++){
+		jsPosition[i*4] = jsResult[i].x;
+		jsPosition[i*4+1] = jsResult[i].y;
+		jsPosition[i*4+2] = jsResult[i].z;
+		jsPosition[i*4+3] = jsResult[i].mass;
+	}
+
+	for (i = 0; i < numBodies*4; i++)
 	{
 		if (Math.abs(jsPosition[i] - cudaPosition[i]) > 1e-5)
 		{
 			print("FAILED");
-			print("Result verification failed at position element " + Math.floor(i/3) + " coordinate " + i%3);
+			print("Result verification failed at position element " + Math.floor(i/4) + " coordinate " + i%4);
 			print("CUDA element value: " + cudaPosition[i] + ", JavaScript element value: " + jsPosition[i]);
 			quit();
 		}
 	}
 
-	var jsAcceleration = jsResult.accelerations;
-	var cudaAcceleration = cudaResult.accelerations;
-	for (i = 0; i < numBodies; i++)
-	{
-		if (Math.abs(jsAcceleration[i] - cudaAcceleration[i]) > 1e-5)
-		{
-			print("FAILED");
-			print("Result verification failed at acceleration element " + i);
-			print("CUDA element value: " + cudaAcceleration[i] + ", JavaScript element value: " + jsAcceleration[i]);
-			quit();
-		}
-	}
-	print("Test PASSED\n");
+	print("PASSED");
 }
 
 main();

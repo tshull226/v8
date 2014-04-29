@@ -113,7 +113,7 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	size_t ptrValLen = 0;
 	size_t sharedMemory = 0;
 	//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
-	Handle<Value> temp = args[0];
+	Handle<Value> temp = args[3];
 	Handle<Integer> val = Handle<Integer>::Cast(temp);
 	sharedMemory = val->Value();
 

@@ -14,6 +14,10 @@ bodyBodyInteraction(float4 bi, float4 bj, float3 ai)
 
 	// distSqr = dot(r_ij, r_ij) + EPS^2  [6 FLOPS]
 	float distSqr = r.x * r.x + r.y * r.y + r.z * r.z;
+	//need this for the case of comparing the point to itself
+	if(distSqr == 0){
+		return ai;
+	}
 
 	// invDistCube =1/distSqr^(3/2)  [4 FLOPS (2 mul, 1 sqrt, 1 inv)]
 	float distSixth = distSqr * distSqr * distSqr;
@@ -50,9 +54,11 @@ calculate_forces(void *devX, void *devV, int num_bodies, int num_iterations, flo
 	float4 *globalX = (float4 *)devX;
 	float3 *globalV = (float3 *)devV;
 	float4 myPosition;
+	//overriding for time being
 	int i, j,  tile;
 
 	int gtid = blockIdx.x * blockDim.x + threadIdx.x;
+	
 	for(i = 0; i < num_iterations; i++){
 		//have to reset acceleration before each iteration
 		float3 acc = {0.0f, 0.0f, 0.0f};
@@ -85,6 +91,7 @@ calculate_forces(void *devX, void *devV, int num_bodies, int num_iterations, flo
 		__syncthreads();
 	}
 
+
 }
 
 void check_CUDA_op(cudaError_t error, char * message)
@@ -115,7 +122,20 @@ void read_file(char *pathname, int length, float4 *position, float3 *velocity){
 	printf("number of rows found: %d\n", i);
 
 	fclose(fp);
+}
 
+void write_file(char *pathname, int length, float4 *position, float3 *velocity){
+	FILE *fp;
+	fp = fopen(pathname, "w");
+	for(int i=0; i < length; i++){
+		fprintf(fp, "%f %f %f %f",
+				position[i].w, position[i].x, position[i].y, position[i].z);
+		fprintf(fp, " %f %f %f\n",
+				velocity[i].x, velocity[i].y, velocity[i].z);
+	}
+	printf("done writing file\n");
+
+	fclose(fp);
 }
 #define NUMBODIES 128
 #define TIMESTEP 0.01 
@@ -159,7 +179,9 @@ int main(void)
 	check_CUDA_op(err, "Failed to copy vector data to device");
 
 
-	int shared_mem_size	= sizeof(float4)*NUMBLOCKS;
+	int shared_mem_size	= sizeof(float4)*NUMTHREADS;
+
+	printf("shared mem size %d\n", shared_mem_size);
 	// Launch the Vector Add CUDA Kernel
 	blocks = dim3(NUMBLOCKS);
 	threads = dim3(NUMTHREADS);
@@ -179,6 +201,9 @@ int main(void)
 
 	err = cudaFree(d_V);
 	check_CUDA_op(err, "Failed to free device velocity memory");
+
+	//write results
+	//write_file("temp.txt", NUMBODIES, h_X, h_V);
 
 	// Free host memory
 	free(h_X);

@@ -17,6 +17,9 @@ bodyBodyInteraction(float4 bi, float4 bj, float3 ai)
 
 	// distSqr = dot(r_ij, r_ij) + EPS^2  [6 FLOPS]
 	float distSqr = r.x * r.x + r.y * r.y + r.z * r.z;
+	if(distSqr == 0){
+		return ai;
+	}
 
 	// invDistCube =1/distSqr^(3/2)  [4 FLOPS (2 mul, 1 sqrt, 1 inv)]
 	float distSixth = distSqr * distSqr * distSqr;
@@ -56,6 +59,7 @@ tile_calculation(float4 myPosition, float3 accel)
 			int i, j,  tile;
 
 			int gtid = blockIdx.x * blockDim.x + threadIdx.x;
+			
 			for(i = 0; i < num_iterations; i++){
 				//have to reset acceleration before each iteration
 				float3 acc = {0.0f, 0.0f, 0.0f};
@@ -87,6 +91,7 @@ tile_calculation(float4 myPosition, float3 accel)
 				//need to wait for all thread to calculate new result before continuing
 				__syncthreads();
 			}
+			
 		}
 }
 
