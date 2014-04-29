@@ -317,7 +317,7 @@ void Module::GetFunction(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	CUresult error = cuModuleGetFunction(&(pfunction->m_function), pmodule->m_module, *name);
 
 	if(error == CUDA_ERROR_NOT_FOUND){
-		cout << "could not find function" << endl;
+		cout << "could not find function " << *name << endl;
 	} else if (error == CUDA_SUCCESS){
 		cout << "successful?" << endl;
 	} else{

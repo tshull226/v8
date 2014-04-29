@@ -1,9 +1,11 @@
 
 INT_SIZE = 4;
 
-var numBodies = 3;
-var timeStep = .3;
+var numBodies;
+var timeStep = 0.01;
 var numIterations = 4;
+var threadSize = 16;
+var blockSize = 8;
 
 function loadData(path){
 	var data = read(path);
@@ -12,25 +14,25 @@ function loadData(path){
 	data = temp.split(' ');
 	var length = data.length;
 	var i;
-	
+
 	/*
-	for(i = 0; i < length; i++){
-		print(data[i]);
-	}
-	*/
-	
+		 for(i = 0; i < length; i++){
+		 print(data[i]);
+		 }
+		 */
+
 	var j;
 	numBodies = length/7;
 	print("numbodies " + numBodies);
 
 	var position = new Float32Array(numBodies*4);
-	var acceleration = new Float32Array(numBodies*3); 
+	var velocity = new Float32Array(numBodies*3); 
 
 	for(i = 0; i < numBodies; i++){
 		position[i*4 + 3] = parseFloat(data[i*7]);
 		for(j = 0; j < 3; j++){
 			position[i*4 + j] = parseFloat(data[i*7 + 1 + j]);
-			acceleration[i*3 + j] = parseFloat(data[i*7 + 4 + j]);
+			velocity[i*3 + j] = parseFloat(data[i*7 + 4 + j]);
 		}
 	}
 	print(position);
@@ -38,18 +40,39 @@ function loadData(path){
 		print(position[i*4 + 3]);
 	}
 	print("\n\n\n****separator***\n\n\n");
-	print(acceleration);
+	print(velocity);
 
-	return { "X" : position, "A" : acceleration};
+	return { "X" : position, "V" : velocity};
 
+}
+
+function loadDataJS(path){
+	var data = read(path);
+	var result = data.replace(/\r?\n|\r/g, " ");
+	var temp = result.replace(/\s+/g,' ').trim();
+	data = temp.split(' ');
+	var length = data.length;
+	var i;
+
+	numBodies = length/7;
+
+	result = new Array();
+
+	for(i = 0; i < numBodies; i++ ){
+		result[i] = new Body(data, i*7);
+	}
+
+	return result;
 }
 
 function main(){
 
 
 	var path = "tests/nbody/data/tab128";
-	loadData(path);
+//	loadData(path);
 
+	runJS(path);
+	runCuda(path);
 	/*
 		 var jsResult = runJS();
 		 webcuda.startProfiling();
@@ -68,7 +91,7 @@ function main(){
 
 }
 
-function runCuda(){
+function runCuda(path){
 	//Retrieving Device
 	print("retrieving Device Info");
 	var dev = webcuda.Device(0);
@@ -80,21 +103,28 @@ function runCuda(){
 	//Creating host memory for pixel array
 	print("creating host memory");
 	//
-	var data = loadData();
+	var data = loadData(path);
 	var h_X = data.X;
-	var h_A = data.A;
+	var h_V = data.V;
 
 	//Creating device memory for pixel array
 	print("allocating CUDA memory");
 	var d_X = webcuda.memAlloc(h_X.buffer.byteLength);
-	var d_A = webcuda.memAlloc(h_A.buffer.byteLength);
+	var d_V = webcuda.memAlloc(h_V.buffer.byteLength);
 	print("d_X size: "+d_X.size+" error: "+d_X.error);
-	print("d_A size: "+d_A.size+" error: "+d_A.error);
+	print("d_A size: "+d_V.size+" error: "+d_V.error);
+
+	//copying data to device
+	print("copying CUDA initial parameters to device");
+	//TODO should allow them to be asynchronous
+	webcuda.copyHtoD(d_X, h_X.buffer);
+	webcuda.copyHtoD(d_V, h_V.buffer);
 
 	//Loading Module
-	print("loading CUDA module");
-	var module = webcuda.moduleLoad("tests/nbody/WebCUDA/nbody.ptx");
-	print("fname: " + module.fname + " error: " + module.error);
+	print("compiling CUDA module");
+	var module = webcuda.compileFile("tests/nbody/WebCUDA/nbody");
+	//TODO fix this
+	print("cuName: " + module.cuName + " fname: " + module.fname + " error: " + module.error);
 
 	//Retrieving Function from Module
 	print("retrieving function from module");
@@ -102,26 +132,26 @@ function runCuda(){
 	print("name: " + cuFunc.name + " error: " + cuFunc.error);
 
 
-	//Calculating Grid and Block Sizes
-	var blockSize = 5;
-	var gridSize = numBodies/blockSize;
 	//Calculating the number of shared memory bytes needed
-	var sharedMem = 44;
+	var sharedMem = threadSize*4*4;
+
+	
 	//Launching the Kernel
 	print("trying to launch kernel");
-	var launchResult = webcuda.launchKernel(cuFunc, [blockSize,1,1], [gridSize,1,1], [{"sharedMemBytes" : sharedMem}, {"memParam" : d_X}, {"memParam" : d_A}, {"floatParam" : timeStep}, {"intParam" : numIterations}]);
+	var launchResult = webcuda.launchKernel(cuFunc, [blockSize,1,1], [threadSize,1,1], sharedMem, [{"memParam" : d_X}, {"memParam" : d_V},{"intParam" : numBodies} , {"intParam" : numIterations}, {"floatParam" : timeStep}]);
 	print("launch result: " + launchResult);
+	print("launched kernel...");
 
 	//Synchronizing for Context to Complete
-	webcuda.synchronizeCtx();
+	//webcuda.synchronizeCtx();
+	
 
 	//Retrieving Data from CUDA Device Memory
 	print("copying CUDA Mem Result to device");
 	//TODO should allow them to be asynchronous
 	h_X = new Float32Array(numBodies); 
-	h_A = new Float32Array(numBodies); 
-	webcuda.copyDtoH(h_X.buffer, d_X);
-	webcuda.copyDtoH(h_A.buffer, d_A);
+	var copyDtoH = webcuda.copyDtoH(h_X.buffer, d_X);
+	print("copying result: " + copyDtoH);
 
 	/*
 	//temp check to see if things seem reasonable
@@ -135,13 +165,13 @@ function runCuda(){
 	print("freeing CUDA memory");
 	var memFree = webcuda.free(d_X);
 	print("d_X free memory result: "+memFree);
-	var memFree = webcuda.free(d_A);
-	print("d_A free memory result: "+memFree);
+	var memFree = webcuda.free(d_V);
+	print("d_V free memory result: "+memFree);
 
 	//Freeing CUDA Module
-	print("freeing CUDA module");
-	var moduleFree = webcuda.moduleUnload(module);
-	print("free module result: " + moduleFree);
+	//print("freeing CUDA module");
+	//var moduleFree = webcuda.moduleUnload(module);
+	//print("free module result: " + moduleFree);
 
 	//Destroying CUDA context
 	print("destroying CUDA context");
@@ -149,13 +179,68 @@ function runCuda(){
 	print("free context result: "+ ctxFree);
 
 	//returning value
-	return {"positions" : d_X, "accelerations" : d_A};
+	return {"positions" : h_X};
 
 }
 
-function runJS(){
+function runJS(path){
 	//TODO
+	var bodies = loadDataJS(path);
+
+	for(var i = 0; i < numIterations; i++){
+		advance(bodies, timeStep);
+	}
+
+	return bodies;
 }
+
+function Body(data, index){
+	this.mass = data[index];
+	this.x = data[index + 1];
+	this.y = data[index + 2];
+	this.z = data[index + 3];
+
+	this.vx = data[index + 4];
+	this.vy = data[index + 5];
+	this.vz = data[index + 6];
+}
+
+function advance(bodies, step){
+	var dx, dy, dz, distance, mag, dt;
+	var i,j;
+	var bodyi, bodyj, body;
+
+	dt = step;
+	for(i = 0; i < numBodies; i++){
+
+		bodyi = bodies[i];
+		for (j=i+1; j<numBodies; j++) {
+			bodyj = bodies[j];
+			dx = bodyi.x - bodyj.x;
+			dy = bodyi.y - bodyj.y;
+			dz = bodyi.z - bodyj.z;
+
+			distance = Math.sqrt(dx*dx + dy*dy + dz*dz);
+			mag = dt / (distance * distance * distance);
+
+			bodyi.vx -= dx * bodyj.mass * mag;
+			bodyi.vy -= dy * bodyj.mass * mag;
+			bodyi.vz -= dz * bodyj.mass * mag;
+
+			bodyj.vx += dx * bodyi.mass * mag;
+			bodyj.vy += dy * bodyi.mass * mag;
+			bodyj.vz += dz * bodyi.mass * mag;
+		}
+	}
+
+	for (i=0; i<numBodies; i++) {
+		body = bodies[i];
+		body.x += dt * body.vx;
+		body.y += dt * body.vy;
+		body.z += dt * body.vz;
+	}
+}
+
 
 function testResult(jsResult, cudaResult){
 	var i;
