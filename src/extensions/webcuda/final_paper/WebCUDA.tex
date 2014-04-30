@@ -20,7 +20,8 @@
 %-----------------------------------------------------------------------------
 
 
-\documentclass[10pt]{sigplanconf}
+%\documentclass[10pt,preprint,reprint]{sigplanconf}
+\documentclass[10pt,reprint]{sigplanconf}
 
 % The following \documentclass options may be useful:
 
@@ -61,10 +62,10 @@
 
 \authorinfo{Jiho Choi}
            {University of Illinois in Urbana-Champaign}
-           {choi42@illinois.edu}
+           {jchoi42@illinois.edu}
 \authorinfo{Kurt Fellows}
            {University of Illinois in Urbana-Champaign}
-           {fellow2@illinois.edu}
+           {fellows2@illinois.edu}
 \authorinfo{Tom Shull}
            {University of Illinois in Urbana-Champaign}
            {shull1@illinois.edu}
@@ -93,11 +94,26 @@ keyword1, keyword2
 \label{background}
 \input{background.tex}
 
-\section{Proposal}
+\section{System Overview}
+\label{overview}
+\input{overview.tex}
+
 \section{Implementation}
+\label{imp}
+\input{imp.tex}
+
+\section{Experiments and Evaluation}
+\label{eval}
+\input{eval.tex}
+
 \section{Discussion}
-\section{Evaluation}
+\label{disc}
+\input{disc.tex}
+
 \section{Related Work}
+\label{related}
+\input{related.tex}
+
 \section{Conclusions}
 
 
@@ -116,11 +132,10 @@ Acknowledgments, if needed.
 
 % The bibliography should be embedded for final submission.
 
-\begin{thebibliography}{1}
+\begin{thebibliography}{}
 \softraggedright
 
-\bibitem[Smith et~al.(2009)Smith, Jones]{smith02}
-P. Q. Smith, and X. Y. Jones. ...reference text...
+\input{bib.tex}
 
 \end{thebibliography}
 

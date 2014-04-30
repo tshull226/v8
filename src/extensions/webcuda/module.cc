@@ -129,7 +129,6 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Handle<String> cuHandle = String::NewFromUtf8(args.GetIsolate(), "cuName");
 	Handle<String> fileHandle = String::NewFromUtf8(args.GetIsolate(), "fname");
 
-	int syserror;
 
 	if(module->HasOwnProperty(textHandle) || module->HasOwnProperty(strHandle)){
 		//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
@@ -137,17 +136,17 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 		String::Utf8Value fileValue1(temp);
 		string deleteFile(*fileValue1);
 		deleteFile += ".cu";
-		syserror = std::system((std::string("rm ") + deleteFile).c_str());
+		std::system((std::string("rm ") + deleteFile).c_str());
 
 		temp = module->Get(fileHandle);
 		String::Utf8Value fileValue2(temp);
 		deleteFile = *fileValue2;
-		syserror = std::system((std::string("rm ") + deleteFile).c_str());
+		std::system((std::string("rm ") + deleteFile).c_str());
 	} else if(module->HasOwnProperty(cuHandle)){
 		Handle<Value> temp = module->Get(fileHandle);
 		String::Utf8Value fileValue1(temp);
 		string deleteFile(*fileValue1);
-		syserror = std::system((std::string("rm ") + deleteFile).c_str());
+		std::system((std::string("rm ") + deleteFile).c_str());
 
 	}
 
@@ -283,7 +282,7 @@ void Module::CompileText(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	string cuFile = ss.str();
 
 	//copying text to cu file
-	int syserror = std::system((std::string("cp ") + txtFile + " " + cuFile + ".cu").c_str());
+	std::system((std::string("cp ") + txtFile + " " + cuFile + ".cu").c_str());
 	Handle<Value> cuNameHandle = Handle<Value>::Cast(String::NewFromUtf8(args.GetIsolate(), cuFile.c_str()));
 	//creating temp file for compilation and compiling
 	Handle<Object> fnameHandle = InvokeNVCC_(args.GetIsolate(), cuNameHandle);

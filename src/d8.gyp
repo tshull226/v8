@@ -75,6 +75,9 @@
 								'libraries': [
 									'$(SDKROOT)/System/Library/Frameworks/CUDA.framework',
 								],
+								'cflags!' : [
+									'-Werror',
+								],
 							}
             }],
             [ 'OS=="linux"', {
