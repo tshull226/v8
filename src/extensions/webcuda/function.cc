@@ -111,8 +111,14 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	void **kernelParams = NULL;
 	void **pointerVals = NULL;
 	size_t ptrValLen = 0;
+	size_t sharedMemory = 0;
+	//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
+	Handle<Value> temp = args[3];
+	Handle<Integer> val = Handle<Integer>::Cast(temp);
+	sharedMemory = val->Value();
 
-	Local<Array> argArray = Local<Array>::Cast(args[3]);
+
+	Local<Array> argArray = Local<Array>::Cast(args[4]);
 	size_t len = argArray->Length();
 	if(len > 0){
 		kernelParams = (void **) malloc(sizeof(void *)*len);
@@ -149,11 +155,11 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 				ptrValLen++;
 			} else if(obj->HasOwnProperty(doubleHandle)){
 				//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
-				Handle<Value> temp = obj->Get(doubleHandle);
-				double *doubleVal = (double *)malloc(sizeof(double));
-				*doubleVal = temp->NumberValue();
-				kernelParams[i] = doubleVal;
-				pointerVals[ptrValLen] = doubleVal;
+				Handle<Value> temp = obj->Get(floatHandle);
+				float *floatVal = (float *)malloc(sizeof(float));
+				*floatVal = temp->NumberValue();
+				kernelParams[i] = floatVal;
+				pointerVals[ptrValLen] = floatVal;
 				ptrValLen++;
 			} else {
 				//currenty cannot handle the parameters given
@@ -170,10 +176,15 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 		}
 	} 
 
+#ifdef V8_WEBCUDA_DEBUG
+	cout << "sharedMemory: " << sharedMemory << endl;
+	cout << "num ptrs " << ptrValLen << endl;
+#endif
+
 	CUresult error = cuLaunchKernel(pfunction->m_function,
 			gridDimX, gridDimY, gridDimZ,
 			blockDimX, blockDimY, blockDimZ,
-			0, 0, kernelParams, NULL);
+			sharedMemory, 0, kernelParams, NULL);
 
 	//Freeing memory that possibly was created
 

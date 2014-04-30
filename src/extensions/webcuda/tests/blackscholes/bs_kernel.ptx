@@ -1,0 +1,193 @@
+	.version 1.4
+	.target sm_10, map_f64_to_f32
+	// compiled with /usr/local/cuda-5.5/open64/lib//be
+	// nvopencc 4.1 built on 2013-07-17
+
+	//-----------------------------------------------------------
+	// Compiling /tmp/tmpxft_00002222_00000000-9_bs_kernel.cpp3.i (/tmp/ccBI#.ZfxXMc)
+	//-----------------------------------------------------------
+
+	//-----------------------------------------------------------
+	// Options:
+	//-----------------------------------------------------------
+	//  Target:ptx, ISA:sm_10, Endian:little, Pointer Size:64
+	//  -O3	(Optimization level)
+	//  -g0	(Debug level)
+	//  -m2	(Report advisories)
+	//-----------------------------------------------------------
+
+	.file	1	"<command-line>"
+	.file	2	"/tmp/tmpxft_00002222_00000000-8_bs_kernel.cudafe2.gpu"
+	.file	3	"/usr/lib/gcc/x86_64-linux-gnu/4.6/include/stddef.h"
+	.file	4	"/usr/local/cuda-5.5/bin/..//include/crt/device_runtime.h"
+	.file	5	"/usr/local/cuda-5.5/bin/..//include/host_defines.h"
+	.file	6	"/usr/local/cuda-5.5/bin/..//include/builtin_types.h"
+	.file	7	"/usr/local/cuda-5.5/bin/..//include/device_types.h"
+	.file	8	"/usr/local/cuda-5.5/bin/..//include/driver_types.h"
+	.file	9	"/usr/local/cuda-5.5/bin/..//include/surface_types.h"
+	.file	10	"/usr/local/cuda-5.5/bin/..//include/texture_types.h"
+	.file	11	"/usr/local/cuda-5.5/bin/..//include/vector_types.h"
+	.file	12	"/usr/local/cuda-5.5/bin/..//include/device_launch_parameters.h"
+	.file	13	"/usr/local/cuda-5.5/bin/..//include/crt/storage_class.h"
+	.file	14	"bs_kernel.cu"
+	.file	15	"/usr/local/cuda-5.5/bin/..//include/common_functions.h"
+	.file	16	"/usr/local/cuda-5.5/bin/..//include/math_functions.h"
+	.file	17	"/usr/local/cuda-5.5/bin/..//include/math_constants.h"
+	.file	18	"/usr/local/cuda-5.5/bin/..//include/device_functions.h"
+	.file	19	"/usr/local/cuda-5.5/bin/..//include/sm_11_atomic_functions.h"
+	.file	20	"/usr/local/cuda-5.5/bin/..//include/sm_12_atomic_functions.h"
+	.file	21	"/usr/local/cuda-5.5/bin/..//include/sm_13_double_functions.h"
+	.file	22	"/usr/local/cuda-5.5/bin/..//include/sm_20_atomic_functions.h"
+	.file	23	"/usr/local/cuda-5.5/bin/..//include/sm_32_atomic_functions.h"
+	.file	24	"/usr/local/cuda-5.5/bin/..//include/sm_35_atomic_functions.h"
+	.file	25	"/usr/local/cuda-5.5/bin/..//include/sm_20_intrinsics.h"
+	.file	26	"/usr/local/cuda-5.5/bin/..//include/sm_30_intrinsics.h"
+	.file	27	"/usr/local/cuda-5.5/bin/..//include/sm_32_intrinsics.h"
+	.file	28	"/usr/local/cuda-5.5/bin/..//include/sm_35_intrinsics.h"
+	.file	29	"/usr/local/cuda-5.5/bin/..//include/surface_functions.h"
+	.file	30	"/usr/local/cuda-5.5/bin/..//include/texture_fetch_functions.h"
+	.file	31	"/usr/local/cuda-5.5/bin/..//include/texture_indirect_functions.h"
+	.file	32	"/usr/local/cuda-5.5/bin/..//include/surface_indirect_functions.h"
+	.file	33	"/usr/local/cuda-5.5/bin/..//include/math_functions_dbl_ptx1.h"
+
+
+	.entry BlackScholesGPU (
+		.param .u64 __cudaparm_BlackScholesGPU_d_CallResult,
+		.param .u64 __cudaparm_BlackScholesGPU_d_PutResult,
+		.param .u64 __cudaparm_BlackScholesGPU_d_StockPrice,
+		.param .u64 __cudaparm_BlackScholesGPU_d_OptionStrike,
+		.param .u64 __cudaparm_BlackScholesGPU_d_OptionYears,
+		.param .f32 __cudaparm_BlackScholesGPU_Riskfree,
+		.param .f32 __cudaparm_BlackScholesGPU_Volatility,
+		.param .s32 __cudaparm_BlackScholesGPU_optN)
+	{
+	.reg .u16 %rh<4>;
+	.reg .u32 %r<6>;
+	.reg .u64 %rd<14>;
+	.reg .f32 %f<92>;
+	.reg .pred %p<5>;
+	.loc	14	81	0
+$LDWbegin_BlackScholesGPU:
+	mov.u16 	%rh1, %ctaid.x;
+	mov.u16 	%rh2, %ntid.x;
+	mul.wide.u16 	%r1, %rh1, %rh2;
+	cvt.u32.u16 	%r2, %tid.x;
+	add.u32 	%r3, %r2, %r1;
+	ld.param.s32 	%r4, [__cudaparm_BlackScholesGPU_optN];
+	setp.le.s32 	%p1, %r4, %r3;
+	@%p1 bra 	$Lt_0_2562;
+	.loc	14	95	0
+	cvt.s64.s32 	%rd1, %r3;
+	mul.wide.s32 	%rd2, %r3, 4;
+	ld.param.u64 	%rd3, [__cudaparm_BlackScholesGPU_d_StockPrice];
+	add.u64 	%rd4, %rd3, %rd2;
+	ld.global.f32 	%f1, [%rd4+0];
+	ld.param.u64 	%rd5, [__cudaparm_BlackScholesGPU_d_OptionStrike];
+	add.u64 	%rd6, %rd5, %rd2;
+	ld.global.f32 	%f2, [%rd6+0];
+	ld.param.u64 	%rd7, [__cudaparm_BlackScholesGPU_d_OptionYears];
+	add.u64 	%rd8, %rd7, %rd2;
+	ld.global.f32 	%f3, [%rd8+0];
+	div.full.f32 	%f4, %f1, %f2;
+	ld.param.f32 	%f5, [__cudaparm_BlackScholesGPU_Volatility];
+	mov.f32 	%f6, 0f3f000000;     	// 0.5
+	mul.f32 	%f7, %f5, %f6;
+	sqrt.approx.f32 	%f8, %f3;
+	lg2.approx.f32 	%f9, %f4;
+	ld.param.f32 	%f10, [__cudaparm_BlackScholesGPU_Riskfree];
+	mad.f32 	%f11, %f5, %f7, %f10;
+	mul.f32 	%f12, %f8, %f5;
+	mov.f32 	%f13, 0f3f317218;    	// 0.693147
+	mul.f32 	%f14, %f9, %f13;
+	mad.f32 	%f15, %f3, %f11, %f14;
+	div.full.f32 	%f16, %f15, %f12;
+	abs.f32 	%f17, %f16;
+	mov.f32 	%f18, 0f3f800000;    	// 1
+	mov.f32 	%f19, 0f3e6d3389;    	// 0.231642
+	mad.f32 	%f20, %f17, %f19, %f18;
+	rcp.approx.f32 	%f21, %f20;
+	mov.f32 	%f22, 0f3ea385fa;    	// 0.319382
+	mov.f32 	%f23, 0fbeb68f87;    	// -0.356564
+	mov.f32 	%f24, 0f3fe40778;    	// 1.78148
+	mov.f32 	%f25, 0fbfe91eea;    	// -1.82126
+	mov.f32 	%f26, 0f3faa466f;    	// 1.33027
+	mad.f32 	%f27, %f26, %f21, %f25;
+	mad.f32 	%f28, %f21, %f27, %f24;
+	mad.f32 	%f29, %f21, %f28, %f23;
+	mad.f32 	%f30, %f21, %f29, %f22;
+	mul.f32 	%f31, %f21, %f30;
+	mov.f32 	%f32, 0fbf000000;    	// -0.5
+	mul.f32 	%f33, %f16, %f32;
+	mul.f32 	%f34, %f16, %f33;
+	mov.f32 	%f35, 0f3fb8aa3b;    	// 1.4427
+	mul.f32 	%f36, %f34, %f35;
+	ex2.approx.f32 	%f37, %f36;
+	mov.f32 	%f38, 0f3ecc422a;    	// 0.398942
+	mul.f32 	%f39, %f37, %f38;
+	mul.f32 	%f40, %f31, %f39;
+	mov.f32 	%f41, 0f3f800000;    	// 1
+	sub.f32 	%f42, %f41, %f40;
+	mov.f32 	%f43, 0f00000000;    	// 0
+	setp.gt.f32 	%p2, %f16, %f43;
+	selp.f32 	%f44, %f42, %f40, %p2;
+	.loc	18	3957	0
+	mul.f32 	%f45, %f5, %f8;
+	sub.f32 	%f46, %f16, %f45;
+	mov.f32 	%f47, 0fbf000000;    	// -0.5
+	mul.f32 	%f48, %f46, %f47;
+	mul.f32 	%f49, %f46, %f48;
+	mov.f32 	%f50, 0f3fb8aa3b;    	// 1.4427
+	mul.f32 	%f51, %f49, %f50;
+	ex2.approx.f32 	%f52, %f51;
+	.loc	14	95	0
+	abs.f32 	%f53, %f46;
+	mov.f32 	%f54, 0f3f800000;    	// 1
+	mov.f32 	%f55, 0f3e6d3389;    	// 0.231642
+	mad.f32 	%f56, %f53, %f55, %f54;
+	rcp.approx.f32 	%f57, %f56;
+	mov.f32 	%f58, 0f3ecc422a;    	// 0.398942
+	mul.f32 	%f59, %f52, %f58;
+	mov.f32 	%f60, 0f3ea385fa;    	// 0.319382
+	mov.f32 	%f61, 0fbeb68f87;    	// -0.356564
+	mov.f32 	%f62, 0f3fe40778;    	// 1.78148
+	mov.f32 	%f63, 0fbfe91eea;    	// -1.82126
+	mov.f32 	%f64, 0f3faa466f;    	// 1.33027
+	mad.f32 	%f65, %f64, %f57, %f63;
+	mad.f32 	%f66, %f57, %f65, %f62;
+	mad.f32 	%f67, %f57, %f66, %f61;
+	mad.f32 	%f68, %f57, %f67, %f60;
+	mul.f32 	%f69, %f57, %f68;
+	mul.f32 	%f70, %f59, %f69;
+	mov.f32 	%f71, 0f3f800000;    	// 1
+	sub.f32 	%f72, %f71, %f70;
+	mov.f32 	%f73, 0f00000000;    	// 0
+	setp.gt.f32 	%p3, %f46, %f73;
+	selp.f32 	%f74, %f72, %f70, %p3;
+	mul.f32 	%f75, %f3, %f10;
+	neg.f32 	%f76, %f75;
+	mov.f32 	%f77, 0f3fb8aa3b;    	// 1.4427
+	mul.f32 	%f78, %f76, %f77;
+	ex2.approx.f32 	%f79, %f78;
+	mul.f32 	%f80, %f79, %f2;
+	mul.f32 	%f81, %f80, %f74;
+	mul.f32 	%f82, %f1, %f44;
+	sub.f32 	%f83, %f82, %f81;
+	ld.param.u64 	%rd9, [__cudaparm_BlackScholesGPU_d_CallResult];
+	add.u64 	%rd10, %rd9, %rd2;
+	st.global.f32 	[%rd10+0], %f83;
+	mov.f32 	%f84, 0f3f800000;    	// 1
+	sub.f32 	%f85, %f84, %f44;
+	mul.f32 	%f86, %f1, %f85;
+	mov.f32 	%f87, 0f3f800000;    	// 1
+	sub.f32 	%f88, %f87, %f74;
+	mul.f32 	%f89, %f80, %f88;
+	sub.f32 	%f90, %f89, %f86;
+	ld.param.u64 	%rd11, [__cudaparm_BlackScholesGPU_d_PutResult];
+	add.u64 	%rd12, %rd11, %rd2;
+	st.global.f32 	[%rd12+0], %f90;
+$Lt_0_2562:
+	.loc	14	104	0
+	exit;
+$LDWend_BlackScholesGPU:
+	} // BlackScholesGPU
+

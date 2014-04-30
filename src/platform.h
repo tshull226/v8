@@ -185,6 +185,15 @@ class OS {
   // 00:00:00 UTC, January 1, 1970.
   static double TimeCurrentMillis();
 
+	// Get tick counter normalized to one tick per microsecond.
+	// Used for calculated time intervals.
+	static int64_t Ticks();
+
+	// Get tick counter normalized to one tick per nanasecond.
+	// Used for calculated time intervals.
+	static int64_t NanoTicks();
+
+
   static TimezoneCache* CreateTimezoneCache();
   static void DisposeTimezoneCache(TimezoneCache* cache);
   static void ClearTimezoneCache(TimezoneCache* cache);

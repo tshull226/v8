@@ -84,7 +84,7 @@
 								],
 								'cflags!' : [
 									'-pedantic',
-					#				'-Werror',
+									'-Werror',
 								],
 							}
             },{}],

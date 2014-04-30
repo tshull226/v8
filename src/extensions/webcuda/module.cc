@@ -129,6 +129,7 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	Handle<String> cuHandle = String::NewFromUtf8(args.GetIsolate(), "cuName");
 	Handle<String> fileHandle = String::NewFromUtf8(args.GetIsolate(), "fname");
 
+
 	if(module->HasOwnProperty(textHandle) || module->HasOwnProperty(strHandle)){
 		//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
 		Handle<Value> temp = module->Get(cuHandle);
@@ -156,7 +157,12 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 }
 
+#ifdef __APPLE__
 #define NVCC "/Developer/NVIDIA/CUDA-5.5/bin/nvcc"
+#else
+#define NVCC "/usr/local/cuda-5.5/bin/nvcc"
+#endif
+
 #define NVCC_FLAGS ""
 
 /** \param kFile name of text file containing CUDA kernel
@@ -317,7 +323,7 @@ void Module::GetFunction(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	CUresult error = cuModuleGetFunction(&(pfunction->m_function), pmodule->m_module, *name);
 
 	if(error == CUDA_ERROR_NOT_FOUND){
-		cout << "could not find function" << endl;
+		cout << "could not find function " << *name << endl;
 	} else if (error == CUDA_SUCCESS){
 		cout << "successful?" << endl;
 	} else{

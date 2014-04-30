@@ -145,11 +145,12 @@ var webcuda = {
 	/**
 	 * asynchronous launches the cuda kernel specified. See <a href="http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/group__CUDA__EXEC_gb8f3dc3031b40da29d5f9a7139e52e15.html#gb8f3dc3031b40da29d5f9a7139e52e15">cuLaunchKernel</a> for more details
 	 * @param {int[]} gridDim the grid dimensions (3D) for launch. NOTE: to work correctly must have an array of length 3
-	 * @param {int[]} blockDim the note dimensions (3D) for launch. NOTE: to work correctly must have an array of length 3
+	 * @param {int[]} blockDim the threadblock dimensions (3D) for launch. NOTE: to work correctly must have an array of length 3
+	 * @param {int} the number of bytes of shared memory per thread block
 	 * @param {Object[]} kernelArgs the arguments for the kernel to be launched. Each element in the array must an object with a the property name of either "memParam", "intParam", "floatParam", or "doubleParam" and have the corresponding value with the description
 	 * @return {Number} the error number denoting whether the operation was successful (error==0) or not (error !=0)
 	 */
-	"launchKernel" : function(){},
+	"launchKernel" : function(gridDim, blockDim, sharedMem, kernelArgs){},
 };
 
 /** @class */
