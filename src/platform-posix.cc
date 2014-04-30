@@ -353,36 +353,57 @@ double OS::TimeCurrentMillis() {
   return Time::Now().ToJsTime();
 }
 
+int64_t OS::Ticks() {
+	// gettimeofday has microsend resolution
+	struct timeval tv;
+	if (gettimeofday(&tv, NULL) < 0){
+		return 0;
+	}
+	return (static_cast<int64_t>(tv.tv_sec) * 1000000) + tv.tv_usec;
+}
+
+int64_t OS::NanoTicks() {
+	//clock_gettime is only in linux
+#if defined(__linux__)
+	// clock_gettime has nanosecond resolution
+	struct timespec tv;
+	clock_gettime(CLOCK_MONOTONIC, &tv);	
+	return (static_cast<int64_t>(tv.tv_sec) * 1000000000) + tv.tv_nsec;
+#else
+	return Ticks()*1000; //have to make it nanoseconds (sort of)
+#endif
+}
+
 
 class TimezoneCache {};
 
 
 TimezoneCache* OS::CreateTimezoneCache() {
-  return NULL;
+	return NULL;
 }
 
 
 void OS::DisposeTimezoneCache(TimezoneCache* cache) {
-  ASSERT(cache == NULL);
+	ASSERT(cache == NULL);
 }
 
 
 void OS::ClearTimezoneCache(TimezoneCache* cache) {
-  ASSERT(cache == NULL);
+	ASSERT(cache == NULL);
 }
 
 
 double OS::DaylightSavingsOffset(double time, TimezoneCache*) {
-  if (std::isnan(time)) return nan_value();
-  time_t tv = static_cast<time_t>(std::floor(time/msPerSecond));
-  struct tm* t = localtime(&tv);
-  if (NULL == t) return nan_value();
-  return t->tm_isdst > 0 ? 3600 * msPerSecond : 0;
+	if (std::isnan(time)) return nan_value();
+	time_t tv = static_cast<time_t>(std::floor(time/msPerSecond));
+	struct tm* t = localtime(&tv);
+	if (NULL == t) return nan_value();
+	return t->tm_isdst > 0 ? 3600 * msPerSecond : 0;
 }
 
 
 int OS::GetLastError() {
-  return errno;
+	return errno;
 }
 
 
@@ -391,24 +412,24 @@ int OS::GetLastError() {
 //
 
 FILE* OS::FOpen(const char* path, const char* mode) {
-  FILE* file = fopen(path, mode);
-  if (file == NULL) return NULL;
-  struct stat file_stat;
-  if (fstat(fileno(file), &file_stat) != 0) return NULL;
-  bool is_regular_file = ((file_stat.st_mode & S_IFREG) != 0);
-  if (is_regular_file) return file;
-  fclose(file);
-  return NULL;
+	FILE* file = fopen(path, mode);
+	if (file == NULL) return NULL;
+	struct stat file_stat;
+	if (fstat(fileno(file), &file_stat) != 0) return NULL;
+	bool is_regular_file = ((file_stat.st_mode & S_IFREG) != 0);
+	if (is_regular_file) return file;
+	fclose(file);
+	return NULL;
 }
 
 
 bool OS::Remove(const char* path) {
-  return (remove(path) == 0);
+	return (remove(path) == 0);
 }
 
 
 FILE* OS::OpenTemporaryFile() {
-  return tmpfile();
+	return tmpfile();
 }
 
 
@@ -416,83 +437,83 @@ const char* const OS::LogFileOpenMode = "w";
 
 
 void OS::Print(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  VPrint(format, args);
-  va_end(args);
+	va_list args;
+	va_start(args, format);
+	VPrint(format, args);
+	va_end(args);
 }
 
 
 void OS::VPrint(const char* format, va_list args) {
 #if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
+	__android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
 #else
-  vprintf(format, args);
+	vprintf(format, args);
 #endif
 }
 
 
 void OS::FPrint(FILE* out, const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  VFPrint(out, format, args);
-  va_end(args);
+	va_list args;
+	va_start(args, format);
+	VFPrint(out, format, args);
+	va_end(args);
 }
 
 
 void OS::VFPrint(FILE* out, const char* format, va_list args) {
 #if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
+	__android_log_vprint(ANDROID_LOG_INFO, LOG_TAG, format, args);
 #else
-  vfprintf(out, format, args);
+	vfprintf(out, format, args);
 #endif
 }
 
 
 void OS::PrintError(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  VPrintError(format, args);
-  va_end(args);
+	va_list args;
+	va_start(args, format);
+	VPrintError(format, args);
+	va_end(args);
 }
 
 
 void OS::VPrintError(const char* format, va_list args) {
 #if defined(ANDROID) && !defined(V8_ANDROID_LOG_STDOUT)
-  __android_log_vprint(ANDROID_LOG_ERROR, LOG_TAG, format, args);
+	__android_log_vprint(ANDROID_LOG_ERROR, LOG_TAG, format, args);
 #else
-  vfprintf(stderr, format, args);
+	vfprintf(stderr, format, args);
 #endif
 }
 
 
 int OS::SNPrintF(Vector<char> str, const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  int result = VSNPrintF(str, format, args);
-  va_end(args);
-  return result;
+	va_list args;
+	va_start(args, format);
+	int result = VSNPrintF(str, format, args);
+	va_end(args);
+	return result;
 }
 
 
 int OS::VSNPrintF(Vector<char> str,
-                  const char* format,
-                  va_list args) {
-  int n = vsnprintf(str.start(), str.length(), format, args);
-  if (n < 0 || n >= str.length()) {
-    // If the length is zero, the assignment fails.
-    if (str.length() > 0)
-      str[str.length() - 1] = '\0';
-    return -1;
-  } else {
-    return n;
-  }
+		const char* format,
+		va_list args) {
+	int n = vsnprintf(str.start(), str.length(), format, args);
+	if (n < 0 || n >= str.length()) {
+		// If the length is zero, the assignment fails.
+		if (str.length() > 0)
+			str[str.length() - 1] = '\0';
+		return -1;
+	} else {
+		return n;
+	}
 }
 
 
 #if V8_TARGET_ARCH_IA32
 static void MemMoveWrapper(void* dest, const void* src, size_t size) {
-  memmove(dest, src, size);
+	memmove(dest, src, size);
 }
 
 
@@ -504,57 +525,57 @@ OS::MemMoveFunction CreateMemMoveFunction();
 
 // Copy memory area. No restrictions.
 void OS::MemMove(void* dest, const void* src, size_t size) {
-  if (size == 0) return;
-  // Note: here we rely on dependent reads being ordered. This is true
-  // on all architectures we currently support.
-  (*memmove_function)(dest, src, size);
+	if (size == 0) return;
+	// Note: here we rely on dependent reads being ordered. This is true
+	// on all architectures we currently support.
+	(*memmove_function)(dest, src, size);
 }
 
 #elif defined(V8_HOST_ARCH_ARM)
 void OS::MemCopyUint16Uint8Wrapper(uint16_t* dest,
-                                   const uint8_t* src,
-                                   size_t chars) {
-  uint16_t *limit = dest + chars;
-  while (dest < limit) {
-    *dest++ = static_cast<uint16_t>(*src++);
-  }
+		const uint8_t* src,
+		size_t chars) {
+	uint16_t *limit = dest + chars;
+	while (dest < limit) {
+		*dest++ = static_cast<uint16_t>(*src++);
+	}
 }
 
 
 OS::MemCopyUint8Function OS::memcopy_uint8_function = &OS::MemCopyUint8Wrapper;
 OS::MemCopyUint16Uint8Function OS::memcopy_uint16_uint8_function =
-    &OS::MemCopyUint16Uint8Wrapper;
+&OS::MemCopyUint16Uint8Wrapper;
 // Defined in codegen-arm.cc.
 OS::MemCopyUint8Function CreateMemCopyUint8Function(
-    OS::MemCopyUint8Function stub);
+		OS::MemCopyUint8Function stub);
 OS::MemCopyUint16Uint8Function CreateMemCopyUint16Uint8Function(
-    OS::MemCopyUint16Uint8Function stub);
+		OS::MemCopyUint16Uint8Function stub);
 
 #elif defined(V8_HOST_ARCH_MIPS)
 OS::MemCopyUint8Function OS::memcopy_uint8_function = &OS::MemCopyUint8Wrapper;
 // Defined in codegen-mips.cc.
 OS::MemCopyUint8Function CreateMemCopyUint8Function(
-    OS::MemCopyUint8Function stub);
+		OS::MemCopyUint8Function stub);
 #endif
 
 
 void OS::PostSetUp() {
 #if V8_TARGET_ARCH_IA32
-  OS::MemMoveFunction generated_memmove = CreateMemMoveFunction();
-  if (generated_memmove != NULL) {
-    memmove_function = generated_memmove;
-  }
+	OS::MemMoveFunction generated_memmove = CreateMemMoveFunction();
+	if (generated_memmove != NULL) {
+		memmove_function = generated_memmove;
+	}
 #elif defined(V8_HOST_ARCH_ARM)
-  OS::memcopy_uint8_function =
-      CreateMemCopyUint8Function(&OS::MemCopyUint8Wrapper);
-  OS::memcopy_uint16_uint8_function =
-      CreateMemCopyUint16Uint8Function(&OS::MemCopyUint16Uint8Wrapper);
+	OS::memcopy_uint8_function =
+		CreateMemCopyUint8Function(&OS::MemCopyUint8Wrapper);
+	OS::memcopy_uint16_uint8_function =
+		CreateMemCopyUint16Uint8Function(&OS::MemCopyUint16Uint8Wrapper);
 #elif defined(V8_HOST_ARCH_MIPS)
-  OS::memcopy_uint8_function =
-      CreateMemCopyUint8Function(&OS::MemCopyUint8Wrapper);
+	OS::memcopy_uint8_function =
+		CreateMemCopyUint8Function(&OS::MemCopyUint8Wrapper);
 #endif
-  // fast_exp is initialized lazily.
-  init_fast_sqrt_function();
+	// fast_exp is initialized lazily.
+	init_fast_sqrt_function();
 }
 
 
@@ -563,12 +584,12 @@ void OS::PostSetUp() {
 //
 
 char* OS::StrChr(char* str, int c) {
-  return strchr(str, c);
+	return strchr(str, c);
 }
 
 
 void OS::StrNCpy(Vector<char> dest, const char* src, size_t n) {
-  strncpy(dest.start(), src, n);
+	strncpy(dest.start(), src, n);
 }
 
 
@@ -577,133 +598,133 @@ void OS::StrNCpy(Vector<char> dest, const char* src, size_t n) {
 //
 
 class Thread::PlatformData : public Malloced {
- public:
-  PlatformData() : thread_(kNoThread) {}
-  pthread_t thread_;  // Thread handle for pthread.
-  // Synchronizes thread creation
-  Mutex thread_creation_mutex_;
+	public:
+		PlatformData() : thread_(kNoThread) {}
+		pthread_t thread_;  // Thread handle for pthread.
+		// Synchronizes thread creation
+		Mutex thread_creation_mutex_;
 };
 
 Thread::Thread(const Options& options)
-    : data_(new PlatformData),
-      stack_size_(options.stack_size()),
-      start_semaphore_(NULL) {
-  if (stack_size_ > 0 && stack_size_ < PTHREAD_STACK_MIN) {
-    stack_size_ = PTHREAD_STACK_MIN;
-  }
-  set_name(options.name());
-}
+	: data_(new PlatformData),
+	stack_size_(options.stack_size()),
+	start_semaphore_(NULL) {
+		if (stack_size_ > 0 && stack_size_ < PTHREAD_STACK_MIN) {
+			stack_size_ = PTHREAD_STACK_MIN;
+		}
+		set_name(options.name());
+	}
 
 
 Thread::~Thread() {
-  delete data_;
+	delete data_;
 }
 
 
 static void SetThreadName(const char* name) {
 #if V8_OS_DRAGONFLYBSD || V8_OS_FREEBSD || V8_OS_OPENBSD
-  pthread_set_name_np(pthread_self(), name);
+	pthread_set_name_np(pthread_self(), name);
 #elif V8_OS_NETBSD
-  STATIC_ASSERT(Thread::kMaxThreadNameLength <= PTHREAD_MAX_NAMELEN_NP);
-  pthread_setname_np(pthread_self(), "%s", name);
+	STATIC_ASSERT(Thread::kMaxThreadNameLength <= PTHREAD_MAX_NAMELEN_NP);
+	pthread_setname_np(pthread_self(), "%s", name);
 #elif V8_OS_MACOSX
-  // pthread_setname_np is only available in 10.6 or later, so test
-  // for it at runtime.
-  int (*dynamic_pthread_setname_np)(const char*);
-  *reinterpret_cast<void**>(&dynamic_pthread_setname_np) =
-    dlsym(RTLD_DEFAULT, "pthread_setname_np");
-  if (dynamic_pthread_setname_np == NULL)
-    return;
+	// pthread_setname_np is only available in 10.6 or later, so test
+	// for it at runtime.
+	int (*dynamic_pthread_setname_np)(const char*);
+	*reinterpret_cast<void**>(&dynamic_pthread_setname_np) =
+		dlsym(RTLD_DEFAULT, "pthread_setname_np");
+	if (dynamic_pthread_setname_np == NULL)
+		return;
 
-  // Mac OS X does not expose the length limit of the name, so hardcode it.
-  static const int kMaxNameLength = 63;
-  STATIC_ASSERT(Thread::kMaxThreadNameLength <= kMaxNameLength);
-  dynamic_pthread_setname_np(name);
+	// Mac OS X does not expose the length limit of the name, so hardcode it.
+	static const int kMaxNameLength = 63;
+	STATIC_ASSERT(Thread::kMaxThreadNameLength <= kMaxNameLength);
+	dynamic_pthread_setname_np(name);
 #elif defined(PR_SET_NAME)
-  prctl(PR_SET_NAME,
-        reinterpret_cast<unsigned long>(name),  // NOLINT
-        0, 0, 0);
+	prctl(PR_SET_NAME,
+			reinterpret_cast<unsigned long>(name),  // NOLINT
+			0, 0, 0);
 #endif
 }
 
 
 static void* ThreadEntry(void* arg) {
-  Thread* thread = reinterpret_cast<Thread*>(arg);
-  // We take the lock here to make sure that pthread_create finished first since
-  // we don't know which thread will run first (the original thread or the new
-  // one).
-  { LockGuard<Mutex> lock_guard(&thread->data()->thread_creation_mutex_); }
-  SetThreadName(thread->name());
-  ASSERT(thread->data()->thread_ != kNoThread);
-  thread->NotifyStartedAndRun();
-  return NULL;
+	Thread* thread = reinterpret_cast<Thread*>(arg);
+	// We take the lock here to make sure that pthread_create finished first since
+	// we don't know which thread will run first (the original thread or the new
+	// one).
+	{ LockGuard<Mutex> lock_guard(&thread->data()->thread_creation_mutex_); }
+	SetThreadName(thread->name());
+	ASSERT(thread->data()->thread_ != kNoThread);
+	thread->NotifyStartedAndRun();
+	return NULL;
 }
 
 
 void Thread::set_name(const char* name) {
-  strncpy(name_, name, sizeof(name_));
-  name_[sizeof(name_) - 1] = '\0';
+	strncpy(name_, name, sizeof(name_));
+	name_[sizeof(name_) - 1] = '\0';
 }
 
 
 void Thread::Start() {
-  int result;
-  pthread_attr_t attr;
-  memset(&attr, 0, sizeof(attr));
-  result = pthread_attr_init(&attr);
-  ASSERT_EQ(0, result);
-  // Native client uses default stack size.
+	int result;
+	pthread_attr_t attr;
+	memset(&attr, 0, sizeof(attr));
+	result = pthread_attr_init(&attr);
+	ASSERT_EQ(0, result);
+	// Native client uses default stack size.
 #if !V8_OS_NACL
-  if (stack_size_ > 0) {
-    result = pthread_attr_setstacksize(&attr, static_cast<size_t>(stack_size_));
-    ASSERT_EQ(0, result);
-  }
+	if (stack_size_ > 0) {
+		result = pthread_attr_setstacksize(&attr, static_cast<size_t>(stack_size_));
+		ASSERT_EQ(0, result);
+	}
 #endif
-  {
-    LockGuard<Mutex> lock_guard(&data_->thread_creation_mutex_);
-    result = pthread_create(&data_->thread_, &attr, ThreadEntry, this);
-  }
-  ASSERT_EQ(0, result);
-  result = pthread_attr_destroy(&attr);
-  ASSERT_EQ(0, result);
-  ASSERT(data_->thread_ != kNoThread);
-  USE(result);
+	{
+		LockGuard<Mutex> lock_guard(&data_->thread_creation_mutex_);
+		result = pthread_create(&data_->thread_, &attr, ThreadEntry, this);
+	}
+	ASSERT_EQ(0, result);
+	result = pthread_attr_destroy(&attr);
+	ASSERT_EQ(0, result);
+	ASSERT(data_->thread_ != kNoThread);
+	USE(result);
 }
 
 
 void Thread::Join() {
-  pthread_join(data_->thread_, NULL);
+	pthread_join(data_->thread_, NULL);
 }
 
 
 void Thread::YieldCPU() {
-  int result = sched_yield();
-  ASSERT_EQ(0, result);
-  USE(result);
+	int result = sched_yield();
+	ASSERT_EQ(0, result);
+	USE(result);
 }
 
 
 static Thread::LocalStorageKey PthreadKeyToLocalKey(pthread_key_t pthread_key) {
 #if V8_OS_CYGWIN
-  // We need to cast pthread_key_t to Thread::LocalStorageKey in two steps
-  // because pthread_key_t is a pointer type on Cygwin. This will probably not
-  // work on 64-bit platforms, but Cygwin doesn't support 64-bit anyway.
-  STATIC_ASSERT(sizeof(Thread::LocalStorageKey) == sizeof(pthread_key_t));
-  intptr_t ptr_key = reinterpret_cast<intptr_t>(pthread_key);
-  return static_cast<Thread::LocalStorageKey>(ptr_key);
+	// We need to cast pthread_key_t to Thread::LocalStorageKey in two steps
+	// because pthread_key_t is a pointer type on Cygwin. This will probably not
+	// work on 64-bit platforms, but Cygwin doesn't support 64-bit anyway.
+	STATIC_ASSERT(sizeof(Thread::LocalStorageKey) == sizeof(pthread_key_t));
+	intptr_t ptr_key = reinterpret_cast<intptr_t>(pthread_key);
+	return static_cast<Thread::LocalStorageKey>(ptr_key);
 #else
-  return static_cast<Thread::LocalStorageKey>(pthread_key);
+	return static_cast<Thread::LocalStorageKey>(pthread_key);
 #endif
 }
 
 
 static pthread_key_t LocalKeyToPthreadKey(Thread::LocalStorageKey local_key) {
 #if V8_OS_CYGWIN
-  STATIC_ASSERT(sizeof(Thread::LocalStorageKey) == sizeof(pthread_key_t));
-  intptr_t ptr_key = static_cast<intptr_t>(local_key);
-  return reinterpret_cast<pthread_key_t>(ptr_key);
+	STATIC_ASSERT(sizeof(Thread::LocalStorageKey) == sizeof(pthread_key_t));
+	intptr_t ptr_key = static_cast<intptr_t>(local_key);
+	return reinterpret_cast<pthread_key_t>(ptr_key);
 #else
-  return static_cast<pthread_key_t>(local_key);
+	return static_cast<pthread_key_t>(local_key);
 #endif
 }
 
@@ -716,49 +737,49 @@ intptr_t kMacTlsBaseOffset = 0;
 // It's safe to do the initialization more that once, but it has to be
 // done at least once.
 static void InitializeTlsBaseOffset() {
-  const size_t kBufferSize = 128;
-  char buffer[kBufferSize];
-  size_t buffer_size = kBufferSize;
-  int ctl_name[] = { CTL_KERN , KERN_OSRELEASE };
-  if (sysctl(ctl_name, 2, buffer, &buffer_size, NULL, 0) != 0) {
-    V8_Fatal(__FILE__, __LINE__, "V8 failed to get kernel version");
-  }
-  // The buffer now contains a string of the form XX.YY.ZZ, where
-  // XX is the major kernel version component.
-  // Make sure the buffer is 0-terminated.
-  buffer[kBufferSize - 1] = '\0';
-  char* period_pos = strchr(buffer, '.');
-  *period_pos = '\0';
-  int kernel_version_major =
-      static_cast<int>(strtol(buffer, NULL, 10));  // NOLINT
-  // The constants below are taken from pthreads.s from the XNU kernel
-  // sources archive at www.opensource.apple.com.
-  if (kernel_version_major < 11) {
-    // 8.x.x (Tiger), 9.x.x (Leopard), 10.x.x (Snow Leopard) have the
-    // same offsets.
+	const size_t kBufferSize = 128;
+	char buffer[kBufferSize];
+	size_t buffer_size = kBufferSize;
+	int ctl_name[] = { CTL_KERN , KERN_OSRELEASE };
+	if (sysctl(ctl_name, 2, buffer, &buffer_size, NULL, 0) != 0) {
+		V8_Fatal(__FILE__, __LINE__, "V8 failed to get kernel version");
+	}
+	// The buffer now contains a string of the form XX.YY.ZZ, where
+	// XX is the major kernel version component.
+	// Make sure the buffer is 0-terminated.
+	buffer[kBufferSize - 1] = '\0';
+	char* period_pos = strchr(buffer, '.');
+	*period_pos = '\0';
+	int kernel_version_major =
+		static_cast<int>(strtol(buffer, NULL, 10));  // NOLINT
+	// The constants below are taken from pthreads.s from the XNU kernel
+	// sources archive at www.opensource.apple.com.
+	if (kernel_version_major < 11) {
+		// 8.x.x (Tiger), 9.x.x (Leopard), 10.x.x (Snow Leopard) have the
+		// same offsets.
 #if V8_HOST_ARCH_IA32
-    kMacTlsBaseOffset = 0x48;
+		kMacTlsBaseOffset = 0x48;
 #else
-    kMacTlsBaseOffset = 0x60;
+		kMacTlsBaseOffset = 0x60;
 #endif
-  } else {
-    // 11.x.x (Lion) changed the offset.
-    kMacTlsBaseOffset = 0;
-  }
+	} else {
+		// 11.x.x (Lion) changed the offset.
+		kMacTlsBaseOffset = 0;
+	}
 
-  Release_Store(&tls_base_offset_initialized, 1);
+	Release_Store(&tls_base_offset_initialized, 1);
 }
 
 
 static void CheckFastTls(Thread::LocalStorageKey key) {
-  void* expected = reinterpret_cast<void*>(0x1234CAFE);
-  Thread::SetThreadLocal(key, expected);
-  void* actual = Thread::GetExistingThreadLocal(key);
-  if (expected != actual) {
-    V8_Fatal(__FILE__, __LINE__,
-             "V8 failed to initialize fast TLS on current kernel");
-  }
-  Thread::SetThreadLocal(key, NULL);
+	void* expected = reinterpret_cast<void*>(0x1234CAFE);
+	Thread::SetThreadLocal(key, expected);
+	void* actual = Thread::GetExistingThreadLocal(key);
+	if (expected != actual) {
+		V8_Fatal(__FILE__, __LINE__,
+				"V8 failed to initialize fast TLS on current kernel");
+	}
+	Thread::SetThreadLocal(key, NULL);
 }
 
 #endif  // V8_FAST_TLS_SUPPORTED
@@ -766,44 +787,44 @@ static void CheckFastTls(Thread::LocalStorageKey key) {
 
 Thread::LocalStorageKey Thread::CreateThreadLocalKey() {
 #ifdef V8_FAST_TLS_SUPPORTED
-  bool check_fast_tls = false;
-  if (tls_base_offset_initialized == 0) {
-    check_fast_tls = true;
-    InitializeTlsBaseOffset();
-  }
+	bool check_fast_tls = false;
+	if (tls_base_offset_initialized == 0) {
+		check_fast_tls = true;
+		InitializeTlsBaseOffset();
+	}
 #endif
-  pthread_key_t key;
-  int result = pthread_key_create(&key, NULL);
-  ASSERT_EQ(0, result);
-  USE(result);
-  LocalStorageKey local_key = PthreadKeyToLocalKey(key);
+	pthread_key_t key;
+	int result = pthread_key_create(&key, NULL);
+	ASSERT_EQ(0, result);
+	USE(result);
+	LocalStorageKey local_key = PthreadKeyToLocalKey(key);
 #ifdef V8_FAST_TLS_SUPPORTED
-  // If we just initialized fast TLS support, make sure it works.
-  if (check_fast_tls) CheckFastTls(local_key);
+	// If we just initialized fast TLS support, make sure it works.
+	if (check_fast_tls) CheckFastTls(local_key);
 #endif
-  return local_key;
+	return local_key;
 }
 
 
 void Thread::DeleteThreadLocalKey(LocalStorageKey key) {
-  pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
-  int result = pthread_key_delete(pthread_key);
-  ASSERT_EQ(0, result);
-  USE(result);
+	pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
+	int result = pthread_key_delete(pthread_key);
+	ASSERT_EQ(0, result);
+	USE(result);
 }
 
 
 void* Thread::GetThreadLocal(LocalStorageKey key) {
-  pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
-  return pthread_getspecific(pthread_key);
+	pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
+	return pthread_getspecific(pthread_key);
 }
 
 
 void Thread::SetThreadLocal(LocalStorageKey key, void* value) {
-  pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
-  int result = pthread_setspecific(pthread_key, value);
-  ASSERT_EQ(0, result);
-  USE(result);
+	pthread_key_t pthread_key = LocalKeyToPthreadKey(key);
+	int result = pthread_setspecific(pthread_key, value);
+	ASSERT_EQ(0, result);
+	USE(result);
 }
 
 

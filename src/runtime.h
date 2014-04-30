@@ -259,6 +259,11 @@ namespace internal {
   F(DateSetValue, 3, 1) \
   F(DateCacheVersion, 0, 1) \
   \
+	/*NanoSecond Profiling */ \
+	F(BeginTiming, 0, 1) \
+	F(GetTiming, 0, 1) \
+	F(PauseTiming, 0, 1) \
+	\
   /* Numbers */ \
   \
   /* Globals */ \
