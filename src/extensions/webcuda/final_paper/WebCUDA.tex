@@ -19,6 +19,7 @@
 %
 %-----------------------------------------------------------------------------
 
+\newcommand{\name}{WebCUDA}
 
 %\documentclass[10pt,preprint,reprint]{sigplanconf}
 \documentclass[10pt,reprint]{sigplanconf}
@@ -31,6 +32,8 @@
 % authoryear    To obtain author/year citation style instead of numeric.
 
 \usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{listings}
 
 
 \begin{document}
@@ -57,7 +60,7 @@
 \titlebanner{banner above paper title}        % These are ignored unless
 \preprintfooter{short description of paper}   % 'preprint' option specified.
 
-\title{WebCUDA: Enabling High Performance Something}
+\title{WebCUDA: Enabling High Performance Heterogeneous JavaScript Programming}
 %\subtitle{Subtitle Text, if any}
 
 \authorinfo{Jiho Choi}
@@ -81,10 +84,10 @@
 % general terms are not compulsory anymore, 
 % you may leave them out
 \terms
-term1, term2
+Languages, Performance, More??
 
 \keywords
-keyword1, keyword2
+JavaScript, Scripting Language, CUDA, GPGPU, More??
 
 \section{Introduction}
 \label{intro}
@@ -94,7 +97,7 @@ keyword1, keyword2
 \label{background}
 \input{background.tex}
 
-\section{System Overview}
+\section{Specification Overview}
 \label{overview}
 \input{overview.tex}
 
@@ -115,6 +118,7 @@ keyword1, keyword2
 \input{related.tex}
 
 \section{Conclusions}
+\label{conc}
 
 
 \appendix
@@ -132,12 +136,13 @@ Acknowledgments, if needed.
 
 % The bibliography should be embedded for final submission.
 
-\begin{thebibliography}{}
-\softraggedright
+%\begin{thebibliography}{}
+%\softraggedright
 
-\input{bib.tex}
+%\input{bib.tex}
+\bibliography{main}
 
-\end{thebibliography}
+%\end{thebibliography}
 
 
 \end{document}
