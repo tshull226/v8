@@ -1,16 +1,75 @@
 
 
+(
 We have implemented our \name standard within google's v8 \cite{v8} compiler. We
-chose to use this compiler for implementation {\bf add stuff here}
-Documentation for the full \name implementation within v8, generated with
-\cite{doxygen}, can be found at 
+have also released our code to the project domain through Github \cite{github}.
+Our repository can be found at
+\url{https://github.com/tshull226/v8/tree/master/src/extensions/webcuda}.  We chose to use
+the google v8  compiler for our implementation due to prior experience with the
+compiler that provided us with a solid understanding on the compiler's
+internals. In addition, v8 is considered a state of the art JavaScript JIT
+compiler and is extremely prevalent due to its inclusion in the Chrome browser
+\cite{chrome} and other projects such as NodeJS \cite{nodeJS} and V8.NET
+\cite{V8.NET}. We have extended V8 through its external API and integrated the
+extension in d8, v8's standalone JavaScript execution engine. 
+
+In total, our implementation is slightly more than 800 LOC, but is very
+self-contained. By using the external V8 API, no modifications (except for
+profiling purposes) had to be made to v8's code base. By not modifying internal
+structures, there is no effect on the performance of JavaScript and native
+JavaScript runs in our implementation without any additional overhead.
+
+Documentation for the full \name implementation within v8,
+generated with Doxygen \cite{doxygen}, can be found at
 \url{http://tshull226.synology.me/CS598SVA/doxygen/index.html}
+
+At a high level, our implementation wraps main CUDA Driver API
+\cite{cudaDriverAPI} calls inside JavaScript wrappers that adhere to the \name
+specification. We had to use the CUDA Driver API, as opposed to the CUDA Runtime
+API \cite{cudaRuntimeAPI}, due to the necessity of compiling our extension along
+with d8 using the gyp \cite{gyp} configuration manager and gcc
+\cite{gcc} instead of using nvcc \cite{nvcc}.
+
+Our implementation is able to store handles to CUDA structs through wrapping them
+within JavaScript objects. JavaScript objects are allowed to have internal
+fields, inaccessible to programmers, that the compiler can use to store various
+information about the object. Therefore, we wrap CUDA structs in a way such that
+based information is available to the user (such as whether the object was
+successfully created) and our extension is able to unwrap the information
+necessary for performing CUDA Driver API calls.
+
+We tried to follow documented programming patterns for embedded application
+developers according to various resources online
+\cite{embeddersGuide, nodeJSDocumentation}. However, due to the rapidly evolving
+nature of the v8 source code, the external API has drastically changed and even
+google's documentation \cite{embeddersGuide} is deprecated. Therefore we found
+the best documentation for using the API to be google code samples provided
+along with v8.
+
+Our implementation class structure closely mirrors the specification, with
+functions broken into respective groups based on their functionality.
+Figure~\ref{v8code}(a) and (b) show real examples of common patterns used
+extensively throughout our code both to wrap CUDA structs and unwrap CUDA
+structs for CUDA Driver API calls.  
+
+Figure~\ref{v8code} (a) shows the code for creating a new connection to a
+CUDA-enabled device. The user provides as input the device number and expects
+the function to return a JavaScript Object Wrapper for a (CUDA object name).
+MORE HERE...
+
+Figure~\ref{v8code} (b) shows the code for freeing device memory.
+
+As can be seen through the code examples above, our implementation is intuitive,
+straightforward, and can be easily extended in the future as more features are
+included within the \name specification.
+
+%this should be in related work
+%Another project we leaned heavily on for our implementation is
+%node-cuda~\cite{nodecuda}. Aptly name, this project goal is to provde
 
 \begin{itemize}
 
-\item general things about the V8 API
-\item general things about the CUDA Driver API
-\item provide specific examples?
+	\item general things about the CUDA Driver API? (maybe need more with this)
 
 \end{itemize}
 
