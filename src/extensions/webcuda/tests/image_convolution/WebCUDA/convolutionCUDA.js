@@ -13,7 +13,7 @@ function convertInput(input){
 	var i;
 	var size = input.length;
 	var output = new Float32Array(size);
-	for(i = 0; i < size, i++){
+	for(i = 0; i < size; i++){
 		output[i] = input[i];
 	}
 	return output;
@@ -48,6 +48,7 @@ function runCUDA(h_K, h_I){
 	var d_Input = webcuda.memAlloc(h_Input.buffer.byteLength);
 	var d_Output = webcuda.memAlloc(h_Output.buffer.byteLength);
 	var d_Buffer = webcuda.memAlloc(h_Buffer.buffer.byteLength);
+	var d_Kernel = webcuda.memAlloc(h_Kernel.buffer.byteLength);
 	print("d_Input size: "+d_Input.size+" error: "+d_Input.error);
 	print("d_A size: "+d_Output.size+" error: "+d_Output.error);
 	print("d_A size: "+d_Buffer.size+" error: "+d_Buffer.error);
@@ -56,7 +57,9 @@ function runCUDA(h_K, h_I){
 	//copying data to device
 	print("copying CUDA initial parameters to device");
 	//TODO should allow them to be asynchronous
-	var memCpy = webcuda.copyHtoD(d_X, h_X.buffer);
+	var memCpy = webcuda.copyHtoD(d_Input, h_Input.buffer);
+	print("memCopy result: " + memCpy);
+	var memCpy = webcuda.copyHtoD(d_Kernel, h_Kernel.buffer);
 	print("memCopy result: " + memCpy);
 
 	//need the convolutionKernel function
@@ -150,6 +153,7 @@ function convolutionRowsGPU(
 }
 
 function convolutionColumnsGPU(
+		func,
 		d_Dst,
 		d_Src,
 		d_Kernel,

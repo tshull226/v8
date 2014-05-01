@@ -12,9 +12,11 @@
 
 
 #include <assert.h>
-#include <helper_cuda.h>
-#include "convolutionSeparable_common.h"
+//#include <helper_cuda.h>
+//#include "convolutionSeparable_common.h"
 
+#define KERNEL_RADIUS 8
+#define KERNEL_LENGTH (2 * KERNEL_RADIUS + 1)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -42,7 +44,7 @@ extern "C" {
 	__global__ void convolutionRowsKernel(
 			float *d_Dst,
 			float *d_Src,
-			float *c_Kernel;
+			float *c_Kernel,
 			int imageW,
 			int imageH,
 			int pitch

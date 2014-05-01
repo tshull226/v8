@@ -18,6 +18,7 @@ function runJS(h_Kernel, h_Input){
 	*/
 
 	print("done");
+	return h_Output;
 }
 
 
