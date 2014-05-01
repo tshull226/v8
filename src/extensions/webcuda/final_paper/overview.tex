@@ -65,10 +65,13 @@ allow for creation of a memory region of an arbitrary byte size. {\bf what about
 alignment issues?}
 
 \paragraph{Data Communication} \name supports two functions,
-\textit{webcuda.CopyDtoH} and \textit{webcuda.CopyHtoD} for transferring of data
-between the host and device.
+\textit{webcuda.CopyDtoH} and \textit{webcuda.CopyHtoD} for the transferring of data
+between the host and device. Our specification requires the JavaScript Object
+to be a Typed Array \cite{typearray}. Typed Arrays are a feature of the new "harmony"
+specification \cite{harmony}. Possible Types include UInt32, Float32, MORE.
 
 \paragraph{Kernel Execution}
+%this has to include function loading, compiling, launching, etc...
 
 \paragraph{Freeing Resources}
 
