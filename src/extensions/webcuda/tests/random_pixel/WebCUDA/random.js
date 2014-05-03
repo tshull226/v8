@@ -1,3 +1,4 @@
+var DEBUG = 1;
 
 INT_SIZE = 4;
 
@@ -10,81 +11,108 @@ numPixels = 4 * numElements;
 function main(){
 	var seed = 1;
 
+	load("tests/Profiler/Profiler.js");
+	var profiler = new Profiler();
 
-	var t_I = runJS(seed);
 	webcuda.startProfiling();
-	var h_I = runCuda(seed);
+	profiler.start("Total");
+	var h_I = runCuda(seed, profiler);
+	profiler.stop("Total");
+	profiler.print();
 	webcuda.stopProfiling();
 
 	//temp check to see if things seem reasonable
 	/*
 		 for(i = 0; i < numPixels; i++){
-		 print(t_I[i]);
+		 if(DEBUG) print(t_I[i]);
 		 }
 		 */
 
+	var t_I = runJS(seed);
 	testResult(t_I, h_I);
 }
 
-function runCuda(seed){
+function runCuda(seed, profiler){
 	//Retrieving Device
-	print("retrieving Device Info");
+	if(DEBUG) print("retrieving Device Info");
+	profiler.start("Retrieving device info");
 	var dev = webcuda.Device(0);
+	profiler.stop("Retrieving device info");
 
 	//Setting up Context for CUDA Device
-	print("creating Context");
+	if(DEBUG) print("creating CUDA context");
+	profiler.start("Creating CUDA context");
 	var ctx = webcuda.Context(0, dev);
+	profiler.stop("Creating CUDA context");
 
 	//Creating host memory for pixel array
-	print("creating host memory");
+	if(DEBUG) print("creating host memory");
+	profiler.start("Allocating host memory");
 	var h_I = new Int32Array(numPixels); 
+	profiler.stop("Allocating host memory");
 
 	//Creating device memory for pixel array
-	print("allocating CUDA memory");
+	if(DEBUG) print("allocating CUDA memory");
+	profiler.start("Allocating CUDA memory");
 	var d_I = webcuda.memAlloc(h_I.buffer.byteLength);
-	print("size: "+d_I.size+" error: "+d_I.error);
+	if(DEBUG) print("size: "+d_I.size+" error: "+d_I.error);
+	profiler.stop("Allocating CUDA memory");
 
 	//Loading Module
-	print("loading CUDA module");
+	if(DEBUG) print("loading CUDA module");
+	profiler.start("Loading CUDA module");
 	var module = webcuda.moduleLoad("tests/random_pixel/WebCUDA/random.ptx");
-	print("fname: " + module.fname + " error: " + module.error);
+	if(DEBUG) print("fname: " + module.fname + " error: " + module.error);
+	profiler.stop("Loading CUDA module");
 
 	//Retrieving Function from Module
-	print("retrieving function from module");
+	if(DEBUG) print("retrieving function from module");
+	profiler.start("Retrieving function from module");
 	var cuFunc = webcuda.getFunction(module, "rng");
-	print("name: " + cuFunc.name + " error: " + cuFunc.error);
+	if(DEBUG) print("name: " + cuFunc.name + " error: " + cuFunc.error);
+	profiler.stop("Retrieving function from module");
 
 	//Launching the Kernel
-	print("trying to launch kernel");
+	if(DEBUG) print("trying to launch kernel");
+	profiler.start("kernel");
 	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], [{"memParam" : d_I}, {"intParam" : 1} ]);
-	print("launch result: " + launchResult);
+	if(DEBUG) print("launch result: " + launchResult);
+	profiler.stop("kernel");
 
 	//Retrieving Data from CUDA Device Memory
-	print("copying CUDA Mem Result to device");
+	if(DEBUG) print("copying CUDA Mem Result to device");
+	profiler.start("copyDtoH");
 	webcuda.copyDtoH(h_I.buffer, d_I);
+	profiler.stop("copyDtoH");
 
 	/*
 	//temp check to see if things seem reasonable
-	print("checking results");
+	if(DEBUG) print("checking results");
 	for(i = 0; i < numPixels; i++){
-	print(h_I[i]);
+	if(DEBUG) print(h_I[i]);
 	}
 	*/
 
 	//Freeing CUDA Memory
-	print("freeing CUDA memory");
+	if(DEBUG) print("freeing CUDA memory");
+	profiler.start("Freeing CUDA memory");
 	var memFree = webcuda.free(d_I);
-	print("free memory result: "+memFree);
+	if(DEBUG) print("free memory result: "+memFree);
+	profiler.stop("Freeing CUDA memory");
 
 	//Freeing CUDA Module
-	print("freeing CUDA module");
+	if(DEBUG) print("freeing CUDA module");
+	profiler.start("Freeing CUDA module");
 	var moduleFree = webcuda.moduleUnload(module);
-	print("free module result: " + moduleFree);
+	if(DEBUG) print("free module result: " + moduleFree);
+	profiler.stop("Freeing CUDA module");
 
 	//Destroying CUDA context
-	print("destroying CUDA context");
+	if(DEBUG) print("destroying CUDA context");
+	profiler.start("Destorying CUDA context");
 	var ctxFree = webcuda.destroyCtx(ctx);
-	print("free context result: "+ ctxFree);
+	if(DEBUG) print("free context result: "+ ctxFree);
+	profiler.stop("Destorying CUDA context");
 
 	//returning value
 	return h_I;
@@ -138,13 +166,13 @@ function testResult(h_I, t_I){
 	{
 		if (Math.abs(t_I[i] - h_I[i]) > 1e-5)
 		{
-			print("FAILED");
-			print("Result verification failed at element " + i);
-			print("Host element value: " + h_I[i] + ", CUDA element value: " + t_I[i]);
+			if(DEBUG) print("FAILED");
+			if(DEBUG) print("Result verification failed at element " + i);
+			if(DEBUG) print("Host element value: " + h_I[i] + ", CUDA element value: " + t_I[i]);
 			quit();
 		}
 	}
-	print("Test PASSED\n");
+	if(DEBUG) print("Test PASSED\n");
 }
 
 main();

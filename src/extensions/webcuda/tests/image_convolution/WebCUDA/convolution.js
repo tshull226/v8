@@ -1,4 +1,3 @@
-
 var imageW = 3072;
 var imageH = 3072
 var numIterations = 16;
@@ -21,11 +20,18 @@ function main(){
 	var h_Kernel = generateRandom(KERNEL_LENGTH);
 	var h_Input = generateRandom(imageW * imageH);
 
-	print("trying JavaScript");
-	outputJS = runJS(h_Kernel, h_Input);
-	print("trying CUDA");
+	load("tests/Profiler/Profiler.js");
+	profiler = new Profiler();
+	profiler.start("Total");
 	outputCUDA = runCUDA(h_Kernel, h_Input);
-	print("done");
+	profiler.stop("Total");
+	profiler.print();
+
+	profiler = new Profiler();
+	profiler.start("Total");
+	outputJS = runJS(h_Kernel, h_Input);
+	profiler.stop("Total");
+	profiler.print();
 
 	testResults(outputJS, outputCUDA);
 }
