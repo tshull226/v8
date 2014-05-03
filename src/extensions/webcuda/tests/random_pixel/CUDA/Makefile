@@ -36,7 +36,7 @@
 include ./findcudalib.mk
 
 # Location of the CUDA Toolkit
-CUDA_PATH       ?= /Developer/NVIDIA/CUDA-5.5
+CUDA_PATH ?= "/usr/local/cuda-5.5"
 
 # internal flags
 NVCCFLAGS   := -m${OS_SIZE}
@@ -100,7 +100,7 @@ ALL_LDFLAGS += $(EXTRA_NVCCLDFLAGS)
 ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
 
 # Common includes and paths for CUDA
-INCLUDES  := -I../../common/inc
+INCLUDES  := -I/usr/local/cuda-5.5/samples/common/inc
 LIBRARIES :=
 
 ################################################################################
@@ -125,8 +125,8 @@ rng.o: rng.cu
 
 rng: rng.o
 	$(NVCC) $(ALL_LDFLAGS) -o $@ $+ $(LIBRARIES)
-	mkdir -p ../../bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))
-	cp $@ ../../bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))
+	#mkdir -p ../../bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))
+	#cp $@ ../../bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))
 
 run: build
 	./rng

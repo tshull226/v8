@@ -4,7 +4,7 @@
 
 #define NUMBODIES 1024
 #define TIMESTEP 0.01 
-#define NUMITERATIONS 4 
+#define NUMITERATIONS 10 
 #define NUMTHREADS 64
 #define NUMBLOCKS 16 
 

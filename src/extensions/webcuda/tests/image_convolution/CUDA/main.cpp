@@ -26,7 +26,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Reference CPU convolution
 ////////////////////////////////////////////////////////////////////////////////
-/*
 extern "C" void convolutionRowCPU(
     float *h_Result,
     float *h_Data,
@@ -44,8 +43,6 @@ extern "C" void convolutionColumnCPU(
     int imageH,
     int kernelR
 );
-*/
-
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -69,9 +66,9 @@ int main(int argc, char **argv)
     *d_Buffer;
 
 
-    const int imageW = 3072;
-    const int imageH = 3072;
-    const int iterations = 16;
+    const int imageW = 4096;
+    const int imageH = 4096;
+    const int iterations = 0;
 
     StopWatchInterface *hTimer = NULL;
 
@@ -143,7 +140,6 @@ int main(int argc, char **argv)
     printf("\nReading back GPU results...\n\n");
     checkCudaErrors(cudaMemcpy(h_OutputGPU, d_Output, imageW * imageH * sizeof(float), cudaMemcpyDeviceToHost));
 
-/*
     printf("Checking the results...\n");
     printf(" ...running convolutionRowCPU()\n");
     convolutionRowCPU(
@@ -177,7 +173,6 @@ int main(int argc, char **argv)
     double L2norm = sqrt(delta / sum);
     printf(" ...Relative L2 norm: %E\n\n", L2norm);
     printf("Shutting down...\n");
-*/
 
     checkCudaErrors(cudaFree(d_Buffer));
     checkCudaErrors(cudaFree(d_Output));
@@ -191,13 +186,13 @@ int main(int argc, char **argv)
     sdkDeleteTimer(&hTimer);
 
     cudaDeviceReset();
-/*
+
     if (L2norm > 1e-6)
     {
         printf("Test failed!\n");
         exit(EXIT_FAILURE);
+    } else {
+        printf("Test passed\n");
+        exit(EXIT_SUCCESS);
     }
-*/
-    printf("Test passed\n");
-    exit(EXIT_SUCCESS);
 }

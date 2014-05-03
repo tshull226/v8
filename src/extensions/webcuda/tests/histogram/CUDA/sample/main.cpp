@@ -24,7 +24,7 @@
 // project include
 #include "histogram_common.h"
 
-const int numRuns = 16;
+const int numRuns = 0;
 static char *sSDKsample = "[histogram]\0";
 
 int main(int argc, char **argv)
@@ -36,7 +36,8 @@ int main(int argc, char **argv)
     StopWatchInterface *hTimer = NULL;
     int PassFailFlag = 1;
     //uint byteCount = 64 * 1048576;
-    uint byteCount = 64 * 1024;
+    //uint byteCount = 64 * 1024;
+    uint byteCount = 8 * 1024 * 64 * 1024;
     uint uiSizeMult = 1;
 
     cudaDeviceProp deviceProp;
@@ -94,57 +95,6 @@ int main(int argc, char **argv)
     checkCudaErrors(cudaMemcpy(d_Data, h_Data, byteCount, cudaMemcpyHostToDevice));
 
     {
-        printf("Starting up 64-bin histogram...\n\n");
-        initHistogram64();
-
-        printf("Running 64-bin GPU histogram for %u bytes (%u runs)...\n\n", byteCount, numRuns);
-
-        for (int iter = -1; iter < numRuns; iter++)
-        {
-            //iter == -1 -- warmup iteration
-            if (iter == 0)
-            {
-                cudaDeviceSynchronize();
-                sdkResetTimer(&hTimer);
-                sdkStartTimer(&hTimer);
-            }
-
-            histogram64(d_Histogram, d_Data, byteCount);
-        }
-
-        cudaDeviceSynchronize();
-        sdkStopTimer(&hTimer);
-        double dAvgSecs = 1.0e-3 * (double)sdkGetTimerValue(&hTimer) / (double)numRuns;
-        printf("histogram64() time (average) : %.5f sec, %.4f MB/sec\n\n", dAvgSecs, ((double)byteCount * 1.0e-6) / dAvgSecs);
-        printf("histogram64, Throughput = %.4f MB/s, Time = %.5f s, Size = %u Bytes, NumDevsUsed = %u, Workgroup = %u\n",
-               (1.0e-6 * (double)byteCount / dAvgSecs), dAvgSecs, byteCount, 1, HISTOGRAM64_THREADBLOCK_SIZE);
-
-        printf("\nValidating GPU results...\n");
-        printf(" ...reading back GPU results\n");
-        checkCudaErrors(cudaMemcpy(h_HistogramGPU, d_Histogram, HISTOGRAM64_BIN_COUNT * sizeof(uint), cudaMemcpyDeviceToHost));
-
-        printf(" ...histogram64CPU()\n");
-        histogram64CPU(
-            h_HistogramCPU,
-            h_Data,
-            byteCount
-        );
-
-        printf(" ...comparing the results...\n");
-
-        for (uint i = 0; i < HISTOGRAM64_BIN_COUNT; i++)
-            if (h_HistogramGPU[i] != h_HistogramCPU[i])
-            {
-                PassFailFlag = 0;
-            }
-
-        printf(PassFailFlag ? " ...64-bin histograms match\n\n" : " ***64-bin histograms do not match!!!***\n\n");
-
-        printf("Shutting down 64-bin histogram...\n\n\n");
-        closeHistogram64();
-    }
-
-    {
         printf("Initializing 256-bin histogram...\n");
         initHistogram256();
 
@@ -185,7 +135,7 @@ int main(int argc, char **argv)
 
         for (uint i = 0; i < HISTOGRAM256_BIN_COUNT; i++)
         {
-            printf("%d %d\n", h_HistogramGPU[i], h_HistogramCPU[i]);
+            //printf("%d %d\n", h_HistogramGPU[i], h_HistogramCPU[i]);
             if (h_HistogramGPU[i] != h_HistogramCPU[i])
             {
                 PassFailFlag = 0;
