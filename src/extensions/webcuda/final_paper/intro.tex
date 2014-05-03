@@ -1,19 +1,59 @@
 
-some words
+JavaScript is one of the top 10 most popular programming languages, 
+considered by many as the “assembly language of the internet.” JavaScript is
+prevalent in the vast majority of websites due to it being the only
+ubiquitous, cross-platform scripting language available on the browser. The 
+burgeoning mobile device market has increased the importance of JavaScript due
+to the increased popularity of web applications
+%The growing
+%mobile device market will continue to boost the popularity of web applications.
+Due to the importance of JavaScript, major web browser providers competitively
+enhance their JavaScript engines. These improvements in JavaScript performance
+have allowed for a proliferation in both the number of web applications and
+their capabilities.  
 
-the contributions of this paper are as follows.
+However, currently JavaScript's single-threaded execution model fundamentally limits
+performance and hinders adoption for computationally intensive and rich visual
+computing applications on the web, such as 3D games, video processing
+applications, and augmented reality applications. Such applications have much data
+parallelism and can benefit from processing elements available in today’s
+heterogeneous systems, such as Graphic Processing Units (GPUs).  Furthermore,
+JavaScript is gaining attention at the server-side as well through popular
+projects such as NodeJS \cite{nodeJS}, where operations are often
+computationally intensive or data-parallel, expanding the JavaScript application
+domain which can benefit from heterogeneous systems.
+
+We propose to implement a JavaScript language extension to allow for bindings to
+CUDA to provide portable and efficient access to CUDA-enabled GPUs from web
+applications.  We call this project \name, highlighting the enabling of CUDA
+programming from within the browser domain. Our contributions in this paper are
+as follows:
+
+%In addition to evaluating the performance impact using the real hardware, we
+%plan to integrate the JavaScript engine with a heterogeneous system simulator to
+%experiment with various architectural alternatives starting with the memory
+%model of GPUs. We envision this to be the first steps towards a long-term goal
+%of creating heterogeneous systems specialized for JavaScript execution.  
 
 \begin{itemize}
 
-\item allow CUDA bindings within JavaScript
-\item perform analysis of the effectiveness of the V8 runtime
-\item compare performance of native CUDA, CUDA-enable JavaScript, and native JavaScript benchmarks
-\item provide insights on the flexibility adding extensions onto V8/Chrome
+\item Create JavaScript extensions to allow CUDA bindings within JavaScript
+\item Compare performance of native CUDA, CUDA-enabled JavaScript, and native JavaScript benchmarks
+\item Perform analysis of the effectiveness of the V8 runtime handler
+\item Provide insights on the flexibility of adding extensions into V8/Chrome
 
 \end{itemize}
 
-(What each Section Talks About). Section~\ref{background} provides background about JavaScript and CUDA, 
+Our evaluations show that \name is about to achieve a speedup of XX\% over
+JavaScript Applications and are within XX\% of native CUDA performance.
+Providing web developers access to high-performance graphics and
+parallel computation will not only enable more applications to be ported to the
+web environment, but it will also unleash a wave of creativity that will result
+in new innovative web applications.
+
+This paper is organized as follows: Section~\ref{background} provides background about JavaScript and CUDA, 
 Sections \ref{overview} and \ref{imp} describe the structure and implementation of WebCUDA, and
 Section~\ref{eval} demonstrates the performance benefits of WebCUDA. Finally, Section~\ref{disc}
-provides discussion about our project  and Section~\ref{related} highlights related work.
+provides discussion about our project, Section~\ref{related} highlights related
+work, and Section~\ref{conc} concludes.
 

@@ -57,11 +57,14 @@ function bs_js(
     OptionYears,
     Riskfree,
     Volatility,
-    optN
+    optN,
+    profiler
 )
 {
+    profiler.start("Allocating host memory");
     var CallResult = new Float32Array(optN);
     var PutResult = new Float32Array(optN);
+    profiler.stop("Allocating host memory");
 
     for (var opt = 0; opt < optN; opt++)
     {

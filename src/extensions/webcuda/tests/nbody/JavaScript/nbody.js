@@ -1,5 +1,3 @@
-
-
 var numBodies;
 var timeStep = 0.01;
 var numIterations = 10;
@@ -29,16 +27,22 @@ function loadDataJS(path){
 }
 
 function main(){
-
+	load("tests/Profiler/Profiler.js");
 	print("STARTING");
-	var jsResult = runJS(filepath);
+	var profiler = new Profiler();
+	profiler.start("Total");
+	var jsResult = runJS(filepath, profiler);
+	profiler.stop("Total");
+	profiler.print();
 	print("DONE");
 }
 
 
-function runJS(path){
+function runJS(path, profiler){
 	//TODO
+	profiler.start("Allocating host memory");
 	var bodies = loadDataJS(path);
+	profiler.stop("Allocating host memory");
 
 	for(var i = 0; i < numIterations; i++){
 		advance(bodies, timeStep);
