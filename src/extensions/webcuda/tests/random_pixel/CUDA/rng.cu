@@ -57,8 +57,10 @@ int main(void)
 
   // Print the image size to be used, and compute its size in terms of pixels
   int seed = 1;
-  int width = 640;
-  int height = 480;
+  //int width = 640;
+  //int height = 480;
+  int width = 8192;
+  int height = 4096;
   int numElements = height * width;
   size_t numPixels = 4 * numElements * sizeof(int);
   dim3 blocks, threads;
@@ -147,7 +149,8 @@ int main(void)
   for (int i = 0; i < numElements*4; i++)
   {
     //printf("%d: %d %d\n",i,t_I[i],h_I[i]); 
-    if (fabs(t_I[i] - h_I[i]) > 1e-5)
+    //if (fabs(t_I[i] - h_I[i]) > 1e-5)
+    if (fabs(t_I[i] - h_I[i]) > 1e-4)
     {
       fprintf(stderr, "Result verification failed at element %d!\n", i);
       exit(EXIT_FAILURE);

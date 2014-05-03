@@ -53,7 +53,7 @@ float RandFloat(float low, float high)
 ////////////////////////////////////////////////////////////////////////////////
 //const int OPT_N = 4000000;
 //const int NUM_ITERATIONS = 512;
-const int OPT_N = 1024;
+const int OPT_N = 40960 * 1024;
 const int NUM_ITERATIONS = 1;
 
 
@@ -132,12 +132,6 @@ int main(int argc, char **argv)
         h_StockPrice[i]    = RandFloat(5.0f, 30.0f);
         h_OptionStrike[i]  = RandFloat(1.0f, 100.0f);
         h_OptionYears[i]   = RandFloat(0.25f, 10.0f);
-    }
-
-    for (i = 0; i < OPT_N; i++)
-    {
-        //printf("%f %f %f\n", h_StockPrice[i], h_OptionStrike[i], h_OptionYears[i]);
-        printf("%f, ", h_OptionYears[i]);
     }
 
     printf("...copying input data to GPU mem.\n");

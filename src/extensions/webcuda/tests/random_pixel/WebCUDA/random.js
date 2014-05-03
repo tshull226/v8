@@ -3,8 +3,8 @@ var DEBUG = 1;
 INT_SIZE = 4;
 
 //setting up pixel dimensions
-width = 640;
-height = 480;
+width = 8192;
+height = 4096;
 numElements = height * width;
 numPixels = 4 * numElements;
 
