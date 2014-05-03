@@ -46,6 +46,19 @@ google's documentation \cite{embeddersGuide} is deprecated. Therefore we found
 the best documentation for using the API to be google code samples provided
 along with v8.
 
+\begin{figure}
+	\begin{center}
+\begin{lstlisting}[frame=single]
+var device = webcuda.Device(0);
+var context = webcuda.Context(0, device);
+var hostMem = new Int32Array(size);
+var deviceMem = webcuda.memAlloc(hostMem.buffer.byteLength);
+\end{lstlisting}
+\end{center}
+\caption{implementation code examples (figure out name)}
+\label{v8code}
+\end{figure}
+
 Our implementation class structure closely mirrors the specification, with
 functions broken into respective groups based on their functionality.
 Figure~\ref{v8code}(a) and (b) show real examples of common patterns used
