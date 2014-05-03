@@ -75,7 +75,7 @@ function runCuda(seed, profiler){
 	//Launching the Kernel
 	if(DEBUG) print("trying to launch kernel");
 	profiler.start("kernel");
-	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], [{"memParam" : d_I}, {"intParam" : 1} ]);
+	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], 0, [{"memParam" : d_I}, {"intParam" : 1} ]);
 	if(DEBUG) print("launch result: " + launchResult);
 	profiler.stop("kernel");
 
