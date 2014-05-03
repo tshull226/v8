@@ -1,4 +1,3 @@
-
 INT_SIZE = 4;
 
 //setting up pixel dimensions
@@ -10,21 +9,27 @@ numPixels = 4 * numElements;
 function main(){
 	var seed = 1;
 
+	load("tests/Profiler/Profiler.js");
+	var profiler = new Profiler();
 
-	var t_I = runJS(seed);
+	profiler.start("Total");
+	var t_I = runJS(seed, profiler);
+	profiler.stop("Total");
+	profiler.print();
 
 	//temp check to see if things seem reasonable
 	/*
 		 for(i = 0; i < numPixels; i++){
 		 print(t_I[i]);
 		 }
-		 */
 	print("TEST PASSED");
-
+	*/
 }
 
-function runJS(seed){
+function runJS(seed, profiler) {
+	profiler.start("Allocating host memory");
 	var t_I = new Int32Array(numPixels);
+	profiler.stop("Allocating host memory");
 
 	var delta = 0x9E3779B9;
 	var k0 = 0xA341316C;

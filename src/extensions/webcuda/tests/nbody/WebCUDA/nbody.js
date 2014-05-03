@@ -1,10 +1,11 @@
+var DEBUG = 0;
 
 var numBodies;
 var timeStep = 0.01;
 var numIterations = 40;
 var threadSize = 16;
 var blockSize = 8;
-var filepath = "tests/nbody/data/tab128";
+var filepath = "tests/nbody/data/tab1024";
 
 function loadData(path){
 	var data = read(path);
@@ -16,7 +17,7 @@ function loadData(path){
 
 	var j;
 	numBodies = length/7;
-	print("numbodies " + numBodies);
+	if(DEBUG) print("numbodies " + numBodies);
 
 	var position = new Float32Array(numBodies*4);
 	var velocity = new Float32Array(numBodies*3); 
@@ -52,106 +53,130 @@ function loadDataJS(path){
 }
 
 function main(){
+	load("tests/Profiler/Profiler.js");
 
-
-	//	loadData(path);
-
-	var jsResult = runJS(filepath);
 	webcuda.startProfiling();
-	var cudaResult = runCuda(filepath);
+	var profiler = new Profiler();
+	profiler.start("Total");
+	var cudaResult = runCuda(filepath, profiler);
+	profiler.stop("Total");
+	profiler.print();
 	webcuda.stopProfiling();
 
-	testResult(jsResult, cudaResult);
-
+	//var jsResult = runJS(filepath);
+	//testResult(jsResult, cudaResult);
 }
 
-function runCuda(path){
+function runCuda(path, profiler){
 	//Retrieving Device
-	print("retrieving Device Info");
+	if(DEBUG) print("retrieving Device Info");
+	profiler.start("Retrieving device info");
 	var dev = webcuda.Device(0);
+	profiler.stop("Retrieving device info");
 
 	//Setting up Context for CUDA Device
-	print("creating Context");
+	if(DEBUG) print("creating CUDA context");
+	profiler.start("Creating CUDA context");
 	var ctx = webcuda.Context(0, dev);
+	profiler.stop("Creating CUDA context");
 
 	//Creating host memory for pixel array
-	print("creating host memory");
-	//
+	if(DEBUG) print("creating host memory");
+	profiler.start("Allocating host memory");
 	var data = loadData(path);
 	var h_X = data.X;
 	var h_V = data.V;
+	profiler.stop("Allocating host memory");
 
 	//Creating device memory for pixel array
-	print("allocating CUDA memory");
+	if(DEBUG) print("allocating CUDA memory");
+	profiler.start("Allocating CUDA memory");
 	var d_X = webcuda.memAlloc(h_X.buffer.byteLength);
 	var d_V = webcuda.memAlloc(h_V.buffer.byteLength);
-	print("d_X size: "+d_X.size+" error: "+d_X.error);
-	print("d_A size: "+d_V.size+" error: "+d_V.error);
+	if(DEBUG) print("d_X size: "+d_X.size+" error: "+d_X.error);
+	if(DEBUG) print("d_A size: "+d_V.size+" error: "+d_V.error);
+	profiler.stop("Allocating CUDA memory");
 
 	//copying data to device
-	print("copying CUDA initial parameters to device");
+	if(DEBUG) print("copying CUDA initial parameters to device");
+	profiler.start("copyHtoD");
 	//TODO should allow them to be asynchronous
 	webcuda.copyHtoD(d_X, h_X.buffer);
 	webcuda.copyHtoD(d_V, h_V.buffer);
+	profiler.stop("copyHtoD");
 
 	//Loading Module
-	print("compiling CUDA module");
+	if(DEBUG) print("compiling CUDA module");
+	profiler.start("Loading CUDA module");
 	var module = webcuda.compileFile("tests/nbody/WebCUDA/nbody");
 	//TODO fix this
-	print("cuName: " + module.cuName + " fname: " + module.fname + " error: " + module.error);
+	if(DEBUG) print("cuName: " + module.cuName + " fname: " + module.fname + " error: " + module.error);
+	profiler.stop("Loading CUDA module");
 
 	//Retrieving Function from Module
-	print("retrieving function from module");
+	if(DEBUG) print("retrieving function from module");
+	profiler.start("Retrieving function from module");
 	var cuFunc = webcuda.getFunction(module, "calculate_forces");
-	print("name: " + cuFunc.name + " error: " + cuFunc.error);
+	if(DEBUG) print("name: " + cuFunc.name + " error: " + cuFunc.error);
+	profiler.stop("Retrieving function from module");
 
 
 	//Calculating the number of shared memory bytes needed
 	var sharedMem = threadSize*4*4;
-	print("shared memory size: " + sharedMem);
+	if(DEBUG) print("shared memory size: " + sharedMem);
 
 
 	//Launching the Kernel
-	print("trying to launch kernel");
+	if(DEBUG) print("trying to launch kernel");
+	profiler.start("kernel");
 	var launchResult = webcuda.launchKernel(cuFunc, [blockSize,1,1], [threadSize,1,1], sharedMem, [{"memParam" : d_X}, {"memParam" : d_V},{"intParam" : numBodies} , {"intParam" : numIterations}, {"floatParam" : timeStep}]);
-	print("launch result: " + launchResult);
-	print("launched kernel...");
+	if(DEBUG) print("launch result: " + launchResult);
+	if(DEBUG) print("launched kernel...");
+	profiler.stop("kernel");
 
 	//Synchronizing for Context to Complete
 	webcuda.synchronizeCtx();
 
 
 	//Retrieving Data from CUDA Device Memory
-	print("copying CUDA Mem Result to device");
+	if(DEBUG) print("copying CUDA Mem Result to device");
+	profiler.start("copyDtoH");
 	//TODO should allow them to be asynchronous
 	h_X = new Float32Array(numBodies); 
 	var copyDtoH = webcuda.copyDtoH(h_X.buffer, d_X);
-	print("copying result: " + copyDtoH);
+	if(DEBUG) print("copying result: " + copyDtoH);
+	profiler.stop("copyDtoH");
 
 	/*
 	//temp check to see if things seem reasonable
-	print("checking results");
+	if(DEBUG) print("checking results");
 	for(i = 0; i < numPixels; i++){
-	print(h_I[i]);
+	if(DEBUG) print(h_I[i]);
 	}
 	*/
 
 	//Freeing CUDA Memory
-	print("freeing CUDA memory");
+	if(DEBUG) print("freeing CUDA memory");
+	profiler.start("Freeing CUDA memory");
 	var memFree = webcuda.free(d_X);
-	print("d_X free memory result: "+memFree);
+	if(DEBUG) print("d_X free memory result: "+memFree);
 	var memFree = webcuda.free(d_V);
-	print("d_V free memory result: "+memFree);
+	if(DEBUG) print("d_V free memory result: "+memFree);
+	profiler.stop("Freeing CUDA memory");
 
 	//Freeing CUDA Module
-	print("freeing CUDA module");
+	if(DEBUG) print("freeing CUDA module");
+	profiler.start("Freeing CUDA module");
 	var moduleFree = webcuda.moduleUnload(module);
-	print("free module result: " + moduleFree);
+	if(DEBUG) print("free module result: " + moduleFree);
+	profiler.stop("Freeing CUDA module");
 
 	//Destroying CUDA context
-	print("destroying CUDA context");
+	if(DEBUG) print("destroying CUDA context");
+	profiler.start("Destorying CUDA context");
 	var ctxFree = webcuda.destroyCtx(ctx);
-	print("free context result: "+ ctxFree);
+	if(DEBUG) print("free context result: "+ ctxFree);
+	profiler.stop("Destorying CUDA context");
 
 	//returning value
 	return {"positions" : h_X};
@@ -233,14 +258,14 @@ function testResult(jsResult, cudaResult){
 	{
 		if (Math.abs(jsPosition[i] - cudaPosition[i]) > 1e-5)
 		{
-			print("FAILED");
-			print("Result verification failed at position element " + Math.floor(i/4) + " coordinate " + i%4);
-			print("CUDA element value: " + cudaPosition[i] + ", JavaScript element value: " + jsPosition[i]);
+			if(DEBUG) print("FAILED");
+			if(DEBUG) print("Result verification failed at position element " + Math.floor(i/4) + " coordinate " + i%4);
+			if(DEBUG) print("CUDA element value: " + cudaPosition[i] + ", JavaScript element value: " + jsPosition[i]);
 			quit();
 		}
 	}
 
-	print("PASSED");
+	if(DEBUG) print("PASSED");
 }
 
 main();

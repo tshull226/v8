@@ -18,18 +18,22 @@ function main(){
 	var h_Kernel = generateRandom(KERNEL_LENGTH);
 	var h_Input = generateRandom(imageW * imageH);
 
-	runJS(h_Kernel, h_Input);
-	
-
+	load("tests/Profiler/Profiler.js")
+	var profiler = new Profiler();
+	profiler.start("Total");
+	runJS(h_Kernel, h_Input, profiler);
+	profiler.stop("Total");
+	profiler.print();
 }
 
-function runJS(h_Kernel, h_Input){
+function runJS(h_Kernel, h_Input, profiler){
 	print("Starting JavaScript Execution!");
+	profiler.start("Allocating host memory");
 	var h_Buffer = new Array(imageW * imageH);
 	var h_Output = new Array(imageW * imageH);
-	var i;
+	profiler.stop("Allocating host memory");
 	
-	for(i = 0; i < numIterations; i++){
+	for(var i = 0; i < numIterations; i++){
 		convolutionRowJS(h_Buffer, h_Input, h_Kernel, imageW, imageH, KERNEL_RADIUS);
 		convolutionColumnJS(h_Output, h_Buffer, h_Kernel, imageW, imageH, KERNEL_RADIUS);
 	}
