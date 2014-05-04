@@ -36,7 +36,7 @@
 include ./findcudalib.mk
 
 # Location of the CUDA Toolkit
-CUDA_PATH       ?= /usr/local/cuda-5.5
+CUDA_PATH ?= "/usr/local/cuda-5.5"
 
 # internal flags
 NVCCFLAGS   := -m${OS_SIZE}
@@ -123,14 +123,14 @@ build: convolutionSeparable
 main.o: main.cpp
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-#convolutionSeparable_gold.o: convolutionSeparable_gold.cpp
-#	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
+convolutionSeparable_gold.o: convolutionSeparable_gold.cpp
+	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 convolutionSeparable.o: convolutionSeparable.cu
 	$(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-#convolutionSeparable: main.o convolutionSeparable_gold.o convolutionSeparable.o 
-convolutionSeparable: main.o convolutionSeparable.o 
+convolutionSeparable: main.o convolutionSeparable_gold.o convolutionSeparable.o 
+#convolutionSeparable: main.o convolutionSeparable.o 
 	$(NVCC) $(ALL_LDFLAGS) -o $@ $+ $(LIBRARIES)
 #	mkdir -p ./bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))
 #	cp $@ ./bin/$(OS_ARCH)/$(OSLOWER)/$(TARGET)$(if $(abi),/$(abi))

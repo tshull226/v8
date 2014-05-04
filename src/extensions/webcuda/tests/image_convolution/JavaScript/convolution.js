@@ -1,7 +1,7 @@
 
-var imageW = 3072;
-var imageH = 3072
-var numIterations = 16;
+var imageW = 4096;
+var imageH = 4096;
+var numIterations = 1;
 var KERNEL_RADIUS = 8
 var KERNEL_LENGTH = 2 * KERNEL_RADIUS + 1
 
