@@ -34,15 +34,15 @@ Our implementation is able to store handles to CUDA structs through wrapping the
 within JavaScript objects. JavaScript objects are allowed to have internal
 fields, inaccessible to programmers, that the compiler can use to store various
 information about the object. Therefore, we wrap CUDA structs in a way such that
-based information is available to the user (such as whether the object was
-successfully created) and our extension is able to unwrap the information
+basic CUDA information is available to the user (such as whether the object was
+successfully created) and internal fields contain the information
 necessary for performing CUDA Driver API calls.
 
 We tried to follow documented programming patterns for embedded application
 developers according to various resources online
 \cite{embeddersGuide, nodeJSDocumentation}. However, due to the rapidly evolving
 nature of the v8 source code, the external API has drastically changed and even
-google's documentation \cite{embeddersGuide} is deprecated. Therefore we found
+google's documentation \cite{embeddersGuide} is deprecated. Therefore, we found
 the best documentation for using the API to be google code samples provided
 along with v8.
 

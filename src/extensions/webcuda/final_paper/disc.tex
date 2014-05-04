@@ -1,18 +1,70 @@
 
 \subsection{Challenges Encountered}
-\begin{verbatim}
-mostly the lack of documentation
-mention LOC
-\end{verbatim}
+While our idea of adding CUDA bindings to JavaScript and the final
+implementation is straightforward, there was much experimentation to get to this point.
+One of the main obstacles encountered during this project is understanding the
+V8 code base. The non-machine backend specific section of code is around 200K
+LOC. In addition, there is not a definitive source explaining the compiler: some
+blogs exist, but they oftentimes cover good programming practices for code to
+performs well on the v8 compiler as opposed to explaining how the compiler works
+itself. Therefore, it is necessary to look at the code itself to determine the
+best way to interact with the compiler.
+
+Luckily, two of the authors of the paper have had much experience working with
+the v8 codebased and thus did not have such a steep learning curve. However, v8
+is a ongoing project and is rapidly changing. Because of this, we wanted to work
+on the most recent version to give our project the most relevance. The author's
+previous experience was on a version of v8 from 2012. While the basic structure
+of the compiler in both versions was similar, the authors were astonished to
+find how many of the class and method names had changed. There was a major
+overhaul of the external programmers API last summer, which has made most
+information provided is blogs obsolete. Even Google's Embedder's Guide
+Documentation \cite{embeddersGuide} does not correspond to the updated API.
+Therefore, it took longer than expected to implement \name and caused many
+headaches. Thankfully, with our newfound experience with this version of v8, any
+additional changes necessary to be made to \name should be straightforward to
+implement.
 
 \subsection{WebCUDA Limitations}
-\begin{verbatim}
-point out there are other limitations which we are not currently aware of 
-\end{verbatim}
-\subparagraph{streaming memory}
-\subparagraph{multiple dimensioned arrays}
-\subparagraph{asynchronous calls} (like memory transfers)
-\subparagraph{Reuse of JavaScript Arrays}
+While the current \name specification and implementation has enough
+functionality for many CUDA implementations, many CUDA Runtime features do not
+have a mapping in \namens. Below we highlight some limitations of \namens.
+
+\subparagraph{Streaming Memory}
+ One of the major limitations of \namens, as seen in
+Section~\ref{eval}, is the lack of support for CUDA Streaming Memory
+\cite{cuStream}. The authors felt Streaming Memory is not a core
+CUDA feature and felt is was outside of the scope of this project.
+Luckily, there is no fundamental reason CUDA Streams cannot be integrated into 
+\name and can easily be added in future versions.
+
+\subparagraph{Multiple Dimensioned Arrays}
+As JavaScript implements multiple dimensioned arrays, as an array of potentially
+non-contiguous arrays, it is not clear how to extend \name to include
+support for multiple dimension array memory transfers between the host and
+CUDA-enabled device. While this affects the ease of programmability, it does not
+limit the range of programs which can be ported to \namens.
+
+\subparagraph{Programmability} Many libraries, such as thrust~\cite{thrust} and
+many math libraries~\cite{magma, cuSparse, arrayFire}, exist to simplify CUDA
+programming. Unfortunately, these libraries are unavailable in the \name environment. While
+this is a current setback, as CUDA programming in the browser becomes prevalent,
+inevitably tools will be created to simplify the process GPGPU programming in
+this domain.
+
+In addition, the CUDA runtime is able to perform many actions necessary to
+connect to a CUDA device without the programmers knowledge that the programmer
+must explicitly perform in \namens, such as creating a CUDA context and
+connecting to a device. \name can be extended to perform many of the same
+monitoring features as the CUDA Runtime, but this would require a nontrivial
+amount of effort to implement. The authors decided to leave this as future work,
+as this does not limit the capabilities of \namens.
+
+\subparagraph{Performance}
+asynchronous calls
+
+
+\subparagraph{The Great Unknown}
 
 \subsection{Programmability}
 want something here about how easy it is to write webcuda programs. (change section title accordingly)
