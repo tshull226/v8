@@ -1,10 +1,42 @@
 
-\paragraph{WebCL}
-something
+The idea of enabling GPGPU programming within more domains has attracted much
+interest from the community. Below we mention some projects we feel are most relevant
+to \namens.
 
-\paragraph{ParallelJS}
-Talk about this paper \cite{parallelJS} something about it
+%\paragraph{node-cuda}
+The project most similar to \name is node-cuda~\cite{nodeCuda}. The goal of this
+project to bring CUDA bindings to JavaScript for Node.js~\cite{nodeJS}. Like
+Chrome, Node.js uses the V8 compiler. However, their project, and the current V8
+version used in Node.js, is a version of V8 before the external API discussed
+in~\ref{challenges}. Therefore, while this project was extremely helpful in
+identifying core CUDA Driver API features the \name spec needed to cover, the
+code itself was not useful, as we use the newest version of V8.
 
-\paragraph{JCuda, Python Cuda}
+%\paragraph{WebCL}
+Several previous projects have been started to implement WebCL \cite{webCL} in various
+browsers, including Safar \cite{safarWebCL} and Firefox \cite{firefoxWebCL}.
+WebCL, discussed in Section~\ref{webCLDisc}, is project started by the Khronos
+Group, to add OpenCL-like bindings to browsers. Since the start of our CS598
+project, AMD released a WebCL implementation on the Chromium browser
+\cite{chromeWebCL}. We hope to eventually compare \name to the Chrome-based
+WebCL over a variety of benchmarks to examine the effectiveness of each.
 
-\paragraph{node-cuda}
+%\paragraph{ParallelJS}
+Another project that has been released since the start of our CS598 project is
+\textit{ParallelJS}~\cite{parallelJS}. The aim of this project closely mirrors
+what we in this paper (as well as in previous progress reports written before we
+learned of this publication) suggest as future work in Section~\ref{future}, namely, to create a
+runtime environment for JavaScript that can recognize native JavaScript code amenable to
+execution on a GPU and perform the necessary source-to-source translation to run
+the code on the GPU. This paper is a good first step in this direction, but
+they only support very specific JavaScript code patterns so there is still much
+work to be done in this area.
+
+%\paragraph{JCuda, Python Cuda}
+Many other projects to bring CUDA languages beyond C/C++ and Fortran, include
+JCUDA~\cite{jcuda} for the Java domain and PyCUDA~\cite{pycuda} for the Python domain.
+Similar to \namens, these projects wrap CUDA functions within methods within
+their respective domains. PyCUDA focuses on exposing the CUDA Drive API, like
+\namens, while JCUDA exposes both the CUDA Runtime and Driver APIs.
+
+
