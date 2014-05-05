@@ -65,6 +65,7 @@ int main(int argc, char **argv)
     *d_Output,
     *d_Buffer;
 
+    float hostMemAlloc, deviceMemAlloc, findDev,  memcpyHtoD, memcpyDtoH, kernel, hostMemFree, deviceMemFree;
 
     const int imageW = 4096;
     const int imageH = 4096;
@@ -73,17 +74,36 @@ int main(int argc, char **argv)
     StopWatchInterface *hTimer = NULL;
 
     //Use command-line specified CUDA device, otherwise use device with highest Gflops/s
+    cudaEvent_t start_event, stop_event;
+    int eventflags = cudaEventDefault;
+    
+    cudaEventCreateWithFlags(&start_event, eventflags);
+    cudaEventCreateWithFlags(&stop_event, eventflags);
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
     findCudaDevice(argc, (const char **)argv);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&findDev, start_event, stop_event);
+
 
     sdkCreateTimer(&hTimer);
 
     printf("Image Width x Height = %i x %i\n\n", imageW, imageH);
     printf("Allocating and initializing host arrays...\n");
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+
     h_Kernel    = (float *)malloc(KERNEL_LENGTH * sizeof(float));
     h_Input     = (float *)malloc(imageW * imageH * sizeof(float));
     h_Buffer    = (float *)malloc(imageW * imageH * sizeof(float));
     h_OutputCPU = (float *)malloc(imageW * imageH * sizeof(float));
     h_OutputGPU = (float *)malloc(imageW * imageH * sizeof(float));
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&hostMemAlloc, start_event, stop_event);
+
     srand(200);
 
     for (unsigned int i = 0; i < KERNEL_LENGTH; i++)
@@ -97,12 +117,30 @@ int main(int argc, char **argv)
     }
 
     printf("Allocating and initializing CUDA arrays...\n");
-    checkCudaErrors(cudaMalloc((void **)&d_Input,   imageW * imageH * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&d_Output,  imageW * imageH * sizeof(float)));
-    checkCudaErrors(cudaMalloc((void **)&d_Buffer , imageW * imageH * sizeof(float)));
+
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+
+    cudaMalloc((void **)&d_Input,   imageW * imageH * sizeof(float));
+    cudaMalloc((void **)&d_Output,  imageW * imageH * sizeof(float));
+    cudaMalloc((void **)&d_Buffer , imageW * imageH * sizeof(float));
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&deviceMemAlloc, start_event, stop_event);
+
 
     setConvolutionKernel(h_Kernel);
-    checkCudaErrors(cudaMemcpy(d_Input, h_Input, imageW * imageH * sizeof(float), cudaMemcpyHostToDevice));
+
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+
+    cudaMemcpy(d_Input, h_Input, imageW * imageH * sizeof(float), cudaMemcpyHostToDevice);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&memcpyHtoD, start_event, stop_event);
+
 
     printf("Running GPU convolution (%u identical iterations)...\n\n", iterations);
 
@@ -111,11 +149,12 @@ int main(int argc, char **argv)
         //i == -1 -- warmup iteration
         if (i == 0)
         {
-            checkCudaErrors(cudaDeviceSynchronize());
+            cudaDeviceSynchronize();
             sdkResetTimer(&hTimer);
             sdkStartTimer(&hTimer);
         }
 
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
         convolutionRowsGPU(
             d_Buffer,
             d_Input,
@@ -129,16 +168,32 @@ int main(int argc, char **argv)
             imageW,
             imageH
         );
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&kernel, start_event, stop_event);
+
+
+
+
     }
 
-    checkCudaErrors(cudaDeviceSynchronize());
+    cudaDeviceSynchronize();
     sdkStopTimer(&hTimer);
     double gpuTime = 0.001 * sdkGetTimerValue(&hTimer) / (double)iterations;
     printf("convolutionSeparable, Throughput = %.4f MPixels/sec, Time = %.5f s, Size = %u Pixels, NumDevsUsed = %i, Workgroup = %u\n",
            (1.0e-6 * (double)(imageW * imageH)/ gpuTime), gpuTime, (imageW * imageH), 1, 0);
 
     printf("\nReading back GPU results...\n\n");
-    checkCudaErrors(cudaMemcpy(h_OutputGPU, d_Output, imageW * imageH * sizeof(float), cudaMemcpyDeviceToHost));
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+
+    cudaMemcpy(h_OutputGPU, d_Output, imageW * imageH * sizeof(float), cudaMemcpyDeviceToHost);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&memcpyDtoH, start_event, stop_event);
+
 
     printf("Checking the results...\n");
     printf(" ...running convolutionRowCPU()\n");
@@ -174,14 +229,30 @@ int main(int argc, char **argv)
     printf(" ...Relative L2 norm: %E\n\n", L2norm);
     printf("Shutting down...\n");
 
-    checkCudaErrors(cudaFree(d_Buffer));
-    checkCudaErrors(cudaFree(d_Output));
-    checkCudaErrors(cudaFree(d_Input));
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+    cudaFree(d_Buffer);
+    cudaFree(d_Output);
+    cudaFree(d_Input);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&deviceMemFree, start_event, stop_event);
+
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+
     free(h_OutputGPU);
     free(h_OutputCPU);
     free(h_Buffer);
     free(h_Input);
     free(h_Kernel);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
+
+    printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nFind Device: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
+    hostMemAlloc*1000000, deviceMemAlloc*1000000,findDev*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
 
     sdkDeleteTimer(&hTimer);
 

@@ -50,7 +50,7 @@ rng(int *I, int seed)
 */
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
   // Error code to check return values for CUDA calls
   cudaError_t err = cudaSuccess;
@@ -59,16 +59,31 @@ int main(void)
   int seed = 1;
   //int width = 640;
   //int height = 480;
-  int width = 8192;
-  int height = 4096;
+  int width = atoi(argv[1]);
+  int height = atoi(argv[2]);
   int numElements = height * width;
   size_t numPixels = 4 * numElements * sizeof(int);
   dim3 blocks, threads;
 
+  float memcpyHtoD = 0.0;
+  float hostMemAlloc, deviceMemAlloc, memcpyDtoH, kernel, hostMemFree, deviceMemFree;
   printf("[Random number generation of a %dx%d image]\n", height, width);
 
   // Allocate the host output image
+    cudaEvent_t start_event, stop_event;
+    int eventflags = cudaEventDefault;
+    
+    cudaEventCreateWithFlags(&start_event, eventflags);
+    cudaEventCreateWithFlags(&stop_event, eventflags);
+
+    cudaEventRecord(start_event, 0);  
+
+
   int *h_I = (int *)malloc(numPixels);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);  
+    cudaEventElapsedTime(&hostMemAlloc, start_event, stop_event);
 
   // Verify that allocations succeeded
   if (h_I == NULL)
@@ -80,7 +95,13 @@ int main(void)
 
   // Allocate the device input image 
   int *d_I = NULL;
+
+  cudaEventRecord(start_event, 0); 
   err = cudaMalloc((void **)&d_I, numPixels);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&deviceMemAlloc, start_event, stop_event);
+
 
   if (err != cudaSuccess)
   {
@@ -90,10 +111,17 @@ int main(void)
 
   // Launch the Vector Add CUDA Kernel
 
-  blocks = dim3(40,30);
   threads = dim3(16,16);
+  blocks = dim3(width/threads.x,height/threads.y);
+
   printf("CUDA kernel launch with %d blocks of %d threads\n", blocks.x*blocks.y, threads.x*threads.y);
+
+    cudaEventRecord(start_event, 0);   
   rng<<< blocks, threads >>>(d_I, seed);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&kernel, start_event, stop_event);
+
   err = cudaGetLastError();
 
   if (err != cudaSuccess)
@@ -103,7 +131,12 @@ int main(void)
   }
 
   printf("Copy output data from the CUDA device to the host memory\n");
+   cudaEventRecord(start_event, 0);
   err = cudaMemcpy(h_I, d_I, numPixels, cudaMemcpyDeviceToHost);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&memcpyDtoH, start_event, stop_event);
+
 
   if (err != cudaSuccess)
   {
@@ -159,7 +192,12 @@ int main(void)
   printf("Test PASSED\n");
 
   // Free device global memory
+    cudaEventRecord(start_event, 0); 
   err = cudaFree(d_I);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   
+    cudaEventElapsedTime(&deviceMemFree, start_event, stop_event);
+
 
   if (err != cudaSuccess)
   {
@@ -168,7 +206,15 @@ int main(void)
   }
 
   // Free host memory
+    cudaEventRecord(start_event, 0); 
   free(h_I);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);
+    cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
+
+
+    printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
+            hostMemAlloc*1000000, deviceMemAlloc*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
 
   // Reset the device and exit
   err = cudaDeviceReset();

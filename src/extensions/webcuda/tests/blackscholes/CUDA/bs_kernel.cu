@@ -14,6 +14,9 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Polynomial approximation of cumulative normal distribution function
 ///////////////////////////////////////////////////////////////////////////////
+#ifndef BS_KERNEL
+#define BS_KERNEL
+
 __device__ inline float cndGPU(float d)
 {
     const float       A1 = 0.31938153f;
@@ -102,3 +105,4 @@ __global__ void BlackScholesGPU(
             Volatility
         );
 }
+#endif
