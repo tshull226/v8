@@ -1,5 +1,6 @@
 
 \subsection{Challenges Encountered}
+\label{challenges}
 While our idea of adding CUDA bindings to JavaScript and the final
 implementation is straightforward, there was much experimentation to get to this point.
 One of the main obstacles encountered during this project is understanding the
@@ -30,13 +31,12 @@ While the current \name specification and implementation has enough
 functionality for many CUDA implementations, many CUDA Runtime features do not
 have a mapping in \namens. Below we highlight some limitations of \namens.
 
-\subparagraph{Streaming Memory}
- One of the major limitations of \namens, as seen in
-Section~\ref{eval}, is the lack of support for CUDA Streaming Memory
-\cite{cuStream}. The authors felt Streaming Memory is not a core
-CUDA feature and felt is was outside of the scope of this project.
-Luckily, there is no fundamental reason CUDA Streams cannot be integrated into 
-\name and can easily be added in future versions.
+\subparagraph{Streaming Memory} One of the major limitations of \namens, as seen
+in Section~\ref{eval}, is the lack of support for CUDA Streaming Memory. The
+authors felt Streaming Memory is not a core CUDA feature and felt is was outside
+of the scope of this project.  Luckily, there is no fundamental reason CUDA
+Streams cannot be integrated into \name and can easily be added in future
+versions.
 
 \subparagraph{Multiple Dimensioned Arrays}
 As JavaScript implements multiple dimensioned arrays, as an array of potentially
@@ -45,7 +45,8 @@ support for multiple dimension array memory transfers between the host and
 CUDA-enabled device. While this affects the ease of programmability, it does not
 limit the range of programs which can be ported to \namens.
 
-\subparagraph{Programmability} Many libraries, such as thrust~\cite{thrust} and
+\subparagraph{Programmability} 
+Many libraries, such as thrust~\cite{thrust} and
 many math libraries~\cite{magma, cuSparse, arrayFire}, exist to simplify CUDA
 programming. Unfortunately, these libraries are unavailable in the \name environment. While
 this is a current setback, as CUDA programming in the browser becomes prevalent,
@@ -61,13 +62,188 @@ amount of effort to implement. The authors decided to leave this as future work,
 as this does not limit the capabilities of \namens.
 
 \subparagraph{Performance}
-asynchronous calls
+Our implementation does not currently allow asynchronous memory transfers
+transfers between the host and device. This hurts performance since the host
+device cannot be performing work while the transfer is in progress. While
+straightforward to include in the \name spec, the authors felt adding this
+feature is unnecessary. In all likelihood, there are also CUDA features used to
+improvements available in the CUDA Runtime not present in \namens; Note that
+while these hurt \namens's compared to CUDA, the main goal of \name is to
+improve performance in the browser domain, which as shown in Section~\ref{eval}
+is successfully accomplished.
 
+\subparagraph{Cross-Domain Support}
+Since CUDA codes can only run on NVidia devices, \name cannot run on every
+platform. Therefore, the programmer must create two versions of their code to
+account for whether they run on a \namens-enabled device or not. This is common
+for other features such as WebGL and to account for the various ways different
+browsers support the DOM in JavaScript. The ideal solution is either NVidia
+extends their compiler support to include non-NVidia products or \name is
+augmented with support for running natively JavaScript programs on the GPU, as
+discussed in Section~\ref{future}.
 
 \subparagraph{The Great Unknown}
+Due to the author's lack of expertise in CUDA programming, it is likely \name
+does not have some functionality which experienced CUDA programmers may deem
+essential. In these cases, the authors hope programmers can extend \name in
+ways they see fit. Through describing the infrastructure of \name in this paper,
+programmers should have the necessary insights to understand the \name
+extension and therefore can augment and improve our implementation. By releasing
+the code to the public domain and also including doxgyen and
+JSDOC documentation, we have tried to make extending \name as simple as
+possible.
 
-\subsection{Programmability}
-want something here about how easy it is to write webcuda programs. (change section title accordingly)
+
+%\begin{verbatim} think this section should not exist \end{verbatim}
+%\subsection{Programmability} want something here about how easy it is to write
+%webcuda programs. (change section title accordingly).
+
+\subsection{\name vs WebCL}
+\label{webCLDisc}
+The Khronos Group, the consortium behind the OpenCL
+\cite{openCL}, OpenGL \cite{openGL}, and many other specifications, has also
+proposed a specification to bring OpenCL-like bindings to JavaScript named WebCL
+\cite{webCLSpec}. This project is very similar to \name except the bindings are for
+OpenCL instead of CUDA.
+
+Like \namens, the actual GPU kernels must be written in OpenCL (vs CUDA in
+\namens), and not in JavaScript. While it seems best for the GPU kernels to be
+written in JavaScript as we talk about in Section~\ref{future}, OpenCL has made
+decisions similar to the \name Specifications. One can rationalize this decision
+both from a programmer's and developer's perspective. From the developer's
+perspective, is it obviously easier to only create wrappers to existing calls in
+another language instead of having to parse and compile the JavaScript kernels
+to CUDA or AMD executables. From the programmer's perspective, there are also
+benefits for the GPU kernels remaining in the OpenCL. The main one is being able
+to port existing kernels written in the OpenCL domain directly to WebCL without
+having to rewrite them in another language. In our experience, the JavaScript
+binding code is very minimal so rewriting it is not a large overhead, whereas
+GPU kernels can be very large and complicated. Therefore, the porting burden is
+substantially lower with the specification decisions made by both WebCL and
+\namens.
+
+While WebCl is very similar to our project, we believe it does not detract from
+the merit of \namens. One reason is CUDA has more capabilities than OpenCL. Due
+to \namens's connection with a specific platform, more hardware features are able to
+be exposed to the programmer for higher performance. Another reason is \name
+allows CUDA applications to be quickly ported to the web domain. If a programmer
+were to use webCL, then the entire code would have to be rewritten while with
+\name only the host operations need to be rewritten in JavaScript.
+
+Finally, \name is
+important because it is an additional way of allowing web apps to use the GPU to
+achieve performance gains. We feel that our project is successful in starting
+conversation about the limitations of current JavaScript execution speeds and
+shows that there are straightforward approaches to improving the performance for
+a certain class of applications. 
+
+
+%While these project have similar goals, the implementation of each is very
+%different due to the different backends.
 
 \subsection{Security}
+\label{security}
+While we feel web apps should be able to leverage the GPU as necessary
+throughout their execution, necessary security measures must be taken before
+this can happen. Currently CUDA applications can crash one's computer. The
+authors inadvertently repeatedly validated this fact throughout the development and
+testing of \namens. This is a nightmare from a security standpoint. While it is
+acceptable for a poorly written application to crash, the typical CPU
+environment provides a level of isolation so that a single user-level
+application, especially within the JavaScript, cannot easily bring down the
+computer. If and when browsers start to include GPU extensions to web apps, it
+will be unacceptable for any novice or malicious programmer to bring down a
+user's computer simply by the user navigating to their specific site. The CUDA
+programming environment must be expanded to provide basic security measures such
+as runtime checks before \name or WebCL can gain traction.
+
+We briefly explored the WebCL specification to see if WebCL addresses the
+security issues addressed above. Their specification in fact makes security a
+top priority. They split security measures into two categories: improper memory
+accesses and Denial of Service.
+
+Improper memory accesses protection handles situations when a program tries to
+access areas of memory locations not belonging to the program. WebCL
+specified that these accesses during runtime must return the value 0 for reads
+and writes must be discarded. They also have a WebCL Validator Project
+\cite{webclValidator} to detect out of bounds-memory accesses at compile time. A
+WebCL program also must not be able to read data left behind in allocated but
+not initialized memory. Therefore, upon allocation the WebCL spec requires all
+memory to be initialized to zero.
+
+The WebCL spec also addresses Denial of Service bugs, when a long running kernel
+causes the system to become unresponsive. In these cases the WebCL spec
+recommends to use the OpenCL 1.2 extensions and driver level timers to detect
+and terminate contexts using an unreasonable amount of the resources.
+With these security measures, no one has yet to find any loopholes. However, no
+current WebCL prototype adheres to all security measures mentioned above
+\cite{nokiasecurity}.
+
+While GPGPU computing cannot be performed in the browser, many browsers include
+WebGL, which allows programmers to write GPU-enabled graphic applications in
+JavaScript. Since they can use the GPU, many of the many same security concerns
+arise in this domain. A quick survey found that WebGL also protects one from the
+issues cited above.
+
+In WebGL specification 1.0, security flaws were found in the Cross-Origin
+Media security policy \cite{webGLerror1, webGLerror2}. The Cross-Origin policy
+dictates how shaders and images/videos from different sources can interact. It
+an arbitrary shader is used to read an image/video from another source, the
+resulting value cannot be read. However, the shader can be made in such a way
+that the length of its runtime is dependent on the value of the pixel and hence
+the image can be inferred. Recent specifications prevent these types of attacks
+by requiring textures to be validated by Cross-Origin Resource Sharing
+(CROS).
+
+Due to previous security issues, not all browsers have adapted and enabled WebGL
+extensions by default. In Safari, the extension is disabled by
+default and Internet Explorer has yet to fully implement the standard.
+
+\subsection{Chrome Browser Integration} 
+\label{chromeIntegration}
+The end goal for \name is to be included within the
+Chrome Browser. For this project, however, we used d8, v8's standalone
+JavaScript execution engine in lieu of the actual browser. We choose to do this
+to isolate the evaluation of \namens's and JavaScript's execution from the other
+tasks in a web browser.  Another issue is the sheer size of the chromium code.
+The chromium browser takes nearly 100GB and multiple hours to compile. They have
+posts dedicated to trying to minimize the compile overhead
+\cite{linuxfasterbuilds}.  Since we had to compile often, the d8 environment,
+where compilation was often well under a minute, was much more practical.
+
+Now that the \name is complete, porting the extension to Chrome should be
+simple. The porting should be able to done in two steps. First, out extensions
+needs to be included alongside v8 and the \texttt{webcuda} object must be
+exposed.  Next, sandboxing either needs to be disabled or extended to allow for
+the necessary \name calls. Chrome sandboxes all JavaScript execution for
+security reasons. This is to limit the types of interactions JavaScript
+application can have with the system so malicious programmers can access to
+sensitive material. We must adjust this security policy to allow the CUDA Driver
+API calls to pass through the sandboxed environment to the proper drivers. 
+
+
 \subsection{Future Work}
+\label{future}
+The obvious next steps for \name are to establish a security policy, as
+discussed in Section~\ref{security} and to integration our extension into the
+Chrome browser. For security reasons, \name must enforce similar measures as
+imposed by WebCL, namely having the runtime monitor memory accesses and
+including the ability to terminate contexts using disproportionate amounts of
+resources. Both security measures do not have clear solutions, since they involve
+altering the CUDA Runtime and drivers. We hope that future NVidia products will
+provide tools to create a more secure GPU programming environment.
+
+Integrating \name into Chrome, as discussed in Section~\ref{chromeIntegration} should be
+straightforward. The time constraints of this project are the only reason this
+has yet to be done. We hope to in the future \name will be integrated into
+Chrome to have direct comparisons against WebCL.
+
+More far off work is to enable native JavaScript application to be run on the
+GPU. This involves altering the compiler to recognize sections of JavaScript
+amenable for running on the GPU and performing the necessary translation measure
+to execute these code regions on the GPU. This will allow \name code on
+platforms without CUDA-enabled devices, since the code is native JavaScript. A recent work,
+ParallelJS~\cite{parallelJS}, has created a runtime framework to execute
+JavaScript on the GPU and is discussed in Section~\ref{related}.
+
+
