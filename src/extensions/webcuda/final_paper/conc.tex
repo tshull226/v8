@@ -1,3 +1,16 @@
 
-Need to see what is the difference between this and the abstract. Think it
-should be probably me no more than a paragraph or two.
+This paper introduces \namens, an extension to provide CUDA-bindings
+within the JavaScript Domain. \name allows programmers to improve web
+application performance through allocating work to the GPU. The specification
+closely mirrors the CUDA Driver API and trying to make porting programs from the
+CUDA domain as intuitive as possible.
+
+We have implemented a version of \name on top of the V8 JavaScript JIT Compiler. 
+All code and documentation has been released to the public domain so that anyone
+can use and modify \name as they see fit. Future iterations should include
+support for additional CUDA functionality to enable higher performance
+
+We test our implementation of \name against native JavaScript and CUDA
+performance over several benchmarks prevalent in scientific computing. Overall,
+we achieve a XX\% speedup over JavaScript and are within XX\% of native CUDA
+performance.

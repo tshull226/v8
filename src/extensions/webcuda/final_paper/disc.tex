@@ -73,6 +73,16 @@ while these hurt \namens's compared to CUDA, the main goal of \name is to
 improve performance in the browser domain, which as shown in Section~\ref{eval}
 is successfully accomplished.
 
+\subparagraph{Cross-Domain Support}
+Since CUDA codes can only run on NVidia devices, \name cannot run on every
+platform. Therefore, the programmer must create two versions of their code to
+account for whether they run on a \namens-enabled device or not. This is common
+for other features such as WebGL and to account for the various ways different
+browsers support the DOM in JavaScript. The ideal solution is either NVidia
+extends their compiler support to include non-NVidia products or \name is
+augmented with support for running natively JavaScript programs on the GPU, as
+discussed in Section~\ref{future}.
+
 \subparagraph{The Great Unknown}
 Due to the author's lack of expertise in CUDA programming, it is likely \name
 does not have some functionality which experienced CUDA programmers may deem
@@ -133,6 +143,7 @@ a certain class of applications.
 %different due to the different backends.
 
 \subsection{Security}
+\label{security}
 While we feel web apps should be able to leverage the GPU as necessary
 throughout their execution, necessary security measures must be taken before
 this can happen. Currently CUDA applications can crash one's computer. The
@@ -189,7 +200,9 @@ Due to previous security issues, not all browsers have adapted and enabled WebGL
 extensions by default. In Safari \cite{safari}, the extension is disabled by
 default and Internet Explorer \cite{IE} has yet to fully implement the standard.
 
-\subsection{Chrome Browser Integration} The end goal for \name is to be included within the
+\subsection{Chrome Browser Integration} 
+\label{chromeIntegration}
+The end goal for \name is to be included within the
 Chrome Browser. For this project, however, we used d8, v8's standalone
 JavaScript execution engine in lieu of the actual browser. We choose to do this
 to isolate the evaluation of \namens's and JavaScript's execution from the other
@@ -207,13 +220,31 @@ the necessary \name calls. Chrome sandboxes all JavaScript execution for
 security reasons. This is to limit the types of interactions JavaScript
 application can have with the system so malicious programmers can access to
 sensitive material. We must adjust this security policy to allow the CUDA Driver
-API calls to pass through the sandboxed environment to the proper drivers. {\bf ASK JIHO
-ABOUT THIS}
+API calls to pass through the sandboxed environment to the proper drivers. 
 
 
 \subsection{Future Work}
 \label{future}
+The obvious next steps for \name are to establish a security policy, as
+discussed in Section~\ref{security} and to integration our extension into the
+Chrome browser. For security reasons, \name must enforce similar measures as
+imposed by WebCL, namely having the runtime monitor memory accesses and
+including the ability to terminate contexts using disproportionate amounts of
+resources. Both security measures do not have clear solutions, since they involve
+altering the CUDA Runtime and drivers. We hope that future NVidia products will
+provide tools to create a more secure GPU programming environment.
 
-{\bf WRITE THIS}
+Integrating \name into Chrome, as discussed in Section~\ref{chromeIntegration} should be
+straightforward. The time constraints of this project are the only reason this
+has yet to be done. We hope to in the future \name will be integrated into
+Chrome to have direct comparisons against WebCL.
+
+More far off work is to enable native JavaScript application to be run on the
+GPU. This involves altering the compiler to recognize sections of JavaScript
+amenable for running on the GPU and performing the necessary translation measure
+to execute these code regions on the GPU. This will allow \name code on
+platforms without CUDA-enabled devices, since the code is native JavaScript. A recent work,
+ParallelJS~\cite{parallelJS}, has created a runtime framework to execute
+JavaScript on the GPU and is discussed in Section~\cite{related}.
 
 
