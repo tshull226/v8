@@ -31,13 +31,12 @@ While the current \name specification and implementation has enough
 functionality for many CUDA implementations, many CUDA Runtime features do not
 have a mapping in \namens. Below we highlight some limitations of \namens.
 
-\subparagraph{Streaming Memory}
- One of the major limitations of \namens, as seen in
-Section~\ref{eval}, is the lack of support for CUDA Streaming Memory
-\cite{cuStream}. The authors felt Streaming Memory is not a core
-CUDA feature and felt is was outside of the scope of this project.
-Luckily, there is no fundamental reason CUDA Streams cannot be integrated into 
-\name and can easily be added in future versions.
+\subparagraph{Streaming Memory} One of the major limitations of \namens, as seen
+in Section~\ref{eval}, is the lack of support for CUDA Streaming Memory. The
+authors felt Streaming Memory is not a core CUDA feature and felt is was outside
+of the scope of this project.  Luckily, there is no fundamental reason CUDA
+Streams cannot be integrated into \name and can easily be added in future
+versions.
 
 \subparagraph{Multiple Dimensioned Arrays}
 As JavaScript implements multiple dimensioned arrays, as an array of potentially
@@ -101,10 +100,10 @@ possible.
 
 \subsection{\name vs WebCL}
 \label{webCLDisc}
-The Khronos Group \cite{khronos}, the consortium behind the OpenCL
+The Khronos Group, the consortium behind the OpenCL
 \cite{openCL}, OpenGL \cite{openGL}, and many other specifications, has also
 proposed a specification to bring OpenCL-like bindings to JavaScript named WebCL
-\cite{webCL}. This project is very similar to \name except the bindings are for
+\cite{webCLSpec}. This project is very similar to \name except the bindings are for
 OpenCL instead of CUDA.
 
 Like \namens, the actual GPU kernels must be written in OpenCL (vs CUDA in
@@ -194,11 +193,11 @@ resulting value cannot be read. However, the shader can be made in such a way
 that the length of its runtime is dependent on the value of the pixel and hence
 the image can be inferred. Recent specifications prevent these types of attacks
 by requiring textures to be validated by Cross-Origin Resource Sharing
-(CROS)~\cite{cros}.
+(CROS).
 
 Due to previous security issues, not all browsers have adapted and enabled WebGL
-extensions by default. In Safari \cite{safari}, the extension is disabled by
-default and Internet Explorer \cite{IE} has yet to fully implement the standard.
+extensions by default. In Safari, the extension is disabled by
+default and Internet Explorer has yet to fully implement the standard.
 
 \subsection{Chrome Browser Integration} 
 \label{chromeIntegration}
@@ -245,6 +244,6 @@ amenable for running on the GPU and performing the necessary translation measure
 to execute these code regions on the GPU. This will allow \name code on
 platforms without CUDA-enabled devices, since the code is native JavaScript. A recent work,
 ParallelJS~\cite{parallelJS}, has created a runtime framework to execute
-JavaScript on the GPU and is discussed in Section~\cite{related}.
+JavaScript on the GPU and is discussed in Section~\ref{related}.
 
 
