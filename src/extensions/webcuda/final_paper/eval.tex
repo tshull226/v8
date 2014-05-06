@@ -65,13 +65,17 @@ We run all experiments on the Amazon EC2 instance to ensure an isolated executio
 
 \subsection{Results}
 
-\paragraph{Execution Time}
+\paragraph{Comparison with JavaScript}
 Figure 4 shows that WebCUDA is about an order of magnitude faster than JavaScript, and on average, it achieves 9x speedup over JavaScript. As shown in Figure 5, while JavaScript benchmarks takes most of time on the computation, it is negligible in WebCUDA and CUDA benchmarks thanks to the combination of parallel nature of the benchmarks and CUDA device optimized for such parallel computation. WebCUDA introduces compilation and runtime overhead to make use of CUDA device and some memory overhead
 for CUDA memory allocation and data transfer between CPU and CUDA device, but the huge gain from the computation more than justifies such overheads.
-Compared to CUDA benchmarks, however, WebCUDA still experiences 5x slowdown on average.
+
+\paragraph{Comparison with CUDA}
+Compared to CUDA benchmarks, however, WebCUDA still experiences 5x slowdown on average. It is mainly due to two reasons. First, WebCUDA has runtime and compilation overhead which is not present in CUDA. Second, memory allocation on CPU takes much more time on WebCUDA. WebCUDA allocates CPU memory using JavaScript constructor functions while CUDA allocates CPU memory through malloc calls. We suspect that a level of indirection for memory allocation in JavaScript would be a source of
+slowdown and leave it as a future work to analyze memory performance between JavaScript and CUDA.
 
 \paragraph{Compilation Overhead}
-Figure 6 shows that compilation overhead is significant which takes up 48\% of the total execution time. It is time to translate a cu file, which is a source code written in CUDA, into a ptx file, which is in the form of intermediate representation for the CUDA-enabled graphics driver. WebCUDA provides a mean to load a ptx file or a cubin file instead which will basically remove the compilation overhead and lead to extra 2x speedup over the native JavaScript. A developer may choose to load a ptx file for better performance at the cost of extra maintenance effort of compiling a cu file offline. In addition, as a ptx file is difficult to read without knowledge of intermediate representation, it will reduce readability and reusability of source code which is one of web application’s benefits.
+Figure 6 shows that compilation overhead is significant which takes up 48\% of the total execution time. It is time to translate a cu file, which is a source code written in CUDA, into a ptx file, which is in the form of intermediate representation for the CUDA-enabled graphics driver. WebCUDA provides a mean to load a ptx file or a cubin file instead which will basically remove the compilation overhead and lead to extra 2x speedup over the native JavaScript. A developer may choose to
+load a ptx file for better performance at the cost of extra maintenance effort of compiling a cu file offline. In addition, as a ptx file is difficult to read without knowledge of intermediate representation, it will degrade readability and reusability of source code which is one of benefits of web applications.
 
 \paragraph{V8 Runtime Overhead}
 Runtime overhead is introduced by WebCUDA Runtime overhead takes 7.9\% on average of the total execution time for WebCUDA benchmarks. As shown in Figure 7, maintaining CUDA execution context is responsible for most of the overhead.
