@@ -3,26 +3,26 @@
 %(
 We have implemented our \name standard within Google's V8 \cite{V8website}
 compiler.   We chose to use the Google V8  compiler for our implementation due
-to prior experience with the compiler that provided us with a solid
+to prior experience working with V8 that  provided us with a solid
 understanding on the compiler's internals. In addition, V8 is considered a state
 of the art JavaScript JIT compiler and is extremely prevalent due to its
 inclusion in the Chromium browser \cite{chromium} and other projects such as
 NodeJS \cite{nodeJS} and V8.NET \cite{V8.NET}. We have extended V8 through its
-external API and integrated the extension in d8, V8's standalone JavaScript
+external API and integrated the extension into d8, V8's standalone JavaScript
 execution engine. 
 
 In total, our implementation is slightly more than 800 LOC, and is very
 self-contained. By using the external V8 API, no modifications (except for
 profiling purposes) had to be made to V8's code base. By not modifying internal
 structures, there is no effect on the performance of JavaScript and native
-JavaScript runs in our implementation without any additional overheads.
+JavaScript code runs in our implementation without any additional overheads.
 
 Below, we provide a high-level overview and explanation of main features of
 \namens's implementation in V8.  Complete documentation for \namens's implementation,
 generated with Doxygen \cite{doxygen}, can be found at
 \url{http://tshull226.synology.me/CS598SVA/doxygen/index.html}. We
 have also released our code to the project domain through GitHub \cite{github}.
-Our repository can be found at
+Our repository is located at
 \url{https://github.com/tshull226/v8/tree/master/src/extensions/webcuda}.
 
 At a high level, our implementation wraps main CUDA Driver API \cite{cudaAPI}
@@ -35,7 +35,7 @@ needing to use nvcc \cite{nvcc}.
 Our implementation is able to store handles to CUDA structs by wrapping them
 within JavaScript objects. JavaScript objects are allowed to have internal
 fields, inaccessible to programmers, that the compiler can use to store various
-information about the object. Therefore, we wrap CUDA structs in a way such that
+information about the object. In other words, we wrap CUDA structs in a way such that
 basic CUDA information is available to the user (such as whether the object was
 successfully created), and internal fields contain the information
 necessary for performing CUDA Driver API calls.
@@ -69,7 +69,7 @@ V8.
 Our implementation class structure closely mirrors the specification, with
 function wrappers broken into files and classes based on their functionality.
 Figures~\ref{v8codea} and \ref{v8codeb} show code examples of common routines
-executed extensively throughout our code both to wrap CUDA structs in a
+patterns throughout our code both to wrap CUDA structs in a
 JavaScript Object and unwrap CUDA structs from a JavaScript Object for CUDA
 Driver API calls.  
 
@@ -81,7 +81,7 @@ JavaScript Object.  The wrapper method receives only 1 parameter of type
 \textit{FunctionCallBackInfo}. This parameter contains all essential information
 about the function's caller, various arguments passed to the function with
 JavaScript, as well as a handle to the object which will be returned by this
-function, which by default is of type undefined. 
+function. 
 
 Line 2 creates the HandleScope manager for this function.  HandleScopes are V8's
 approach to managing garbage collection of JavaScript objects within a function. It
@@ -92,11 +92,11 @@ guide~\cite{embeddersGuide}.
 Lines 4 and 5 retrieve the integer value given as
 input to the function. Arguments passed to the JavaScript function are stored
 as indexes in the argument received in the C++ domain. Since in JavaScript
-Integer primitives must be wrapped for function calls, our code must extract the
-integer value from the Object.
+Integer primitives must be wrapped for function calls, our code must unbox the
+Object.
 
 Lines 7 and 8 show the creation of the C++ Device object and the calling of the
-CUDA Driver API method, \textit{cuDeviceGet}, that returns a pointer to a
+CUDA Driver API method, \textit{cuDeviceGet()}, that returns a pointer to a
 cuDevice handle. We created the Device Class to store this value.
 
 Lines 10 and 11 create the JavaScript object to store the C++ Device Object. A
@@ -120,9 +120,9 @@ Figure~\ref{v8codeb} shows the code implementing the \name feature
 the parameter passed to the function. 
 
 As in the previous example, Line 2 creates a HandleScope manager for this
-function.  Line 4 performs multiple functions. First, it retrieves the parameter
-passed from the JavaScript function. Next, it casts the value of the pointer to
-a JavaScript object. Finally, it calls another member function, UnwrapDevicePtr, a
+function.  Line 4 performs multiple functions: first, it retrieves the parameter
+passed from the JavaScript function; next, it casts the value of the pointer to
+a JavaScript object; finally, it calls another member function, UnwrapDevicePtr, a
 function used to extract the C++ Mem Object from the JavaScript Object. This
 process is repeated whenever a C++ class needs to be extracted from a JavaScript
 Object, leading to much code reuse.

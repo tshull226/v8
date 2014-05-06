@@ -108,11 +108,16 @@ done in the CUDA Runtime, is left as future work.
 %is created for a thread,  all memory allocations to a specific device, thus allow different processes to have
 %different unshared address spaces. 
 
-Figure~\ref{codeExample}, lines 2-7 shows the protocol for
-retrieving a handle to a CUDA-enabled device and creating a CUDA context. Since
-a context is associated with a specific CUDA device, a handle to a CUDA-enabled
-device must first be attained. Passed along with the handle to the device is a
-flag indicating any special features this CUDA context is to have.
+Figure~\ref{codeExample}, lines 2-7 shows the protocol for retrieving a handle
+to a CUDA-enabled device and creating a CUDA context. Since a context is
+associated with a specific CUDA device, a handle to a CUDA-enabled device must
+first be attained as is done in Line 3. \name specifies various
+programmer-visible fields that JavaScript Objects containing CUDA values should
+have. For instance, the JavaScript Object holding the result of Line 3 has
+fields denoting the CUDA device's name, the amount of memory on the device, and
+its compute capacity. Line 7 creates the new CUDA contexted. Passed along with
+the handle to the device is a flag indicating any special features this CUDA
+context is to have.
 
 \paragraph{Memory Allocation} Memory within the current CUDA context can be
 allocated through the \textit{webcuda.memAlloc()} function. Similar to
