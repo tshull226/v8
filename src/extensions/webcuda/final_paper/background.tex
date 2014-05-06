@@ -17,7 +17,7 @@ reload. In addition, there is a large collection of libraries, such as
 JQuery~\cite{JQuery}, used by programmers to provide users interactive browsing
 experiences.
 
-JavaScript is run either by an interpreter or Just-In-Time Compilation. In the
+JavaScript is run either by an interpreter or Just-In-Time compilation. In the
 JavaScript world, all variables are objects and can have fields and methods
 added to and removed from them on the fly. This limits the amount of
 optimization able to be performed, since the fields and objects are not static. In
@@ -31,8 +31,8 @@ processing resources available on GPUs more accessible for general purpose use.
 CUDA is a parallel programming platform developed by NVIDIA which allows
 programmers access to the graphics processing units. CUDA provides extensions to
 standard programming languages like C/C++ and Fortran to give programmers in
-these languages the option to move computation from more latency oriented CPUs
-to bandwidth oriented GPUs. 
+these languages the option to move computation from more latency-oriented CPUs
+to bandwidth-oriented GPUs. 
 
 %The Khronos group has standardized OpenCL
 %\cite{openCL}, a programming platform similar to CUDA which allows programs to
@@ -41,8 +41,8 @@ to bandwidth oriented GPUs.
 CUDA code is often divided into two parts: one part is the code designed to
 execute on the CPU or ``host'' while the second part is designed to execute on the
 GPU or ``device.''  While CUDA is simply an extension to C/C++ and Fortran, it
-requires a specific compiler for creating a CUDA executable. CUDA C/C++ uses
-NVIDIA's LLVM-based nvcc~\cite{nvcc} compiler. The resulting executable is split into a
+requires a specific compiler for creating a CUDA executable. For example, CUDA C/C++ uses
+nvcc~\cite{nvcc}, NVIDIA CUDA Compiler based on LLVM. The resulting executable is split into a
 CPU binary executable and either a .ptx or .cubin file which is to be run on the
 GPU.
 

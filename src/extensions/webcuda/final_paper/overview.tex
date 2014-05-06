@@ -118,12 +118,12 @@ flag indicating any special features this CUDA context is to have.
 allocated through the \textit{webcuda.memAlloc()} function. Similar to
 cuMemAlloc(), this function allocates a linear memory region containing the
 number of bytes given as a parameter. Lines 8 and 9 in Figure~\ref{codeExample}
-show the creation of device and host memory.  Our specification requires host
-memory JavaScript Objects to be Typed Arrays \cite{typedarray} in order to communicate
-with device memory. Typed Arrays are a feature of the new ``harmony''
-specification \cite{harmony}. Possible Types include Int16, UInt16, Int32, Float32, and many
-other variants. While typical JavaScript Arrays can hold arbitrary types of Objects and must be
-allocated accordingly, Type Arrays enforce data sizes and therefore can be
+show the creation of device and host memory.  Our specification requires JavaScript objects
+for communication with device memory to be Typed Arrays \cite{typedarray}.
+Typed Arrays are a feature of the new ``harmony'' specification \cite{harmony}.
+Possible types include Int16, Uint16, Int32, Float32, and many other variants.
+While typical JavaScript Arrays can hold arbitrary types of Objects and must be
+allocated accordingly, Typed Arrays enforce data sizes and therefore can be
 allocated the same way as C arrays. This allows for efficient communication
 between the host and device.
 
