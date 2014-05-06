@@ -78,15 +78,6 @@ void webcuda::Function::MakeFunctionObject(const v8::FunctionCallbackInfo<v8::Va
 void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Function* pfunction = UnwrapFunction(Handle<Object>::Cast(args[0]));
-	/*
-	//testing function
-	CUfunction *func = &(pfunction->m_function);
-	int test;
-	CUresult e1 = cuFuncGetAttribute(&test, CU_FUNC_ATTRIBUTE_NUM_REGS, *func);
-	cout << "test error:" << e1 << ", result:" << test << endl;
-	e1 = cuFuncGetAttribute(&test, CU_FUNC_ATTRIBUTE_MAX_THREADS_PER_BLOCK, *func);
-	cout << "test error:" << e1 << ", result:" << test << endl;
-	*/
 
 	Local<Array> gridDim = Local<Array>::Cast(args[1]);
 	unsigned int gridDimX = gridDim->Get(0)->Uint32Value();
@@ -99,20 +90,12 @@ void webcuda::Function::LaunchKernel(const v8::FunctionCallbackInfo<v8::Value>& 
 	unsigned int blockDimY = blockDim->Get(1)->Uint32Value();
 	unsigned int blockDimZ = blockDim->Get(2)->Uint32Value();
 
-	/*
-		 Local<Object> buf = args[3]->ToObject();
-	//char *pbuffer = Buffer::Data(buf);
-	char *pbuffer = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
-	//size_t bufferSize = Buffer::Length(buf);
-	size_t bufferSize =  buf->GetIndexedPropertiesExternalArrayDataLength();
-	*/
 
 
 	void **kernelParams = NULL;
 	void **pointerVals = NULL;
 	size_t ptrValLen = 0;
 	size_t sharedMemory = 0;
-	//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
 	Handle<Value> temp = args[3];
 	Handle<Integer> val = Handle<Integer>::Cast(temp);
 	sharedMemory = val->Value();

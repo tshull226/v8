@@ -44,7 +44,6 @@ void Module::Initialize(v8::Isolate* isolate, Handle<ObjectTemplate> webcuda_tem
 	//std::srand(std::time(NULL));
 	//ACUTALLY LIKE THE DETERMINSTIC ASPECT OF IT FOR THE TIME BEING
 
-  //target->Set(String::NewSymbol("Module"), constructor_template->GetFunction());
 }
 
 
@@ -65,7 +64,6 @@ Handle<Object> Module::MakeModuleObject_(Isolate* isolate) {
 	EscapableHandleScope handle_scope(isolate);
 	
 	Module* pmodule = new Module();
-	//cuDeviceGet(&(pdevice->m_device), deviceNum);
 
 	//creating object
 	Handle<ObjectTemplate> templ = Local<ObjectTemplate>::New(isolate, constructor_template);
@@ -101,10 +99,7 @@ void  Module::MakeModuleObject(const v8::FunctionCallbackInfo<v8::Value>& args) 
  */
 void Module::Load(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope scope(args.GetIsolate());
-	/*
-	Local<Object> result = constructor_template->InstanceTemplate()->NewInstance();
-	Module *pmodule = ObjectWrap::Unwrap<Module>(result);
-	*/
+
 	Handle<Object> result = MakeModuleObject_(args.GetIsolate());
 	Module *pmodule = UnwrapModule(result);
 
@@ -131,7 +126,6 @@ void Module::Unload(const v8::FunctionCallbackInfo<v8::Value>& args) {
 
 
 	if(module->HasOwnProperty(textHandle) || module->HasOwnProperty(strHandle)){
-		//Handle<Value> temp = obj->GetRealNamedProperty(String::NewFromUtf8(args.GetIsolate(), "devicePtr"));
 		Handle<Value> temp = module->Get(cuHandle);
 		String::Utf8Value fileValue1(temp);
 		string deleteFile(*fileValue1);
@@ -179,11 +173,15 @@ Handle<Object>  Module::InvokeNVCC_(Isolate *isolate, Handle<Value> kFileHandle)
 	cuFile +=	".cu";
 	std::string outFile(*kFile);
 	outFile += ".ptx";
+#ifdef V8_WEBCUDA_DEBUG
 	cout <<"trying" << endl;
+#endif
 	int nvcc_exit_status = std::system((std::string(NVCC) + " -ptx " + NVCC_FLAGS + " " + cuFile + " -o " + outFile).c_str());
 
 	if (nvcc_exit_status != 0){
+#ifdef V8_WEBCUDA_DEBUG
 		cout << "no go" << endl;
+#endif
 	}
 
 	Local<Object> returnValue = Local<Object>::Cast(String::NewFromUtf8(isolate, outFile.c_str()));
@@ -209,7 +207,7 @@ void Module::Compile(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	stringstream ss;
 	ss << random_val;
 	random_val = std::rand() % 10000;
-	ss << random_val;
+	ss << "__" << random_val;
 	string cuFileName = ss.str();
 
 	//write CUDA text to random file name
@@ -283,7 +281,7 @@ void Module::CompileText(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	stringstream ss;
 	ss << random_val;
 	random_val = std::rand() % 10000;
-	ss << random_val;
+	ss << "__" << random_val;
 	string cuFile = ss.str();
 
 	//copying text to cu file
@@ -322,6 +320,7 @@ void Module::GetFunction(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	String::Utf8Value name(args[1]);
 	CUresult error = cuModuleGetFunction(&(pfunction->m_function), pmodule->m_module, *name);
 
+#ifdef V8_WEBCUDA_DEBUG
 	if(error == CUDA_ERROR_NOT_FOUND){
 		cout << "could not find function " << *name << endl;
 	} else if (error == CUDA_SUCCESS){
@@ -329,6 +328,7 @@ void Module::GetFunction(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	} else{
 		cout << "back to drawing board" << endl;
 	}
+#endif
 
 
 	result->Set(String::NewFromUtf8(args.GetIsolate(), "name"), args[1]);

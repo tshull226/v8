@@ -54,25 +54,33 @@ void WebCUDA::Version(const v8::FunctionCallbackInfo<v8::Value>& args){
 void WebCUDA::GetDriverVersion(const v8::FunctionCallbackInfo<v8::Value>& args){
 	int driverVersion = 0;
 	cuDriverGetVersion(&driverVersion);
+#ifdef V8_WEBCUDA_DEBUG
 	cout << "Driver Version " << driverVersion << endl;
+#endif
 	args.GetReturnValue().Set(Integer::New(args.GetIsolate(), driverVersion));
 }
 
 void WebCUDA::GetDeviceCount(const v8::FunctionCallbackInfo<v8::Value>& args){
 	int deviceCount = 0;
 	cuDeviceGetCount(&deviceCount);
+#ifdef V8_WEBCUDA_DEBUG
 	cout << "Device Count " << deviceCount << endl;
+#endif
 	args.GetReturnValue().Set(Integer::New(args.GetIsolate(), deviceCount));
 }
 
 void WebCUDA::StartProfiling(const v8::FunctionCallbackInfo<v8::Value>& args){
 	cuProfilerStart();
+#ifdef V8_WEBCUDA_DEBUG
 	cout << "Profiling Started!" << endl;
+#endif
 	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Profiling Started!"));
 }
 
 void WebCUDA::StopProfiling(const v8::FunctionCallbackInfo<v8::Value>& args){
 	cuProfilerStop();
+#ifdef V8_WEBCUDA_DEBUG
 	cout << "Profiling Stopped!" << endl;
+#endif
 	args.GetReturnValue().Set(String::NewFromUtf8(args.GetIsolate(),"Profiling Stopped!"));
 }

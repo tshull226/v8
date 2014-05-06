@@ -64,8 +64,6 @@ namespace webcuda {
       ~Module() {}
 
     private:
- //     static Handle<Value> New(const Arguments& args);
-			
 			/**
 			 * \brief helper method for creating JavaScript Object used to represent CUDA file
 			 */
@@ -80,7 +78,6 @@ namespace webcuda {
 			 * \brief helper method to invoke nvcc
 			 */
 			static Handle<Object> InvokeNVCC_(Isolate* isolate, Handle<Value> kFile);
-			//static void InvokeNVCC_(String::Utf8Value kFile);
 			
 
 

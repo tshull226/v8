@@ -39,13 +39,6 @@ Handle<ObjectTemplate> Mem::MakeMemTemplate(Isolate* isolate) {
   Local<ObjectTemplate> result = ObjectTemplate::New(isolate);
   result->SetInternalFieldCount(1);
 
-	//Don't think I need any....
-  // Add accessors for each of the fields of the request.
-	/*
-  result->SetAccessor(
-      String::NewFromUtf8(isolate, "name", String::kInternalizedString),
-      Device::GetName);
-	*/
 
   // Again, return the result through the current handle scope.
   return handle_scope.Escape(result);
@@ -145,29 +138,15 @@ void Mem::CopyHtoD(const v8::FunctionCallbackInfo<v8::Value>& args) {
 	HandleScope handle_scope(args.GetIsolate());
 	Mem *pmem = UnwrapDevicePtr(Handle<Object>::Cast(args[0]));
 
-	/*Local<Object> buf = args[1]->ToObject();
-	//char *phost = Buffer::Data(buf);
-  char *phost = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
-	//size_t bytes = Buffer::Length(buf);
-  size_t bytes=  buf->GetIndexedPropertiesExternalArrayDataLength();
-	*/
 	Handle<ArrayBuffer> buf = Handle<ArrayBuffer>::Cast(args[1]);
 	v8::ArrayBuffer::Contents ctx = buf->Externalize();
   //char *phost = static_cast<char*>(ctx.Data());
   void *phost = ctx.Data();
 	size_t bytes = ctx.ByteLength();
 
-	//bool async = args.Length() >= 2 && args[2]->IsTrue();
 
 	CUresult error;
 	error = cuMemcpyHtoD(pmem->m_devicePtr, phost, bytes);
-	/*
-	if (async) {
-		error = cuMemcpyHtoDAsync(pmem->m_devicePtr, phost, bytes, 0);
-	} else {
-		error = cuMemcpyHtoD(pmem->m_devicePtr, phost, bytes);
-	}
-	*/
 
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
@@ -180,27 +159,11 @@ void Mem::CopyDtoH(const v8::FunctionCallbackInfo<v8::Value>& args) {
   //char *phost = static_cast<char*>(ctx.Data());
   void *phost = ctx.Data();
 	size_t bytes = ctx.ByteLength();
-	/*
-	Local<Object> buf = args[0]->ToObject();
-	//char *phost = Buffer::Data(buf);
-  char *phost = static_cast<char*>(buf->GetIndexedPropertiesExternalArrayData());
-	//size_t bytes = Buffer::Length(buf);
-  size_t bytes=  buf->GetIndexedPropertiesExternalArrayDataLength();
-	*/
 
 	Mem *pmem = UnwrapDevicePtr(Handle<Object>::Cast(args[1]));
 
-	//bool async = args.Length() >= 2 && args[2]->IsTrue();
-
 	CUresult error;
 	error = cuMemcpyDtoH(phost, pmem->m_devicePtr, bytes);
-	/*
-	if (async) {
-		error = cuMemcpyDtoHAsync(pmem->m_devicePtr, phost, bytes, 0);
-	} else {
-		error = cuMemcpyDtoH(pmem->m_devicePtr, phost, bytes);
-	}
-	*/
 
 	args.GetReturnValue().Set(Number::New(args.GetIsolate(), error));
 }
@@ -212,25 +175,5 @@ void* Mem::GetDevicePtr(Handle<Object> obj, size_t* bufsize){
 	*bufsize = sizeof(pmem->m_devicePtr);
 
 	return &(pmem->m_devicePtr);
-	
-	//enclosing device pointer info inside a array buffer
-	//Handle<ArrayBuffer> ptrbuf = ArrayBuffer::New(info.GetIsolate(), &pmem->m_devicePtr,sizeof(pmem->m_devicePtr));
-	/*
-	Handle<ArrayBuffer> ptrbuf = ArrayBuffer::New(info.GetIsolate(), sizeof(pmem->m_devicePtr));
-	v8::ArrayBuffer::Contents ctx = ptrbuf->Externalize();
-	memcpy(ctx.Data(), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
-	*/
 
 }
-//Not sure why this exists...
-/*
-	 Handle<Value> Mem::GetDevicePtr(Local<String> property, const AccessorInfo &info) {
-	 HandleScope scope;
-	 Mem *pmem = ObjectWrap::Unwrap<Mem>(info.Holder());
-	 Buffer *ptrbuf = Buffer::New(sizeof(pmem->m_devicePtr));
-
-	 memcpy(Buffer::Data(ptrbuf->handle_), &pmem->m_devicePtr, sizeof(pmem->m_devicePtr));
-
-	 return scope.Close(ptrbuf->handle_);
-	 }
-	 */

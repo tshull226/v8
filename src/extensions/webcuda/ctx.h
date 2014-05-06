@@ -27,7 +27,6 @@ namespace webcuda{
 			/**
 			 * \brief Delete CUDA context
 			 */
-			//static void Destroy(Local<String> name, const v8::PropertyCallbackInfo<v8::Value>& info);
 			static void  Destroy(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 			/**
@@ -59,12 +58,10 @@ namespace webcuda{
 			 * \brief retrieve current CUDA context
 			 */
 			static void  GetCurrent(const v8::FunctionCallbackInfo<v8::Value>& args);
-			//static void  MakeCtxObject(const v8::FunctionCallbackInfo<v8::Value>& args);
 
 			static Ctx* UnwrapCtx(Handle<Object> obj);
 
 			Ctx() : m_context(0) {}
-			//Ctx() : m_context(0), sync_in_progress(false) {}
 
 			~Ctx () {}
 
@@ -81,14 +78,6 @@ namespace webcuda{
 
 			CUcontext m_context;
 
-			/*
-				 bool sync_in_progress;
-
-				 uv_work_t work_req_;
-
-				 static void Process(uv_work_t* work_req);
-				 static void After(uv_work_t* work_req, int status);
-				 */
 	};
 
 }

@@ -73,7 +73,6 @@ namespace webcuda {
 
       CUdeviceptr m_devicePtr;
 
-//      friend class NodeCuda::Function; NEED TO SEE WHY THIS IS HERE...
   };
 
 }

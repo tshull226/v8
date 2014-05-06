@@ -44,8 +44,6 @@ namespace webcuda {
     private:
       static Handle<ObjectTemplate> MakeDeviceTemplate(Isolate* isolate);
 
-
-//      friend class Ctx; DON'T THINK THAT I NEED THIS ANYMORE
   };
 
 }

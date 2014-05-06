@@ -50,7 +50,6 @@ var webcuda = {
 	 */
 	"getFunction" : function(module, kernelName){},
 	/**
-	 * @deprecated need to create new module type
 	 * compiles the given string into a handle to a CUDA module
 	 * @param {string} module
 	 * @return {ModuleStr} a new {@link Module} Object
@@ -144,7 +143,7 @@ var webcuda = {
 	"destroyCtx" : function(ctx){},
 	/**
 	 * asynchronous launches the cuda kernel specified. See <a href="http://developer.download.nvidia.com/compute/cuda/4_1/rel/toolkit/docs/online/group__CUDA__EXEC_gb8f3dc3031b40da29d5f9a7139e52e15.html#gb8f3dc3031b40da29d5f9a7139e52e15">cuLaunchKernel</a> for more details
-	 * @param func {Function} the kernel function to launch
+	 * @param func {Kernel} the kernel function to launch
 	 * @param {int[]} gridDim the grid dimensions (3D) for launch. NOTE: to work correctly must have an array of length 3
 	 * @param {int[]} blockDim the threadblock dimensions (3D) for launch. NOTE: to work correctly must have an array of length 3
 	 * @param {int} sharedMem the number of bytes of shared memory per thread block
@@ -155,19 +154,31 @@ var webcuda = {
 };
 
 /** @class */
-function Device() {
+function Compute(){
 	/**
-	 *
-	 */
-	this.name = 0;
-	/**
-	 *
+	 * {number} major version number of the device
 	 */
 	this.major = 0;
 	/**
-	 *
+	 * {number} minor version number of the device
 	 */
 	this.minor = 0;
+}
+
+/** @class */
+function Device() {
+	/**
+	 * {string} name of the CUDA device
+	 */
+	this.name = 0;
+	/**
+	 * {number} total amount of memory in Device
+	 */
+	this.totalMem = 0;
+	/**
+	 * {Compute} information about the compute Capabilities
+	 */
+	this.computeCapability = 0;
 }
 
 /** @class */
@@ -177,10 +188,47 @@ function Module() {
 	 */
 	this.fname = 0;
 	/**
-	 * error value deonting whether the loading of the module was successful (error==0) or not (error!=0)
+	 * error value denoting whether the loading of the module was successful (error==0) or not (error!=0)
 	 */
 	this.error = 0;
 }
+
+/** @class */
+function ModuleTxt() {
+	/**
+	 * {string} name of the .cu File generated
+	 */
+	this.cuName = 0;
+	/**
+	 * {string} name of the file kernel was extracted from
+	 */
+	this.fname = 0;
+	/**
+	 * error value denoting whether the loading of the module was successful (error==0) or not (error!=0)
+	 */
+	this.error = 0;
+}
+
+/** @class */
+function ModuleStr() {
+	/**
+	 * {string} the CUDA string used to make the kernel
+	 */
+	this.cudaString = 0;
+	/**
+	 * {string} name of the .cu File generated
+	 */
+	this.cuName = 0;
+	/**
+	 * {string} name of the file kernel was extracted from
+	 */
+	this.fname = 0;
+	/**
+	 * error value denoting whether the loading of the module was successful (error==0) or not (error!=0)
+	 */
+	this.error = 0;
+}
+
 
 /** @class */
 function Kernel() {

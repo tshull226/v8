@@ -3,7 +3,6 @@
 
 #include <cuda.h>
 #include <v8.h>
-//#include "module.hpp" need to see why i need this
 
 using namespace v8;
 
@@ -46,7 +45,6 @@ namespace webcuda {
       ~Function() {}
 
     private:
-      //static Handle<Value> New(const Arguments& args); shouldn't need this
 			
 			/**
 			 * \brief helper method for creating JavaScript Object used to represent CUDA kernel
@@ -59,7 +57,6 @@ namespace webcuda {
       static Handle<ObjectTemplate> MakeFunctionTemplate(Isolate* isolate);
 
 
-      //friend Handle<Value> Module::GetFunction(const Arguments&); see why i need this...
   };
 
 }
