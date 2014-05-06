@@ -156,7 +156,7 @@ multiple CUDA kernels from the multiple sources.
 
 \paragraph{Kernel Execution} Lines 18-28 show the setup and execution of the
 CUDA kernel. The grid and block dimensions must be passed to the kernel as
-arrays of Integers. Note that in the current implementation of \namens, all
+arrays of integers. Note that in the current implementation of \namens, all
 dimensions must explicitly be given a value, unlike the CUDA runtime where
 unfilled dimensions are implicitly assigned the value 1. \name has support for
 shared memory; the amount needed must be given in byte size. Finally, parameters
