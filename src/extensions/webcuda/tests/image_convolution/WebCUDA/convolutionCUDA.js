@@ -11,10 +11,12 @@ var ROWS_RESULT_STEPS = 8;
 var ROWS_HALO_STEPS = 1;
 
 //need to make input of proper typed array
-function convertInput(input){
+function convertInput(input, profiler){
 	var i;
 	var size = input.length;
+	profiler.start("Allocating host memory");
 	var output = new Float32Array(size);
+	profiler.stop("Allocating host memory");
 	for(i = 0; i < size; i++){
 		output[i] = input[i];
 	}
@@ -28,7 +30,7 @@ function assert(condition){
 	}
 }
 
-function runCUDA(h_K, h_I){
+function runCUDA(h_K, h_I, profiler) {
 	//Retrieving Device
 	if(DEBUG) print("retrieving Device Info");
 	profiler.start("Retrieving device info");
@@ -43,9 +45,11 @@ function runCUDA(h_K, h_I){
 
 	//Creating host memory for pixel array
 	if(DEBUG) print("creating host memory");
+	//var h_Kernel = convertInput(h_K, profiler);
+	//var h_Input = convertInput(h_I, profiler);
+	var h_Kernel = h_K;
+	var h_Input = h_I;
 	profiler.start("Allocating host memory");
-	var h_Kernel = convertInput(h_K);
-	var h_Input = convertInput(h_I);
 	var h_Output = new Float32Array(imageW * imageH);
 	var h_Buffer = new Float32Array(imageW * imageH);
 	profiler.stop("Allocating host memory");
@@ -61,7 +65,6 @@ function runCUDA(h_K, h_I){
 	if(DEBUG) print("d_A size: "+d_Output.size+" error: "+d_Output.error);
 	if(DEBUG) print("d_A size: "+d_Buffer.size+" error: "+d_Buffer.error);
 	profiler.stop("Allocating CUDA memory");
-
 
 	//copying data to device
 	if(DEBUG) print("copying CUDA initial parameters to device");
@@ -96,7 +99,7 @@ function runCUDA(h_K, h_I){
 	profiler.start("kernel");
 	for(var i = 0; i < numIterations; i++){
 		convolutionRowsGPU(rowFunc, d_Buffer, d_Input, d_Kernel, imageW, imageH);
-		webcuda.synchronizeCtx();
+		//webcuda.synchronizeCtx();
 		convolutionColumnsGPU(columnFunc, d_Output, d_Buffer, d_Kernel, imageW, imageH);
 		webcuda.synchronizeCtx();
 	}
@@ -136,7 +139,6 @@ function runCUDA(h_K, h_I){
 	profiler.stop("Destorying CUDA context");
 
 	return d_Output;
-
 }
 
 function convolutionRowsGPU(

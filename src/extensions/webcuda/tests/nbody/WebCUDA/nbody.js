@@ -7,7 +7,7 @@ var threadSize = 16;
 var blockSize = 8;
 var filepath = "tests/nbody/data/tab1024";
 
-function loadData(path){
+function loadData(path, profiler) {
 	var data = read(path);
 	var result = data.replace(/\r?\n|\r/g, " ");
 	var temp = result.replace(/\s+/g,' ').trim();
@@ -19,8 +19,10 @@ function loadData(path){
 	numBodies = length/7;
 	if(DEBUG) print("numbodies " + numBodies);
 
+	profiler.start("Allocating host memory");
 	var position = new Float32Array(numBodies*4);
 	var velocity = new Float32Array(numBodies*3); 
+	profiler.stop("Allocating host memory");
 
 	for(i = 0; i < numBodies; i++){
 		position[i*4 + 3] = parseFloat(data[i*7]);
@@ -57,9 +59,9 @@ function main(){
 
 	webcuda.startProfiling();
 	var profiler = new Profiler();
-	profiler.start("Total");
+	//profiler.start("Total");
 	var cudaResult = runCuda(filepath, profiler);
-	profiler.stop("Total");
+	//profiler.stop("Total");
 	profiler.print();
 	webcuda.stopProfiling();
 
@@ -82,11 +84,9 @@ function runCuda(path, profiler){
 
 	//Creating host memory for pixel array
 	if(DEBUG) print("creating host memory");
-	profiler.start("Allocating host memory");
-	var data = loadData(path);
+	var data = loadData(path, profiler);
 	var h_X = data.X;
 	var h_V = data.V;
-	profiler.stop("Allocating host memory");
 
 	//Creating device memory for pixel array
 	if(DEBUG) print("allocating CUDA memory");
@@ -120,11 +120,9 @@ function runCuda(path, profiler){
 	if(DEBUG) print("name: " + cuFunc.name + " error: " + cuFunc.error);
 	profiler.stop("Retrieving function from module");
 
-
 	//Calculating the number of shared memory bytes needed
 	var sharedMem = threadSize*4*4;
 	if(DEBUG) print("shared memory size: " + sharedMem);
-
 
 	//Launching the Kernel
 	if(DEBUG) print("trying to launch kernel");
@@ -132,11 +130,8 @@ function runCuda(path, profiler){
 	var launchResult = webcuda.launchKernel(cuFunc, [blockSize,1,1], [threadSize,1,1], sharedMem, [{"memParam" : d_X}, {"memParam" : d_V},{"intParam" : numBodies} , {"intParam" : numIterations}, {"floatParam" : timeStep}]);
 	if(DEBUG) print("launch result: " + launchResult);
 	if(DEBUG) print("launched kernel...");
-	profiler.stop("kernel");
-
-	//Synchronizing for Context to Complete
 	webcuda.synchronizeCtx();
-
+	profiler.stop("kernel");
 
 	//Retrieving Data from CUDA Device Memory
 	if(DEBUG) print("copying CUDA Mem Result to device");
@@ -180,7 +175,6 @@ function runCuda(path, profiler){
 
 	//returning value
 	return {"positions" : h_X};
-
 }
 
 function runJS(path){

@@ -1,8 +1,8 @@
 
 function runJS(h_Kernel, h_Input){
 	print("Starting JavaScript Execution!");
-	var h_Buffer = new Array(imageW * imageH);
-	var h_Output = new Array(imageW * imageH);
+	var h_Buffer = new Float32Array(imageW * imageH);
+	var h_Output = new Float32Array(imageW * imageH);
 	var i;
 	
 	for(i = 0; i < numIterations; i++){

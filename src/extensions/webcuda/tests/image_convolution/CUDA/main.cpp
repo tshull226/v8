@@ -67,8 +67,8 @@ int main(int argc, char **argv)
 
     float hostMemAlloc, deviceMemAlloc, findDev,  memcpyHtoD, memcpyDtoH, kernel, hostMemFree, deviceMemFree;
 
-    const int imageW = 4096;
-    const int imageH = 4096;
+    const int imageW = 8192;
+    const int imageH = 8192;
     const int iterations = 0;
 
     StopWatchInterface *hTimer = NULL;
@@ -252,7 +252,7 @@ int main(int argc, char **argv)
     cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
 
     printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nFind Device: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
-    hostMemAlloc*1000000, deviceMemAlloc*1000000,findDev*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
+    hostMemAlloc*1000, deviceMemAlloc*1000,findDev*1000,memcpyHtoD*1000, kernel*1000,memcpyDtoH*1000, hostMemFree*1000, deviceMemFree*1000);
 
     sdkDeleteTimer(&hTimer);
 
