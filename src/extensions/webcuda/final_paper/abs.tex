@@ -1,22 +1,23 @@
 
 The proliferation of web apps has let to an increased reliance on JavaScript in
 recent years. However, due to its single-threaded semantics, the performance of
-JavaScript has not been able to match the demands required by future applications. In
-this paper we introduce \name, a new way to enable heterogeneous computing
-within the browser.
+JavaScript has not been able to match the demands required by computationally
+intensive applications. In this paper we introduce \namens, a new way to enable
+heterogeneous computing within the browser.
 
 \name allows JavaScript programmers to launch CUDA kernels within JavaScript
 code. We have extended the JavaScript language to allow for the management of
-the CUDA runtime within a JavaScript program, including allocating CUDA memory,
-transferring data between the JavaScript and CUDA domains, and compiling and
-launching CUDA kernels. In this paper we describe our extension as well as
-\name's
-implementation within a JavaScript compiler.
+the CUDA runtime within a JavaScript program, including functionality to
+allocate CUDA memory, transfer data between the JavaScript and CUDA domains,
+compile CUDA code, and launch CUDA kernels. In this paper we describe our
+extension as well as \namens's implementation within a high-performance
+JavaScript compiler.
 
-We have implemented \name within the Chrome V8 compiler
-to test the effectiveness of the JavaScript extensions within a state of the art
-Just-in-Time (JIT) Compiler. We examine the performance of \name compare to CUDA
-and JavaScript over several benchmarks prevalent in scientific computing.
-Overall, we achieve a XX\% speedup over JavaScript and are within XX\% of native CUDA
-performance.
+We have implemented \name within the Chrome V8 code base to test the
+effectiveness of the JavaScript extensions within a state of the art
+Just-in-Time (JIT) compiler. We examine the performance of \name compared to
+CUDA and JavaScript over several benchmarks prevalent in scientific computing,
+evaluating both the execution time and runtime overheads.  Overall, we achieve a
+XX\% speedup over the JavaScript benchmarks without any degradation to native
+JavaScript performance.
 

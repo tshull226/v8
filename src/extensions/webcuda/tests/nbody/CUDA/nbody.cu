@@ -4,7 +4,7 @@
 
 #define NUMBODIES 1024
 #define TIMESTEP 0.01 
-#define NUMITERATIONS 10 
+#define NUMITERATIONS 1
 #define NUMTHREADS 64
 #define NUMBLOCKS 16 
 
@@ -150,9 +150,24 @@ int main(void)
 
 	char * pathname = "../data/tab1024";
 
+    cudaEvent_t start_event, stop_event;
+    int eventflags = cudaEventDefault;
+    
+    float hostMemAlloc, deviceMemAlloc, memcpyHtoD, memcpyDtoH, kernel, hostMemFree, deviceMemFree;
+    cudaEventCreateWithFlags(&start_event, eventflags);
+    cudaEventCreateWithFlags(&stop_event, eventflags);
+
 	//allocate host memory for position, velocity
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
 	float4 *h_X = (float4 *) malloc(sizeof(float4) * NUMBODIES);
 	float3 *h_V = (float3 *) malloc(sizeof(float3) * NUMBODIES);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&hostMemAlloc, start_event, stop_event);
+
+
+
 
 	read_file(pathname, NUMBODIES, h_X, h_V);
 
@@ -163,20 +178,32 @@ int main(void)
 
 	// Allocate the device input image 
 	float4 *d_X = NULL;
-	err = cudaMalloc((void **)&d_X, NUMBODIES*sizeof(float4));
-	check_CUDA_op(err, "Failed to allocate device memory for position array");
-
 	float3 *d_V = NULL;
+
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+
+
+	err = cudaMalloc((void **)&d_X, NUMBODIES*sizeof(float4));
 	err = cudaMalloc((void **)&d_V, NUMBODIES*sizeof(float3));
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&deviceMemAlloc, start_event, stop_event);
+
 	check_CUDA_op(err, "Failed to allocate device memory for vector array");
 
 	//Copy position, vector data over to kernel
 	printf("Copy position data from the CUDA device to the host memory\n");
-	err = cudaMemcpy(d_X, h_X, NUMBODIES*sizeof(float4), cudaMemcpyHostToDevice);
-	check_CUDA_op(err, "Failed to copy position data to device");
 
-	printf("Copy vector data from the CUDA device to the host memory\n");
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
+	err = cudaMemcpy(d_X, h_X, NUMBODIES*sizeof(float4), cudaMemcpyHostToDevice);
 	err = cudaMemcpy(d_V, h_V, NUMBODIES*sizeof(float3), cudaMemcpyHostToDevice);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&memcpyHtoD, start_event, stop_event);
+
 	check_CUDA_op(err, "Failed to copy vector data to device");
 
 
@@ -187,28 +214,58 @@ int main(void)
 	blocks = dim3(NUMBLOCKS);
 	threads = dim3(NUMTHREADS);
 	printf("CUDA kernel launch with %d blocks of %d threads\n", blocks.x, threads.x);
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
 	calculate_forces<<< blocks, threads, shared_mem_size >>>(d_X, d_V, NUMBODIES, NUMITERATIONS, TIMESTEP);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&kernel, start_event, stop_event);
+
+
+
+
 	err = cudaGetLastError();
 	check_CUDA_op(err, "Failed to to launch calculate_forces kernel");
 
 
 	printf("Copy output data from the CUDA device to the host memory\n");
+
+   cudaEventRecord(start_event, 0);
 	err = cudaMemcpy(h_X, d_X, NUMBODIES*sizeof(float4), cudaMemcpyDeviceToHost);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&memcpyDtoH, start_event, stop_event);
+
+
 	check_CUDA_op(err, "Failed to to launch calculate_forces kernel");
 
 	// Free device global memory
+    cudaEventRecord(start_event, 0);   
 	err = cudaFree(d_X);
-	check_CUDA_op(err, "Failed to free device position memory");
-
 	err = cudaFree(d_V);
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&deviceMemFree, start_event, stop_event);
+
 	check_CUDA_op(err, "Failed to free device velocity memory");
 
 	//write results
 	//write_file("temp.txt", NUMBODIES, h_X, h_V);
 
 	// Free host memory
+
+    cudaEventRecord(start_event, 0);     // record in stream-0, to ensure that all previous CUDA calls have completed
 	free(h_X);
 	free(h_V);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
+
+    printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
+            hostMemAlloc*1000000, deviceMemAlloc*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
+
 
 	// Reset the device and exit
 	err = cudaDeviceReset();

@@ -69,20 +69,43 @@ int main(int argc, char **argv)
     *d_OptionStrike,
     *d_OptionYears;
 
+    float hostMemAlloc, deviceMemAlloc, memcpyHtoD, memcpyDtoH, kernel, hostMemFree, deviceMemFree;
+
     printf("Initializing data...\n");
     printf("...allocating CPU memory for options.\n");
+
+
+    cudaEvent_t start_event, stop_event;
+    int eventflags = cudaEventDefault;
+    
+    cudaEventCreateWithFlags(&start_event, eventflags);
+    cudaEventCreateWithFlags(&stop_event, eventflags);
+
+    cudaEventRecord(start_event, 0);  
+
     h_CallResultGPU = (float *)malloc(OPT_SZ);
     h_PutResultGPU  = (float *)malloc(OPT_SZ);
     h_StockPrice    = (float *)malloc(OPT_SZ);
     h_OptionStrike  = (float *)malloc(OPT_SZ);
     h_OptionYears   = (float *)malloc(OPT_SZ);
 
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);  
+    cudaEventElapsedTime(&hostMemAlloc, start_event, stop_event);
+
     printf("...allocating GPU memory for options.\n");
+
+    cudaEventRecord(start_event, 0); 
+
     cudaMalloc((void **)&d_CallResult,   OPT_SZ);
     cudaMalloc((void **)&d_PutResult,    OPT_SZ);
     cudaMalloc((void **)&d_StockPrice,   OPT_SZ);
     cudaMalloc((void **)&d_OptionStrike, OPT_SZ);
     cudaMalloc((void **)&d_OptionYears,  OPT_SZ);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&deviceMemAlloc, start_event, stop_event);
 
     printf("...generating input data in CPU mem.\n");
     srand(5347);
@@ -104,14 +127,24 @@ int main(int argc, char **argv)
 */
     printf("...copying input data to GPU mem.\n");
     //Copy options data to GPU memory for further processing
+
+    cudaEventRecord(start_event, 0);   
+
     cudaMemcpy(d_StockPrice,  h_StockPrice,   OPT_SZ, cudaMemcpyHostToDevice);
     cudaMemcpy(d_OptionStrike, h_OptionStrike,  OPT_SZ, cudaMemcpyHostToDevice);
     cudaMemcpy(d_OptionYears,  h_OptionYears,   OPT_SZ, cudaMemcpyHostToDevice);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   
+    cudaEventElapsedTime(&memcpyHtoD, start_event, stop_event);
+
     printf("Data init done.\n\n");
 
 
     printf("Executing Black-Scholes GPU kernel (%i iterations)...\n", NUM_ITERATIONS);
     cudaDeviceSynchronize();
+
+    cudaEventRecord(start_event, 0);     
 
     for (i = 0; i < NUM_ITERATIONS; i++)
     {
@@ -128,33 +161,61 @@ int main(int argc, char **argv)
         //getLastCudaError("BlackScholesGPU() execution failed\n");
     }
 
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&kernel, start_event, stop_event);
+
     cudaDeviceSynchronize();
 
     printf("\nReading back GPU results...\n");
     //Read back GPU results to compare them to CPU results
+   cudaEventRecord(start_event, 0);
+
     cudaMemcpy(h_CallResultGPU, d_CallResult, OPT_SZ, cudaMemcpyDeviceToHost);
     cudaMemcpy(h_PutResultGPU,  d_PutResult,  OPT_SZ, cudaMemcpyDeviceToHost);
 
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event); 
+    cudaEventElapsedTime(&memcpyDtoH, start_event, stop_event);
+
     for (i = 0; i < OPT_N; i++)
     {
-        printf("%f %f\n", h_CallResultGPU[i], h_PutResultGPU[i]);
+    //    printf("%f %f\n", h_CallResultGPU[i], h_PutResultGPU[i]);
     }
 
     printf("Shutting down...\n");
     printf("...releasing GPU memory.\n");
+
+    cudaEventRecord(start_event, 0); 
+
     cudaFree(d_OptionYears);
     cudaFree(d_OptionStrike);
     cudaFree(d_StockPrice);
     cudaFree(d_PutResult);
     cudaFree(d_CallResult);
 
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);   // block until the event is actually recorded
+    cudaEventElapsedTime(&deviceMemFree, start_event, stop_event);
+
     printf("...releasing CPU memory.\n");
+
+    cudaEventRecord(start_event, 0); 
+
     free(h_OptionYears);
     free(h_OptionStrike);
     free(h_StockPrice);
     free(h_PutResultGPU);
     free(h_CallResultGPU);
+
+    cudaEventRecord(stop_event, 0);
+    cudaEventSynchronize(stop_event);
+    cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
+
     printf("Shutdown done.\n");
+
+    printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
+            hostMemAlloc*1000000, deviceMemAlloc*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
 
     cudaDeviceReset();
 
