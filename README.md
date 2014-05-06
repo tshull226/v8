@@ -15,15 +15,15 @@ CUDA-enabled JavaScript fuctionality includes
 
 ## Code Location ##
 
-Our extension is located on the folder `src/extensions/webcuda`
+Our extension is located in the folder `src/extensions/webcuda`
 
 ## Specification Information ##
 
-A detailed describition of the WebCUDA specification from the JavaScript Programmer's prespective is available [here](http://www.google.com)
+A detailed description of the WebCUDA specification from the JavaScript Programmer's perspective is available [here](http://tshull226.synology.me/CS598SVA/JSDoc/index.html)
 
 ### Doxygen ###
 
-We have also generated Doxygen Documentation to go along with our implementation. This Documentation is available [here](http://www.google.com)
+We have also generated Doxygen Documentation to go along with our implementation. This Documentation is available [here](http://tshull226.synology.me/CS598SVA/doxygen/index.html)
 
 
 ### Contributers ###

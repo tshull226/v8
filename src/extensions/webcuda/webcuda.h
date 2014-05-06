@@ -3,13 +3,25 @@
 
 /** \mainpage WebCUDA Documentation
  *
- * These webpages consist of the WebCUDA documentation. The goal of WebCUDA is
- * to add CUDA bindings for JavaScript for V8 in the Chrome and d8 applications.
- * This is the CS598 SVA project for Jiho Choi, Kurt Fellows, and Tom Shull. We
- * base this project on node-cuda, a similar project for Node.js.
- * 
- * Stay Tuned for future updates!
+ * \section intro_sec Introduction
+ *
+ * These webpages consist of documentation for WebCUDA's implementation in v8.
+ * The goal of WebCUDA is to add CUDA bindings to JavaScript. This project was started as
+ * as class project for CS598SVA at the University of Illinois in Urbana-Champaign.
+ *
+ * \section webcuda_spec WebCUDA Specification
+ * The WebCUDA specification can be found <a href="http://tshull226.synology.me/CS598SVA/JSDoc/index.html">here</a>
+ *
+ * \section webcuda_code WebCUDA Code
+ * The code used as the basis for this documentation can be found
+ * <a href="https://github.com/tshull226/v8">here</a>
+ *
+ * \subsection Contributors
+ * Jiho Choi <br/>
+ * Kurt Fellows <br/>
+ * Tom Shull
  */
+
 
 using namespace v8;
 
