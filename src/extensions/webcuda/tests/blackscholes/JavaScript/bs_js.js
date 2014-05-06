@@ -66,6 +66,7 @@ function bs_js(
     var PutResult = new Float32Array(optN);
     profiler.stop("Allocating host memory");
 
+    profiler.start("Computation");
     for (var opt = 0; opt < optN; opt++)
     {
         var result =
@@ -79,6 +80,7 @@ function bs_js(
         CallResult[opt] = result[0];
         PutResult[opt] = result[1];
     }
+    profiler.stop("Computation");
 
     return [CallResult, PutResult];
 }

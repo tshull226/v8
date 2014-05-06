@@ -5,9 +5,14 @@ load("tests/Profiler/Profiler.js");
 
 var SCALE = 40960;
 
+var profiler = new Profiler();
+
+profiler.start("Allocating host memory");
 BigStockPrice = new Float32Array(SCALE * 1024);
 BigOptionStrike = new Float32Array(SCALE * 1024);
 BigOptionYears = new Float32Array(SCALE * 1024);
+profiler.stop("Allocating host memory");
+
 for(var i = 0; i < SCALE; i++) {
   for(var j = 0; j < 1024; j++) {
     BigStockPrice[1024 * i + j] = StockPrice[j];
@@ -16,11 +21,10 @@ for(var i = 0; i < SCALE; i++) {
   }
 }
 
-profiler = new Profiler();
-profiler.start("Total");
+//profiler.start("Total");
 //var result = bs_webcuda(StockPrice, OptionStrike, OptionYears, 0.02, 0.3, 1024);
 var result = bs_webcuda(BigStockPrice, BigOptionStrike, BigOptionYears, 0.02, 0.3, SCALE * 1024, profiler);
-profiler.stop("Total");
+//profiler.stop("Total");
 profiler.print();
 
 /*var result_js = bs_js(BigStockPrice, BigOptionStrike, BigOptionYears, 0.02, 0.3, SCALE * 1024, profiler);

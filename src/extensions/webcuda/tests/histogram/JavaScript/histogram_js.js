@@ -7,10 +7,12 @@ function histogram_js(Data, byteCount, profiler) {
         histogram[i] = 0;
     }
 
+    profiler.start("Computation");
     for (var i = 0; i < byteCount; i++)
     {
         histogram[Data[i]]++;
     }
+    profiler.stop("Computation");
 
     return histogram;
 }

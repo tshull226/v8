@@ -12,9 +12,9 @@ function main(){
 	load("tests/Profiler/Profiler.js");
 	var profiler = new Profiler();
 
-	profiler.start("Total");
+	//profiler.start("Total");
 	var t_I = runJS(seed, profiler);
-	profiler.stop("Total");
+	//profiler.stop("Total");
 	profiler.print();
 
 	//temp check to see if things seem reasonable
@@ -31,16 +31,15 @@ function runJS(seed, profiler) {
 	var t_I = new Int32Array(numPixels);
 	profiler.stop("Allocating host memory");
 
+	profiler.start("Computation");
 	var delta = 0x9E3779B9;
 	var k0 = 0xA341316C;
 	var k1 = 0xC8013EA4;
 	var k2 = 0xAD90777D;
 	var k3 = 0x7E95761E;
 	var ITER = 15;
-
 	var i,j;
 	for(i = 0; i < numElements; i++){
-
 		var x = seed;
 		var y = seed << 3;
 
@@ -61,8 +60,8 @@ function runJS(seed, profiler) {
 		t_I[i*4+1] = r;
 		t_I[i*4+2] = r;
 		t_I[i*4+3] = g;
-
 	}
+	profiler.stop("Computation");
 
 	return t_I;
 }

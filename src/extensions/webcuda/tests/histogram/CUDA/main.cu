@@ -27,7 +27,7 @@ int main(int argc, char **argv)
     uchar *d_Data;
     uint  *d_Histogram, *d_PartialHistograms;
     //uint byteCount = 64 * 1048576;
-    uint byteCount = 64 * 1024;
+    uint byteCount = 512 * 1024 * 1024;
 
     float hostMemAlloc, deviceMemAlloc, memcpyHtoD, memcpyDtoH, h_kernel, m_kernel, hostMemFree, deviceMemFree, temp;
 
@@ -87,9 +87,8 @@ int main(int argc, char **argv)
     {
         printf("Running 256-bin GPU histogram for %u bytes (%u runs)...\n\n", byteCount, numRuns);
 
-        for (int iter = -1; iter < numRuns; iter++)
+        for (int iter = 0; iter < numRuns; iter++)
         {
-            //iter == -1 -- warmup iteration
             if (iter == 0)
             {
                 cudaDeviceSynchronize();
@@ -179,7 +178,7 @@ int main(int argc, char **argv)
     cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
 
     printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nMem Copy H to D: %f\nHistogram Kernel: %f\nMerge Kernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n",
-            hostMemAlloc*1000000, deviceMemAlloc*1000000,memcpyHtoD*1000000, h_kernel*1000000, m_kernel*1000000, memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
+            hostMemAlloc*1000, deviceMemAlloc*1000,memcpyHtoD*1000, h_kernel*1000, m_kernel*1000, memcpyDtoH*1000, hostMemFree*1000, deviceMemFree*1000);
     cudaDeviceReset();
 
     return 0;
