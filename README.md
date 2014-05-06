@@ -13,6 +13,10 @@ CUDA-enabled JavaScript fuctionality includes
 + compiling CUDA modules on-the-fly
 + launching CUDA kernels
 
+## Code Location ##
+
+Our extension is located on the folder `src/extensions/webcuda`
+
 ## Specification Information ##
 
 A detailed describition of the WebCUDA specification from the JavaScript Programmer's prespective is available [here](http://www.google.com)
