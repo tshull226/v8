@@ -1,36 +1,36 @@
 
-%the ( for some reason allows spell checks, uncomment following line to enable
-%spell checking
+%( used for spell checking
 %(
-We have implemented our \name standard within google's V8 \cite{V8website} compiler. We
-have also released our code to the project domain through Github \cite{github}.
-Our repository can be found at
-\url{https://github.com/tshull226/v8/tree/master/src/extensions/webcuda}.  We chose to use
-the google V8  compiler for our implementation due to prior experience with the
-compiler that provided us with a solid understanding on the compiler's
-internals. In addition, V8 is considered a state of the art JavaScript JIT
-compiler and is extremely prevalent due to its inclusion in the Chrome browser
-\cite{chromium} and other projects such as NodeJS \cite{nodeJS} and V8.NET
-\cite{V8.NET}. We have extended V8 through its external API and integrated the
-extension in d8, V8's standalone JavaScript execution engine. 
+We have implemented our \name standard within Google's V8 \cite{V8website}
+compiler.   We chose to use the Google V8  compiler for our implementation due
+to prior experience with the compiler that provided us with a solid
+understanding on the compiler's internals. In addition, V8 is considered a state
+of the art JavaScript JIT compiler and is extremely prevalent due to its
+inclusion in the Chromium browser \cite{chromium} and other projects such as
+NodeJS \cite{nodeJS} and V8.NET \cite{V8.NET}. We have extended V8 through its
+external API and integrated the extension in d8, V8's standalone JavaScript
+execution engine. 
 
-In total, our implementation is slightly more than 800 LOC, but is very
+In total, our implementation is slightly more than 800 LOC, and is very
 self-contained. By using the external V8 API, no modifications (except for
 profiling purposes) had to be made to V8's code base. By not modifying internal
 structures, there is no effect on the performance of JavaScript and native
 JavaScript runs in our implementation without any additional overheads.
 
-Below we provide a high-level overview and explanation of main features of
-\namens.  Complete documentation for \namens's implementation within V8,
+Below, we provide a high-level overview and explanation of main features of
+\namens's implementation in V8.  Complete documentation for \namens's implementation,
 generated with Doxygen \cite{doxygen}, can be found at
-\url{http://tshull226.synology.me/CS598SVA/doxygen/index.html}
+\url{http://tshull226.synology.me/CS598SVA/doxygen/index.html}. We
+have also released our code to the project domain through GitHub \cite{github}.
+Our repository can be found at
+\url{https://github.com/tshull226/v8/tree/master/src/extensions/webcuda}.
 
-At a high level, our implementation wraps main CUDA Driver API
-\cite{cudaAPI} calls inside JavaScript wrappers that adhere to the \name
-specification. We had to use the CUDA Driver API, as opposed to the CUDA Runtime
-API \cite{cudaRuntimeAPI}, due to the necessity of compiling our extension
-alongside d8 using the gyp \cite{gyp} configuration manager and gcc \cite{gcc},
-instead of using nvcc \cite{nvcc}.
+At a high level, our implementation wraps main CUDA Driver API \cite{cudaAPI}
+calls inside JavaScript wrappers that adhere to the \name specification. We
+chose to use the CUDA Driver API, as opposed to the CUDA Runtime API
+\cite{cudaRuntimeAPI}, so our extension can easily be compiled alongside d8
+using the gyp \cite{gyp} configuration manager and gcc \cite{gcc}, instead of
+needing to use nvcc \cite{nvcc}.
 
 Our implementation is able to store handles to CUDA structs by wrapping them
 within JavaScript objects. JavaScript objects are allowed to have internal
@@ -41,15 +41,15 @@ successfully created), and internal fields contain the information
 necessary for performing CUDA Driver API calls.
 
 We tried to follow documented programming patterns for V8 embedded application
-developers according to various resources online \cite{embeddersGuide,
+developers provided by various resources online \cite{embeddersGuide,
 nodeJSDocumentation}. However, due to the rapidly evolving nature of the V8
-source code, the external API has drastically changed and even google's
+source code, the external API has drastically changed and even Google's
 documentation \cite{embeddersGuide} is deprecated. Therefore, we found the best
-documentation for using the API to be google code samples provided along with
+documentation for using the API to be Google code samples provided along with
 V8.
 
 \lstset{ language=C++, numbers=left, stepnumber=1, tabsize=1, keepspaces=false,
-breaklines=true}
+	breaklines=true, escapeinside={\%}{*)}}
 \begin{figure*}
 	\begin{center}
 		\small
@@ -61,36 +61,37 @@ breaklines=true}
 		\small
 		\lstinputlisting{exampleC2.cc}
 \end{center}
-\caption{C++ Implementation of \namens's \textit{webcuda.free} method}
+\caption{C++ Implementation of \namens's \textit{webcuda.free()} method}
 \label{v8codeb}
 
 \end{figure*}
 
 Our implementation class structure closely mirrors the specification, with
-functions broken into files and classes based on their functionality.
-Figures~\ref{v8codea} and \ref{v8codeb} show real examples of common patterns used
-extensively throughout our code both to wrap CUDA structs and unwrap CUDA
-structs for CUDA Driver API calls.  
+function wrappers broken into files and classes based on their functionality.
+Figures~\ref{v8codea} and \ref{v8codeb} show code examples of common routines
+executed extensively throughout our code both to wrap CUDA structs in a
+JavaScript Object and unwrap CUDA structs from a JavaScript Object for CUDA
+Driver API calls.  
 
 Figure~\ref{v8codea} shows the code for creating a new connection to a
-CUDA-enabled device. The user provides as input the device number and expects
-the function to return a JavaScript Object Wrapper for a (CUDA object name).
-Other code has associated the function call \textit{webcuda.Device} with this
-method. The method receives only 1 parameter of type
+CUDA-enabled device. This is a function wrapper for the \textit{webcuda.Device()}
+function in the \name specification. The user provides as input the device
+number and expects the function to return a cuDevice struct wrapped in a
+JavaScript Object.  The wrapper method receives only 1 parameter of type
 \textit{FunctionCallBackInfo}. This parameter contains all essential information
 about the function's caller, various arguments passed to the function with
 JavaScript, as well as a handle to the object which will be returned by this
-function, which is by default undefined. 
+function, which by default is of type undefined. 
 
 Line 2 creates the HandleScope manager for this function.  HandleScopes are V8's
-approach to managing garbage collection of JavaScript objects for a function. It
-deletes all stack allocated objects calls upon exiting the function.  A more
+approach to managing garbage collection of JavaScript objects within a function. It
+deletes all stack allocated objects upon exiting the function.  A more
 thorough explanation of HandleScopes can be found in the V8 embedder's
 guide~\cite{embeddersGuide}.  
 
 Lines 4 and 5 retrieve the integer value given as
 input to the function. Arguments passed to the JavaScript function are stored
-as a vector in the argument received in the C++ domain. Since in JavaScript
+as indexes in the argument received in the C++ domain. Since in JavaScript
 Integer primitives must be wrapped for function calls, our code must extract the
 integer value from the Object.
 
@@ -99,11 +100,11 @@ CUDA Driver API method, \textit{cuDeviceGet}, that returns a pointer to a
 cuDevice handle. We created the Device Class to store this value.
 
 Lines 10 and 11 create the JavaScript object to store the C++ Device Object. A
-global object, constructor\_template, is used a basis for all JavaScript Device
+global object, constructor\_template, is used as a basis for all JavaScript Device
 Objects created. The constructor\_template object was created during
-initialization. This object sets the various properties of the JavaScript Device
-Object specified by \namens, including, the CUDA device's name, compute
-capacity, and amount of memory.
+initialization. This object contains mappings to the various properties of the
+JavaScript Device Object visible to the user as specified by \namens, including the
+CUDA device's name, compute capacity, and amount of memory.
 
 Line 13 creates a JavaScript wrapper for the C++ Device Object. This is
 necessary for the Device Object to be stored as a internal field within the
@@ -115,19 +116,19 @@ Object.
 
 
 Figure~\ref{v8codeb} shows the code implementing the \name feature
-\textit{webcuda.free}. This function frees the CUDA device memory pointed to by
-the parameter passed to the function. As in the previous example, Line 2 creates
-a HandleScope manager for this function. 
+\textit{webcuda.free()}. This function frees the CUDA device memory pointed to by
+the parameter passed to the function. 
 
-Line 4 performs multiple functions. First, it retrieves the parameter passed
-from the JavaScript function. Next, it casts the value of the pointer to a
-JavaScript object. Finally, it calls a built-in function, UnwrapDevicePtr, a
+As in the previous example, Line 2 creates a HandleScope manager for this
+function.  Line 4 performs multiple functions. First, it retrieves the parameter
+passed from the JavaScript function. Next, it casts the value of the pointer to
+a JavaScript object. Finally, it calls another member function, UnwrapDevicePtr, a
 function used to extract the C++ Mem Object from the JavaScript Object. This
 process is repeated whenever a C++ class needs to be extracted from a JavaScript
 Object, leading to much code reuse.
 
 Line 6 calls the CUDA Driver API method, \textit{cuMemFree}, used to free the
-device memory. Finally, Line 8 set the function's return value to the result of
+device memory. Finally, Line 8 sets the function's return value to the result of
 the CUDA Driver Call so a programmer knows whether the call was able to
 successfully free the CUDA-device memory or not.
 

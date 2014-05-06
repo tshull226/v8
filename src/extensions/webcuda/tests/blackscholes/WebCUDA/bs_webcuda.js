@@ -64,6 +64,7 @@ function bs_webcuda(h_StockPrice, h_OptionStrike, h_OptionYears, RiskFree, Volat
 						  {"memParam" : d_StockPrice}, {"memParam" : d_OptionStrike}, {"memParam" : d_OptionYears},
 						  {"floatParam" : RiskFree}, {"floatParam" : Volatility}, {"intParam" : optN}
 						]);
+	webcuda.synchronizeCtx();
 	if(DEBUG) print("launch result: " + launchResult);
 	profiler.stop("kernel");
 

@@ -585,12 +585,13 @@
       \else
         \@toappear
       \fi
-      \if \@reprint
-        \noindent Reprinted from \@conferencename,
-        \@proceedings,
-        \@conferenceinfo,
-        pp.~\number\thepage--\pageref{sigplanconf@finalpage}.\par
-      \fi}}%
+ %     \if \@reprint
+ %       \noindent Reprinted from \@conferencename,
+ %       \@proceedings,
+ %       \@conferenceinfo,
+ %       pp.~\number\thepage--\pageref{sigplanconf@finalpage}.\par
+ %     \fi
+	}}%
   \end@float}
 
 \newcommand{\reprintprice}[1]{%
@@ -607,7 +608,7 @@
   \noindent \textsl{\@conferencename}, \quad \@conferenceinfo. \par
   \noindent Copyright \copyright\ \@copyrightyear\ ACM \@copyrightdata
     \dots \@reprintprice.\par
-  \noindent http://dx.doi.org/10.1145/\@doi }
+  \noindent \@doi }
 
 \newcommand{\permission}[1]{%
   \gdef \@permission {#1}}
@@ -636,7 +637,7 @@
     permission and/or a fee. Request permissions from permissions@acm.org.}
   \toappear{%
     \noindent \@permission \par
-    \vspace{2pt}
+    \vspace{9pt}
     \noindent \textsl{\@conferencename}, \quad \@conferenceinfo. \par
     \noindent Copyright is held by the owner/author(s). Publication rights licensed to ACM. \par
     \noindent ACM \@copyrightdata \dots \@reprintprice.\par
@@ -655,8 +656,8 @@
     \vspace{2pt}
     \noindent \textsl{\@conferencename}, \quad \@conferenceinfo. \par
     \noindent Copyright is held by the owner/author(s). \par
-    \noindent ACM \@copyrightdata.\par
-    \noindent http://dx.doi.org/10.1145/\@doi}}
+    %\noindent ACM \@copyrightdata.\par
+    \noindent \@doi}}
 
 % The following permission notices are
 % for the traditional copyright transfer agreement option.

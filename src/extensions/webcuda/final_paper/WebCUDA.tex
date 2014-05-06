@@ -22,8 +22,9 @@
 \newcommand{\name}{WebCUDA }
 \newcommand{\namens}{WebCUDA}
 
-%\documentclass[10pt,preprint,reprint]{sigplanconf}
+%\documentclass[10pt,preprint]{sigplanconf}
 \documentclass[10pt,reprint]{sigplanconf}
+%\documentclass[10pt]{sigplanconf}
 
 % The following \documentclass options may be useful:
 
@@ -35,6 +36,7 @@
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{listings}
+\usepackage{graphicx}
 
 
 \begin{document}
@@ -43,10 +45,7 @@
 \setlength{\pdfpageheight}{\paperheight}
 \setlength{\pdfpagewidth}{\paperwidth}
 
-\conferenceinfo{CONF 'yy}{Month d--d, 20yy, City, ST, Country} 
-\copyrightyear{20yy} 
-\copyrightdata{978-1-nnnn-nnnn-n/yy/mm} 
-\doi{nnnnnnn.nnnnnnn}
+
 
 % Uncomment one of the following two, if you are not going for the 
 % traditional copyright transfer agreement.
@@ -58,10 +57,17 @@
                                   % (paid open-access papers, 
                                   % short abstracts)
 
+\conferenceinfo{CS598SVA Final Paper}{May 06, 2014, Urbana, IL, USA} 
+\copyrightyear{2014} 
+\copyrightdata{978-1-nnnn-nnnn-n/yy/mm} 
+%\permission{blah blah blah}
+%\toappear{what does this do?}
+\doi{http://tshull226.synology.me/CS598SVA/paper/WebCUDA.pdf}
+
 \titlebanner{banner above paper title}        % These are ignored unless
 \preprintfooter{short description of paper}   % 'preprint' option specified.
 
-\title{WebCUDA: Enabling High Performance Heterogeneous JavaScript Programming}
+\title{WebCUDA: Enabling High-Performance Heterogeneous JavaScript Programming}
 %\subtitle{Subtitle Text, if any}
 
 \authorinfo{Jiho Choi}
@@ -80,15 +86,15 @@
 	\input{abs.tex}
 \end{abstract}
 
-\category{CR-number}{subcategory}{third-level}
+%\category{CR-number}{subcategory}{third-level}
 
 % general terms are not compulsory anymore, 
 % you may leave them out
 \terms
-Languages, Performance, More??
+Languages, Performance
 
 \keywords
-JavaScript, Scripting Language, CUDA, GPGPU, More??
+JavaScript, Scripting Language, CUDA, GPGPU, Heterogeneous Computing
 
 \section{Introduction}
 \label{intro}
@@ -131,7 +137,7 @@ JavaScript, Scripting Language, CUDA, GPGPU, More??
 \acks
 
 We would like to thank our fellow classmate, Abdul Dakkak, for informing use
-about node-cuda, AMD's WebCL implementation in Chrome, and ParallelJS.  We have
+about node-cuda, AMD's WebCL implementation in Chromium, and ParallelJS.  We have
 found all three resources indispensable throughout this class project.
 
 % We recommend abbrvnat bibliography style.

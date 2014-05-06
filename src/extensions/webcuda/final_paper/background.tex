@@ -2,12 +2,49 @@
 This section provides readers background about the JavaScript and CUDA
 programming environments. Experienced programmers in these domains can skip to
 Sections~\ref{overview} and \ref{imp} to learn about our specification and
-implementation of \name.
+implementation of \namens.
 
-\subsection{JavaScript}
-JavaScript is awesome\ldots
+\subsection{JavaScript} JavaScript, also known as ECMAScript, is a
+dynamically-typed, object-oriented scripting language.  It has gained popularity
+through its use in the web domain. JavaScript is the de facto standard for
+adding animations to web pages. Programmers are able to create JavaScript events
+that are triggered by specific user interaction with the web page. These
+JavaScript events can manipulate the web page layout through altering the web
+page's Document Object Model (DOM), an abstraction of the web page provided by
+browsers. By using JSON~\cite{json}, JavaScript programs can also asynchronously
+communicate with servers and update content on a web page without having to
+reload. In addition, there is a large collection of libraries, such as
+JQuery~\cite{JQuery}, used by programmers to provide users interactive browsing
+experiences.
 
-\subsection{CUDA}
-CUDA is not as awesome\ldots
+JavaScript is run either by an interpreter or Just-In-Time Compilation. In the
+JavaScript world all variables are objects and thus can have fields and methods
+added to and removed from them on the fly. This limits the amount of
+optimization able to be performed, since the fields an object are not static. In
+addition, JavaScript has a single-threaded execution model, which further limits
+its performance.
 
+\subsection{CUDA} Graphics processing units (GPUs), as their name suggests, were
+initially designed to accelerate computationally intensive graphics rendering.
+However, in the past decade or so, a large push has been made to make the
+processing resources available on GPUs more accessible for general purpose use.
+CUDA is a parallel programming platform developed by NVIDIA which allows
+programmers access to the graphics processing units. CUDA provides extensions to
+standard programming languages like C/C++ and Fortran to give programmers in
+these languages the option to move computation from more latency oriented CPUs
+to bandwidth oriented GPUs. The Khronos group has standardized OpenCL
+\cite{openCL}, a programming platform similar to CUDA which allows programs to
+execute across heterogeneous systems.  
+
+CUDA code is often divided into two parts: one part is the code designed to
+execute on the CPU or "host" while the second part is designed to execute on the
+GPU or "device".  While CUDA is simply an extension to C/C++ and Fortran, it
+requires a specific compiler for creating a CUDA executable. CUDA C/C++ uses
+NVIDIA's LLVM-based "nvcc" compiler. The resulting executable is split into a
+CPU binary executable and either a .ptx or .cubin file which is to be run on the
+GPU.
+
+%When compiling with nvcc, .c and .cpp files
+%(host code) are compiled with the mature gcc compiler and .cu files (device
+%code) are compiled with nvcc.
 
