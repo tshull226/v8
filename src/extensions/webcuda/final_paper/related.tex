@@ -8,7 +8,7 @@ The project most similar to \name is node-cuda~\cite{nodeCuda}. The goal of
 this project is to bring CUDA bindings to JavaScript execution within
 Node.js~\cite{nodeJS}. Like Chrome, Node.js uses the V8 compiler. However,
 their project, and the current V8 version used in Node.js, is a version of V8
-released the major overhaul of the external API discussed in~\ref{challenges}.
+released before the major overhaul of the external API discussed in~\ref{challenges}.
 Therefore, while this project was extremely helpful in identifying core CUDA
 Driver API features the \name spec needed to cover, the code itself was not
 useful, as we use the newest version of V8.
@@ -17,7 +17,7 @@ useful, as we use the newest version of V8.
 Several previous projects have been started to implement WebCL \cite{webCL} in
 various browsers, including Safari \cite{safariCL} and Firefox \cite{nokiaCL},
 and Chromium \cite{chromeCL}.  WebCL, discussed in Section~\ref{webCLDisc}, is
-project started by the Khronos Group, to add OpenCL-like bindings to browsers.
+project a started by the Khronos Group, to add OpenCL-like bindings to browsers.
 Since the start of our CS598 project, AMD released a WebCL implementation on
 the Chromium browser \cite{chromeCL}. We hope to eventually compare \name to
 the Chrome-based WebCL over a variety of benchmarks to determine the
