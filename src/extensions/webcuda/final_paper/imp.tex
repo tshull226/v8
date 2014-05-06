@@ -4,7 +4,7 @@
 We have implemented our \name standard within Google's V8 \cite{V8website}
 compiler.   We chose to use the Google V8  compiler for our implementation due
 to prior experience working with V8 that  provided us with a solid
-understanding on the compiler's internals. In addition, V8 is considered
+understanding of the compiler's internals. In addition, V8 is considered
 a state-of-the-art JavaScript JIT compiler and is extremely prevalent due to its
 inclusion in the Chromium browser \cite{chromium} and other projects such as
 NodeJS \cite{nodeJS} and V8.NET \cite{V8.NET}. We have extended V8 through its
@@ -91,7 +91,7 @@ guide~\cite{embeddersGuide}.
 
 Lines 4 and 5 retrieve the integer value given as
 input to the function. Arguments passed to the JavaScript function are stored
-as indexes in the argument received in the C++ domain. Since in JavaScript
+as indexes in the argument received in the C++ domain. Since JavaScript
 Integer primitives must be wrapped for function calls, our code must unbox the
 Object.
 
@@ -107,7 +107,7 @@ JavaScript Device Object visible to the user as specified by \namens, including 
 CUDA device's name, compute capacity, and amount of memory.
 
 Line 13 creates a JavaScript wrapper for the C++ Device Object. This is
-necessary for the Device Object to be stored as a internal field within the
+necessary for the Device Object to be stored as an internal field within the
 returned JavaScript Object.
 
 Line 15 stores the Device Object wrapper in an internal field of the JavaScript

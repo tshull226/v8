@@ -81,8 +81,8 @@ Section~\ref{eval}, \name successfully accomplishes.
 devices, \name cannot run on every platform. Therefore, the programmer must
 create two versions of their code to account for whether their application is
 running on a \namens-supported platform or not. This is common for other
-features such as WebGL and to account for the various ways different browsers
-support the DOM in JavaScript. The ideal solution is either NVidia extends their
+features, such as WebGL, and also to account for the various ways different browsers
+layout the DOM in JavaScript. The ideal solution is either NVidia extends their
 compiler support to include non-NVidia products or \name is augmented with
 support for running natively JavaScript programs on the GPU, as discussed in
 Section~\ref{future}.
@@ -103,7 +103,7 @@ documentation, we have tried to make extending \name as simple as possible.
 
 \subsection{\name vs WebCL}
 \label{webCLDisc}
-The Khronos Group, the consortium behind the OpenCL
+The Khronos Group, the consortium behind OpenCL
 \cite{openCL}, OpenGL \cite{openGL}, and many other specifications, has also
 proposed a specification to bring OpenCL-like bindings to JavaScript named WebCL
 \cite{webCLSpec}. This project is very similar to \namens, except the bindings are for
@@ -130,8 +130,8 @@ the merit of \namens. One reason is CUDA has more capabilities than OpenCL. Due
 to \namens's connection with a specific platform, more hardware features are
 able to be exposed to the programmer for higher performance. Another reason is
 \name allows the vast collection of CUDA applications to be quickly ported to
-the web domain. If a programmer were to use webCL, then the kernel would have to
-be converted to openCL while in \name only the host operations need to be
+the web domain. If a programmer were to use WebCL, then the kernel would have to
+be converted to OpenCL while in \name only the host operations need to be
 rewritten in JavaScript.
 
 Finally, \name is important because it is an another way of allowing web apps
@@ -145,6 +145,21 @@ web developers.
 %While these project have similar goals, the implementation of each is very
 %different due to the different backends.
 
+\subsection{NVidia Visual Profiling Tools} \label{visualProfiler} Since \name is
+geared towards enabling high-performance computing within web apps, it is
+essential for developers to have access to tools which can assess the
+performance of their application. To allow \name users to accurately profile and
+analyze CUDA portions of their code, we have included support for the NVidia
+Visual Profiler Tool~\cite{visualProfiler}. To use the Visual Profiler, one must
+use the functions \textit{webcuda.startProfiling()} and
+\textit{webcuda.stopProfiling()} within the JavaScript code to wrap the 
+sections to be profiled. One can then give the d8 application and the .js file to execute as
+input to Visual Profiler. The Visual Profiler provides a detailed timeline
+outlining the time spent performing various CUDA functions and also provides
+information about the utilization of GPU resources. Programmers can use this
+data to then further optimize their programs to achieve maximal performance and
+efficiency gains.
+
 \subsection{Security} \label{security} While one wishes web apps could leverage
 the GPU freely throughout their execution, necessary security measures must be
 taken to prevent unintended side effects. Currently CUDA applications can crash
@@ -152,7 +167,7 @@ one's computer.  The authors repeatedly inadvertently validated this fact
 throughout the development and testing of \namens. This is a nightmare from a
 security standpoint. While it is acceptable for a poorly written application to
 crash, the typical CPU environment provides a level of isolation so that a
-single user-level application, especially within the JavaScript, cannot easily
+single user-level application, especially within JavaScript, cannot easily
 crash a computer. If and when browsers start to expose GPU extensions to web
 apps, it will be unacceptable to allow any novice or malicious programmer to
 crash a user's computer simply by the user navigating to their specific site.
@@ -243,10 +258,11 @@ straightforward. The time constraints of this project are the only reason this
 has yet to be done. We hope that in the future \name will be integrated into
 Chromium to enable fair comparisons against WebCL.
 
-Since the creation of Typed Arrays is currently a bottleneck in \namens, more
-time must be spent exploring the related V8 code to determine sources
-of overheads. Once this code is better understood, we hope to optimize Type
-Array creation to reduce the performance gap between \name and CUDA.
+%turned out to be not true
+%Since the creation of Typed Arrays is currently a bottleneck in \namens, more
+%time must be spent exploring the related V8 code to determine sources
+%of overheads. Once this code is better understood, we hope to optimize Type
+%Array creation to reduce the performance gap between \name and CUDA.
 
 More distant work includes enabling native JavaScript applications to be run on
 the GPU. This involves altering the compiler to first recognize sections of JavaScript

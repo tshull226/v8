@@ -108,7 +108,7 @@ done in the CUDA Runtime, is left as future work.
 %is created for a thread,  all memory allocations to a specific device, thus allow different processes to have
 %different unshared address spaces. 
 
-Figure~\ref{codeExample}, lines 2-7 shows the protocol for retrieving a handle
+In Figure~\ref{codeExample}, Lines 2-7 show the protocol for retrieving a handle
 to a CUDA-enabled device and creating a CUDA context. Since a context is
 associated with a specific CUDA device, a handle to a CUDA-enabled device must
 first be attained as is done in Line 3. \name specifies various
@@ -166,7 +166,7 @@ Allowable property names are \textit{memParam}, \textit{intParam},
 \textit{floatParam}, and \textit{doubleParam}. The elements in the array must be
 passed in the same order as expected by the CUDA kernel function.
 
-The launching of the CUDA array, performed by \textit{webcuda.launchKernel()}, is
+The launching of the CUDA kernel, performed by \textit{webcuda.launchKernel()}, is
 done asynchronously. Therefore, it is recommended to call
 \textit{webcuda.synchronizeCtx()} afterward to block the host until all device operations
 have completed.

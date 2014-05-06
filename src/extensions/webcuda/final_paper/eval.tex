@@ -59,7 +59,7 @@ To evaluate performance on different platforms, we create different versions of
 benchmarks for each domain. We chose 5 CUDA examples, mostly from CUDA SDK
 samples, and manually ported them to the \name and JavaScript environments.
 Porting to \name versions starts from CUDA versions, and involves rewriting CPU
-portions in JavaScript with \name extension and placing CUDA portions in a
+portions in JavaScript with \name extensions and placing CUDA portions in a
 separate file. Porting to JavaScript versions is more straightforward, since it
 involves translating C code into JavaScript code, which has C-like semantics
 for many arithmetic operations.  The input sizes are adjusted as shown in Table
@@ -71,7 +71,7 @@ benchmark versions nontrivial.
 environment. The g2.2xlarge instance has an Intel Xeon 8-core processor running
 at 2.6 GHz and a NVIDIA GRID K520 processor based on the Kepler architecture.
 The CUDA driver and runtime version is set to 5.5, which was the most recent
-version when the project was started. We use a unmodified version of V8 to run JavaScript benchmarks, a \name-enabled version of V8 to run \name benchmarks, and the NVIDIA CUDA Compiler (nvcc~\cite{nvcc}) to build CUDA benchmarks.
+version when the project was started. We use an unmodified version of V8 to run JavaScript benchmarks, a \namens-enabled version of V8 to run \name benchmarks, and the NVIDIA CUDA Compiler (nvcc~\cite{nvcc}) to build CUDA benchmarks.
 
 %We build our \namens-enabled
 %JavaScript V8 shell on the instance to execute JavaScript and \name benchmarks,
@@ -79,9 +79,9 @@ version when the project was started. We use a unmodified version of V8 to run J
 
 \subsection{Results}
 
-\paragraph{Comparison with JavaScript} Figure~\ref{fig4} shows that \name is
+\paragraph{Comparison with JavaScript} Figure~\ref{fig1} shows that \name is
 about an order of magnitude faster than JavaScript; on average, it achieves 9x
-speedup over JavaScript. As shown in Figure~\ref{fig5}, while computation
+speedup over JavaScript. As shown in Figure~\ref{fig2}, while computation
 consumes the major portion of execution time for JavaScript benchmarks, it is
 negligible in \name and CUDA benchmarks thanks to the parallel
 nature of the benchmarks and the utilization of a CUDA device optimized for such
@@ -90,7 +90,7 @@ use of the CUDA device and some memory overhead for CUDA memory allocation and d
 transfer between CPU and CUDA device, but the huge gain from the computation
 more than justifies such overheads.
 
-\paragraph{Comparison with CUDA} Compared to CUDA benchmarks, however, \name
+\paragraph{Comparison with CUDA} Compared to CUDA benchmarks, \name
 still experiences 5x slowdown on average. It is mainly due to two reasons.
 First, \name has runtime and compilation overheads which are not present in CUDA.
 Second, memory allocation on CPU takes much more time on \namens. \name
@@ -100,7 +100,7 @@ indirection for memory allocation in JavaScript is a source of slowdown
 and leave it as a future work to analyze memory performance between JavaScript
 and CUDA.
 
-\paragraph{Compilation Overhead} Figure~\ref{fig6} shows that compilation
+\paragraph{Compilation Overhead} Figure~\ref{fig3} shows that compilation
 overhead is significant and takes up 48\% of the total execution time for \name
 benchmarks. This is the time taken to translate a .cu file, which contains source code
 written in CUDA, into a .ptx file, which contains an intermediate
@@ -113,13 +113,13 @@ file is difficult to read without knowledge of intermediate representation, it
 will degrade readability and reusability of source code, which is one of the main
 benefits of web applications.
 
-\paragraph{V8 Runtime Overhead} Runtime overhead is introduced by \name
+\paragraph{V8 Runtime Overhead} Runtime overhead introduced by \name
 takes 7.9\% on average of the total execution time for \name
-benchmarks. As shown in Figure~\ref{fig7}, managing the CUDA execution context is
+benchmarks. As shown in Figure~\ref{fig4}, managing the CUDA execution context is
 responsible for most of the overhead.
 
 \paragraph{Running Native JavaScript Programs} To verify that the \name
-extension does not negatively affect native JavaScript programs, we ran Octane
+extension does not negatively affect native JavaScript programs, we ran The Octane
 Benchmark Suite on the original V8 and our \namens-enabled V8 . The Octane
 Benchmark Suite~\cite{octane} is a popular JavaScript benchmark suite
 consisting of 17 programs, ranging from traditional scientific benchmarks to
