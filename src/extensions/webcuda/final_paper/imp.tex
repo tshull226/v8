@@ -100,7 +100,7 @@ CUDA Driver API method, \textit{cuDeviceGet}, that returns a pointer to a
 cuDevice handle. We created the Device Class to store this value.
 
 Lines 10 and 11 create the JavaScript object to store the C++ Device Object. A
-global object, constructor\_template, is used a basis for all JavaScript Device
+global object, constructor\_template, is used as a basis for all JavaScript Device
 Objects created. The constructor\_template object was created during
 initialization. This object contains mappings to the various properties of the
 JavaScript Device Object visible to the user as specified by \namens, including the
@@ -128,7 +128,7 @@ process is repeated whenever a C++ class needs to be extracted from a JavaScript
 Object, leading to much code reuse.
 
 Line 6 calls the CUDA Driver API method, \textit{cuMemFree}, used to free the
-device memory. Finally, Line 8 set the function's return value to the result of
+device memory. Finally, Line 8 sets the function's return value to the result of
 the CUDA Driver Call so a programmer knows whether the call was able to
 successfully free the CUDA-device memory or not.
 
