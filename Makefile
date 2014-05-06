@@ -195,6 +195,7 @@ endif
 endif
 ifeq ($(cuda_extension), on)
 	GYPFLAGS += -Dv8_cuda_extension='true'
+	LINK += -F/Library/Frameworks -framework CUDA
 endif
 ifeq ($(cuda_extension_debug), on)
 	GYPFLAGS += -Dv8_cuda_extension_debug='true'

@@ -31,18 +31,24 @@
 	\label{fig4}
 \end{figure}
 
+We evaluate our WebCUDA implementation with the original V8 JavaScript engine, which servers as a baseline, and the CUDA framework, which is set as a reference.
+
 \subsection{Benchmarks}
-there should probably be a table here...
-%TODO make table listing benchmarks, data sets
 \begin{table}
 	\begin{center}
 		\begin{tabular}{| l | l |}
 			\hline
-			Benchname & Input Size \\
+			Benchname & Input/Output Size \\
 			\hline
-			random-pixel & N/A \\
+			random-pixel & 32M pixel image \\
 			\hline
-			Nbody &  1024 bodies \\
+			histogram & 512M elements \\
+			\hline
+			image-convolution & 16M pixel image \\
+			\hline
+			blackscholes & 40M options \\
+			\hline
+			nbody-simulation & 1024 bodies \\
 			\hline
 		\end{tabular}
 	\end{center}
@@ -50,29 +56,26 @@ there should probably be a table here...
 	\label{benchmark-table}
 \end{table}
 
-\paragraph{Random Pixel Generator}
-
-\paragraph{N-Body Force Calculation}
-
-\paragraph{Black Scholes} \hspace{0pt}\\
-I am curious what this does
-
-
-\paragraph{Histogram}
-maybe want it this way instead \ldots
-
-\paragraph{Awesome B}
+To evaluate performance on different platforms, we create different versions of benchmarks for each platform. We choose 5 CUDA examples provided with corresponding CPU version mostly from CUDA SDK samples, and manually port them to WebCUDA and JavaScript environments. Porting to WebCUDA versions starts from CUDA versions, and involves rewriting CPU portions in JavaScript with WebCUDA extension and wrapping CUDA portions separately as string. Porting to JavaScript versions is more
+straightforward, and involves translating C code into JavaScript code line by line.
+The input sizes are adjusted as shown in Table 2 to make the amount of computation and the execution time of JavaScript versions nontrivial.
 
 \subsection{Experimental Setup}
+We run all experiments on the Amazon EC2 instance to ensure an isolated execution environment. It has Intel Xeon 8-core processor running at 2.6 GHz and NVIDIA GRID K520 based on the Kepler architecture. The CUDA driver and runtime version is set to 5.5 which was the most recent version when the project was started. We build our WebCUDA-enabled JavaScript V8 shell on the instance to execute JavaScript and WebCUDA benchmarks, and we build CUDA benchmarks using NVIDIA CUDA Compiler.
 
 \subsection{Results}
 
 \paragraph{Execution Time}
+Figure 4 shows that WebCUDA is about an order of magnitude faster than JavaScript, and on average, it achieves 9x speedup over JavaScript. As shown in Figure 5, while JavaScript benchmarks takes most of time on the computation, it is negligible in WebCUDA and CUDA benchmarks thanks to the combination of parallel nature of the benchmarks and CUDA device optimized for such parallel computation. WebCUDA introduces compilation and runtime overhead to make use of CUDA device and some memory overhead
+for CUDA memory allocation and data transfer between CPU and CUDA device, but the huge gain from the computation more than justifies such overheads.
+Compared to CUDA benchmarks, however, WebCUDA still experiences 5x slowdown on average.
+
 \paragraph{Compilation Overhead}
-\paragraph{CUDA Visual Profiling}
+Figure 6 shows that compilation overhead is significant which takes up 48\% of the total execution time. It is time to translate a cu file, which is a source code written in CUDA, into a ptx file, which is in the form of intermediate representation for the CUDA-enabled graphics driver. WebCUDA provides a mean to load a ptx file or a cubin file instead which will basically remove the compilation overhead and lead to extra 2x speedup over the native JavaScript. A developer may choose to load a ptx file for better performance at the cost of extra maintenance effort of compiling a cu file offline. In addition, as a ptx file is difficult to read without knowledge of intermediate representation, it will reduce readability and reusability of source code which is one of web application’s benefits.
+
 \paragraph{V8 Runtime Overhead}
-something about how the overhead is infinitesimal and does not influence
-decisions about whether to run a program on the GPU or not
+Runtime overhead is introduced by WebCUDA Runtime overhead takes 7.9\% on average of the total execution time for WebCUDA benchmarks. As shown in Figure 7, maintaining CUDA execution context is responsible for most of the overhead.
+
 \paragraph{Running Native JavaScript Programs}
-
-
+To verify that the WebCUDA extension does not negatively affect native JavaScript programs, we run Octane Benchmark Suite on the original V8 and our WebCUDA-enabled V8. Octane Benchmark Suite is a popular JavaScript benchmark suite consisting of 17 programs ranging from traditional scientific benchmarks to realistic web applications, and reports test scores based on the execution time. We ran it multiple times on the original and modified V8 versions, and the test scores were about 20,000
+with a marginal noise.
