@@ -7,7 +7,7 @@ var filepath = "tests/nbody/data/tab1024";
 //var filepath = "tests/nbody/data/tab8096";
 
 
-function loadDataJS(path){
+function loadDataJS(path, profiler) {
 	var data = read(path);
 	var result = data.replace(/\r?\n|\r/g, " ");
 	var temp = result.replace(/\s+/g,' ').trim();
@@ -17,11 +17,12 @@ function loadDataJS(path){
 
 	numBodies = length/7;
 
+	profiler.start("Allocating host memory");
 	result = new Array();
-
 	for(i = 0; i < numBodies; i++ ){
 		result[i] = new Body(data, i*7);
 	}
+	profiler.stop("Allocating host memory");
 
 	return result;
 }
@@ -30,9 +31,9 @@ function main(){
 	load("tests/Profiler/Profiler.js");
 	print("STARTING");
 	var profiler = new Profiler();
-	profiler.start("Total");
+	//profiler.start("Total");
 	var jsResult = runJS(filepath, profiler);
-	profiler.stop("Total");
+	//profiler.stop("Total");
 	profiler.print();
 	print("DONE");
 }
@@ -40,13 +41,15 @@ function main(){
 
 function runJS(path, profiler){
 	//TODO
-	profiler.start("Allocating host memory");
-	var bodies = loadDataJS(path);
-	profiler.stop("Allocating host memory");
+	//profiler.start("Allocating host memory");
+	var bodies = loadDataJS(path, profiler);
+	//profiler.stop("Allocating host memory");
 
+	profiler.start("Computation");
 	for(var i = 0; i < numIterations; i++){
 		advance(bodies, timeStep);
 	}
+	profiler.stop("Computation");
 
 	return bodies;
 }

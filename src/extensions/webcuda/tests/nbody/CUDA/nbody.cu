@@ -4,9 +4,9 @@
 
 #define NUMBODIES 1024
 #define TIMESTEP 0.01 
-#define NUMITERATIONS 1
-#define NUMTHREADS 64
-#define NUMBLOCKS 16 
+#define NUMITERATIONS 40
+#define NUMTHREADS 16
+#define NUMBLOCKS 8
 
 	__device__ float3
 bodyBodyInteraction(float4 bi, float4 bj, float3 ai)
@@ -264,7 +264,7 @@ int main(void)
     cudaEventElapsedTime(&hostMemFree, start_event, stop_event);
 
     printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
-            hostMemAlloc*1000000, deviceMemAlloc*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
+            hostMemAlloc*1000, deviceMemAlloc*1000,memcpyHtoD*1000, kernel*1000,memcpyDtoH*1000, hostMemFree*1000, deviceMemFree*1000);
 
 
 	// Reset the device and exit

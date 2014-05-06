@@ -15,7 +15,11 @@ function Profiler() {
   function stop_timer(name) {
     if(name == undefined) print("[ERROR] Profiler.stop() needs a timer name.");
     if(name in start) {
-      elasped_time[name] = %GetTiming() - start[name];
+      if(name in elasped_time) {
+        elasped_time[name] += %GetTiming() - start[name];
+      } else {
+        elasped_time[name] = %GetTiming() - start[name];
+      }
       delete start[name];
     } else {
       print("[ERROR] Not started: " + name);
@@ -29,7 +33,7 @@ function Profiler() {
         //print(key + ": " + String(Math.round(elasped_time[key])) + " (" + String(Math.round(elasped_time[key] / elasped_time["Total"] * 10000) / 100) + "%)");
         print(key + ", " + String(Math.round(elasped_time[key])));
       } else {
-        print(key + ": " + String(Math.round(elasped_time[key])));
+        print(key + ", " + String(Math.round(elasped_time[key])));
       }
     }
   }

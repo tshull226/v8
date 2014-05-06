@@ -34,7 +34,7 @@ float RandFloat(float low, float high)
 ////////////////////////////////////////////////////////////////////////////////
 //const int OPT_N = 4000000;
 //const int NUM_ITERATIONS = 512;
-const int OPT_N = 1024;
+const int OPT_N = 40960 * 1024;
 const int NUM_ITERATIONS = 1;
 
 
@@ -215,7 +215,7 @@ int main(int argc, char **argv)
     printf("Shutdown done.\n");
 
     printf("Host Mem Alloc: %f\nDevice Mem Alloc: %f\nMem Copy H to D: %f\nKernel: %f\nMem Copy D to H: %f\nHost Mem Free: %f\nDevice Mem Free: %f\n\n",
-            hostMemAlloc*1000000, deviceMemAlloc*1000000,memcpyHtoD*1000000, kernel*1000000,memcpyDtoH*1000000, hostMemFree*1000000, deviceMemFree*1000000);
+            hostMemAlloc*1000, deviceMemAlloc*1000,memcpyHtoD*1000, kernel*1000,memcpyDtoH*1000, hostMemFree*1000, deviceMemFree*1000);
 
     cudaDeviceReset();
 

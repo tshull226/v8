@@ -15,9 +15,9 @@ function main(){
 	var profiler = new Profiler();
 
 	webcuda.startProfiling();
-	profiler.start("Total");
+	//profiler.start("Total");
 	var h_I = runCuda(seed, profiler);
-	profiler.stop("Total");
+	//profiler.stop("Total");
 	profiler.print();
 	webcuda.stopProfiling();
 
@@ -61,7 +61,8 @@ function runCuda(seed, profiler){
 	//Loading Module
 	if(DEBUG) print("loading CUDA module");
 	profiler.start("Loading CUDA module");
-	var module = webcuda.moduleLoad("tests/random_pixel/WebCUDA/random.ptx");
+	//var module = webcuda.moduleLoad("tests/random_pixel/WebCUDA/random.ptx");
+	var module = webcuda.compileFile("tests/random_pixel/WebCUDA/random");
 	if(DEBUG) print("fname: " + module.fname + " error: " + module.error);
 	profiler.stop("Loading CUDA module");
 
@@ -75,8 +76,9 @@ function runCuda(seed, profiler){
 	//Launching the Kernel
 	if(DEBUG) print("trying to launch kernel");
 	profiler.start("kernel");
-	var launchResult = webcuda.launchKernel(cuFunc, [40,30,1], [16,16,1], 0, [{"memParam" : d_I}, {"intParam" : 1} ]);
+	var launchResult = webcuda.launchKernel(cuFunc, [width / 16, height / 16, 1], [16, 16, 1], 0, [{"memParam" : d_I}, {"intParam" : 1} ]);
 	if(DEBUG) print("launch result: " + launchResult);
+	webcuda.synchronizeCtx();
 	profiler.stop("kernel");
 
 	//Retrieving Data from CUDA Device Memory

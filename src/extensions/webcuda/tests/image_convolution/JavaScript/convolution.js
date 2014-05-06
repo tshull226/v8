@@ -1,12 +1,13 @@
-
-var imageW = 4096;
-var imageH = 4096;
+var imageW = 8192;
+var imageH = 8192;
 var numIterations = 1;
 var KERNEL_RADIUS = 8
 var KERNEL_LENGTH = 2 * KERNEL_RADIUS + 1
 
-function generateRandom(size){
-	var output = new Array(size);
+function generateRandom(size, profiler){
+	profiler.start("Allocating host memory");
+	var output = new Float32Array(size);
+	profiler.stop("Allocating host memory");
 	var i;
 	for(i = 0; i < size; i++){
 		output[i] = (Math.random() % 16);
@@ -15,28 +16,29 @@ function generateRandom(size){
 }
 
 function main(){
-	var h_Kernel = generateRandom(KERNEL_LENGTH);
-	var h_Input = generateRandom(imageW * imageH);
-
 	load("tests/Profiler/Profiler.js")
 	var profiler = new Profiler();
-	profiler.start("Total");
+	var h_Kernel = generateRandom(KERNEL_LENGTH, profiler);
+	var h_Input = generateRandom(imageW * imageH, profiler);
+	//profiler.start("Total");
 	runJS(h_Kernel, h_Input, profiler);
-	profiler.stop("Total");
+	//profiler.stop("Total");
 	profiler.print();
 }
 
 function runJS(h_Kernel, h_Input, profiler){
 	print("Starting JavaScript Execution!");
 	profiler.start("Allocating host memory");
-	var h_Buffer = new Array(imageW * imageH);
-	var h_Output = new Array(imageW * imageH);
+	var h_Buffer = new Float32Array(imageW * imageH);
+	var h_Output = new Float32Array(imageW * imageH);
 	profiler.stop("Allocating host memory");
 	
+	profiler.start("Computation");
 	for(var i = 0; i < numIterations; i++){
 		convolutionRowJS(h_Buffer, h_Input, h_Kernel, imageW, imageH, KERNEL_RADIUS);
 		convolutionColumnJS(h_Output, h_Buffer, h_Kernel, imageW, imageH, KERNEL_RADIUS);
 	}
+	profiler.stop("Computation");
 
 	/*
 	for(i = 0; i < imageW * imageH; i++){
