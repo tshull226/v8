@@ -11,20 +11,20 @@ JavaScript code as opposed to explaining how the compiler itself works.
 Therefore, it was necessary to look deep into the source code to determine the
 best way to interact with the compiler.
 
-Two of the paper's authors have much experience working with the V8 codebase and
-thus did not expect any difficulty implementing the \name standard. V8 is an
-ongoing project and is rapidly improving and including new features. Because of
-this, we wanted to work on its most recent version to give our project the most
-relevance. The author's previous experience was on a version of V8 from 2012.
-While the basic structure of the compiler in both versions is similar, the
-authors were astonished to find how many of V8's class and method names had
-changed. There was a major overhaul of the external programmers API last summer,
-which has made most information provided in blogs obsolete. Even Google's
-Embedder's Guide Documentation \cite{embeddersGuide} does not correspond to the
-updated API.  Therefore, it was much more difficult and took longer than
-expected to implement \name. Thankfully, with our newfound experience working on
-this version of V8, any additional changes necessary to be made to \name should
-be straightforward to implement.
+V8 is an ongoing project and is rapidly improving and including new features.
+Because of this, we wanted to work on its most recent version to give our
+project the most relevance.  Two of the paper's authors have much experience
+working with the V8 codebase and thus did not expect any difficulty implementing
+the \name standard.  The author's previous experience was on a version of V8
+from 2012.  While the basic structure of the compiler in both versions is
+similar, the authors were astonished to find how many of V8's class and method
+names had changed. There was a major overhaul of the external programmers API
+last summer, which has made most information provided in blogs obsolete. Even
+Google's Embedder's Guide documentation \cite{embeddersGuide} does not
+correspond to the updated API.  Therefore, it was much more difficult and took
+longer than expected to implement \namens. Thankfully, with our newfound
+experience working on this version of V8, any additional changes necessary to be
+made to \name should be straightforward to implement.
 
 \subsection{WebCUDA Limitations}
 While the current \name specification and implementation has enough
@@ -157,8 +157,8 @@ crash a computer. If and when browsers start to expose GPU extensions to web
 apps, it will be unacceptable to allow any novice or malicious programmer to
 crash a user's computer simply by the user navigating to their specific site.
 The CUDA programming environment must be expanded to provide basic security
-measures, such as runtime checks and forced kernel termination, before \name or
-WebCL can gain traction.
+measures, such as runtime checks and forced kernel termination, before \name
+can gain popularity.
 
 We briefly explored the WebCL specification to see if WebCL addresses the
 security issues addressed above. Their specification in fact makes security a
@@ -167,8 +167,8 @@ accesses and Denial of Service.
 
 Improper memory access protection handles situations when a program tries to
 access areas of memory not belonging to the program. WebCL specifies that these
-accesses during runtime must return the value 0 for reads and writes must be
-discarded. They also have a WebCL Validator Project \cite{webclValidator} to
+accesses during runtime must return the value ``0'' for reads and writes must be
+discarded. They also have the WebCL Validator Project \cite{webclValidator} to
 detect out of bounds-memory accesses at compile time. A WebCL program also must
 not be able to read data left behind in allocated but not initialized memory.
 Therefore, upon allocation, the WebCL specfication requires all allocated memory
@@ -187,16 +187,16 @@ WebGL, which allows programmers to write GPU-enabled graphic applications in
 JavaScript. Since they can use the GPU, many of the many same security concerns
 arise in this domain. 
 
-A quick survey found that WebGL also protects one from the issues cited above.
-However, in WebGL specification 1.0, security flaws were found in the
-Cross-Origin Media security policy \cite{webGLerror1, webGLerror2}. The
-Cross-Origin policy dictates how shaders and images/videos from different
-sources can interact. The policy stipulated if an arbitrary shader is used to
-read an image/video from another source, the resulting value cannot be read.
-However, researchers found the shader can be made in such a way that the length
-of its runtime is dependent on the value of the pixel and hence the image can be
-inferred. Recent specifications prevent these types of attacks by requiring
-textures to be validated by Cross-Origin Resource Sharing (CROS).
+A quick survey found that the most recent WebGL specification also protects one
+from the issues cited above.  However, in WebGL specification 1.0, security
+flaws were found in the Cross-Origin Media security policy \cite{webGLerror1,
+webGLerror2}. The Cross-Origin policy dictates how shaders and images/videos
+from different sources can interact. The policy stipulated if an arbitrary
+shader is used to read an image/video from another source, the resulting value
+cannot be read.  However, researchers found the shader can be made in such a way
+that the length of its runtime is dependent on the value of the pixel and hence
+the image can be inferred. Recent specifications prevent these types of attacks
+by requiring textures to be validated by Cross-Origin Resource Sharing (CROS).
 
 Due to previous security issues, not all browsers have adapted and enabled WebGL
 extensions. In Safari, the extension is disabled by default and Internet
@@ -204,12 +204,12 @@ Explorer has yet to fully implement the standard.
 
 \subsection{Chromium Browser Integration} 
 \label{chromeIntegration}
-The end goal for \name is to be included within the
+The end goal for \name is for it to be integrated into the
 Chromium browser. For this project, however, we used d8, V8's standalone
 JavaScript execution engine, in lieu of the actual browser. We chose to do this
-to isolate the evaluation of \namens's JavaScript's execution from the many other
-tasks occurring in a web browser.  Another issue is the sheer size of the chromium code.
-The chromium browser takes nearly 100GB and multiple hours to compile. Google
+to isolate the evaluation of \namens's JavaScript execution from the many other
+tasks occurring in a web browser.  Another issue is the sheer size of the Chromium code.
+The Chromium browser takes nearly 100GB and multiple hours to compile. Google
 even has 
 posts dedicated to recommending ways minimize the build overhead
 \cite{linuxfasterbuilds}.  Since we had to compile often, the d8 environment,
@@ -235,7 +235,7 @@ Chromium browser. For security reasons, \name must enforce similar measures as
 imposed by WebCL, namely having the runtime monitor memory accesses and
 including the ability to terminate contexts using disproportionate amounts of
 resources. Both security measures do not have clear solutions, since they involve
-altering the CUDA Runtime and drivers. We hope that future NVidia products will
+altering NVidia's tools and drivers. We hope that future NVidia products will
 provide tools to create a more secure GPU programming environment.
 
 Integrating \name into Chromium, as discussed in Section~\ref{chromeIntegration} should be
